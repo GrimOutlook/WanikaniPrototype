@@ -1,0 +1,5 @@
+!.gitignore
+env/
+Objects/
+__pycache__/
+wanikani.db
