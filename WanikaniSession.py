@@ -269,6 +269,16 @@ class WanikaniSession():
                 d["incorrect_reading_answers"]
             ))
 
+        elif( type_obj == "updated_review" ):
+            self.wk_db.createReview((
+                r["id"]                         ,
+                r["created_datetime"]           ,
+                r["assignment_id"]              ,
+                r["subject_id"]                 ,
+                r["incorrect_meaning_answers"]  ,
+                r["incorrect_reading_answers"]
+            ))
+
         elif( type_obj == "assignment" ):
             d = r["data"]
             self.wk_db.createAssignment((
@@ -289,6 +299,13 @@ class WanikaniSession():
                 str( d["passed"] )              ,
                 str( d["resurrected"] )         ,
                 str( d["hidden"] )
+            ))
+
+        elif( type_obj == "updated_assignment" ):
+            self.wk_db.createAssignment((
+                r["id"]                         ,
+                d["subject_id"]                 ,
+                d["started_datetime"]           ,
             ))
 
         else:
@@ -354,3 +371,9 @@ class WanikaniSession():
 
     def postAssignmentByID( self ):
         pass
+
+    """
+    ##############################################################
+    ################### Post object functions ####################
+    ##############################################################
+    """
