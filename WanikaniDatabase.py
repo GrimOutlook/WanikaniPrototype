@@ -26,6 +26,11 @@ class WanikaniDatabase():
         I want to store only a single image or audio file per object. I will try and grab
         of the largest quality I can get. I will download the images or audio to a known directory and store the paths to each
         objects images or audio in the database rather than storing the data itself.
+
+        ##### Timestamps #####
+        Timestamps are stored in datetime.isoformat(timespec="microseconds") format
+        Use datetime.datetime.fromisoformat( variable.strip("Z") ) to get the datetime data
+        Possible optimization in storing timestap as posix timestamp but I will hold off for now
         """
 
         sql_create_table_radical = """CREATE TABLE IF NOT EXISTS radical (
@@ -402,7 +407,7 @@ class WanikaniDatabase():
     ############################
     """
     def itemTypeIsValid( self, item_type ):
-        valid_types = [ "radical", "kanji", "vocabulary", "review", "updated_review", "assignment", "updated_assignment" ]
+        valid_types = [ "radical", "kanji", "vocabulary", "review", "updated_review", "assignment", "updated_assignment", "download_queue" ]
         return ( item_type in valid_types )
 
     def objectExistsInDatabase( self, item_id, item_type ):
@@ -434,9 +439,12 @@ class WanikaniDatabase():
         c.execute( "SELECT * FROM {0} WHERE {1}=?".format(item_type, item_id_prompt[ item_type ]), (item_subject_id,) )
         return( c.fetchall() )
 
-    def getAllFromDownloadQueue( self ):
+    def getAllOfItemTypeFromTable( self, item_type ):
+        if( not self.itemTypeIsValid( item_type ) ):
+            raise Exception("Provided item type is not supported. Item is of type {}".format(item_type))
+
         c = self.conn.cursor()
-        c.execute( "SELECT * FROM download_queue" )
+        c.execute( "SELECT * FROM {}".format(item_type ) )
         return( c.fetchall() )
 
     def removeFromDownloadQueue( self, item_id ):

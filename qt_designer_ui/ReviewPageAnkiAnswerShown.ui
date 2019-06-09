@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1524</width>
-    <height>1136</height>
+    <width>1177</width>
+    <height>713</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -212,6 +212,36 @@
      </widget>
     </item>
     <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="QPushButton" name="correctResponse">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>125</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Correct Answer</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="wrongResponse">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>125</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Wrong Answer</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
      <spacer name="horizontalSpacer_4">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
@@ -222,7 +252,7 @@
       <property name="sizeHint" stdset="0">
        <size>
         <width>20</width>
-        <height>160</height>
+        <height>35</height>
        </size>
       </property>
      </spacer>
@@ -272,7 +302,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1524</width>
+     <width>1177</width>
      <height>24</height>
     </rect>
    </property>
@@ -280,5 +310,86 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>correctResponse</sender>
+   <signal>clicked()</signal>
+   <receiver>centralwidget</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>297</x>
+     <y>540</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>588</x>
+     <y>356</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>wrongResponse</sender>
+   <signal>clicked()</signal>
+   <receiver>centralwidget</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>879</x>
+     <y>540</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>588</x>
+     <y>356</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sortMode</sender>
+   <signal>clicked()</signal>
+   <receiver>centralwidget</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>928</x>
+     <y>665</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>588</x>
+     <y>356</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>reviewMode</sender>
+   <signal>clicked()</signal>
+   <receiver>centralwidget</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1014</x>
+     <y>665</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>588</x>
+     <y>356</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ignoreAnswer</sender>
+   <signal>clicked()</signal>
+   <receiver>centralwidget</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1113</x>
+     <y>665</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>588</x>
+     <y>356</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

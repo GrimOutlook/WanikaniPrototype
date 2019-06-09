@@ -132,7 +132,7 @@
         <property name="alignment">
          <set>Qt::AlignCenter</set>
         </property>
-        <widget class="QWidget" name="scrollAreaWidgetContents_3">
+        <widget class="QWidget" name="mainScrollAreaWidgetContents">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -359,5 +359,54 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>lessonsLink</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1186</x>
+     <y>62</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>878</x>
+     <y>508</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>reviewsLink</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1272</x>
+     <y>62</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>878</x>
+     <y>508</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>levelsLink</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1358</x>
+     <y>62</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>878</x>
+     <y>508</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ReviewPageAnkiAnswerShown.ui'
+# Form implementation generated from reading ui file 'ReviewPageAnkiAnswerNotShown.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(416, 511)
+        MainWindow.resize(1299, 991)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -92,18 +92,14 @@ class Ui_MainWindow(object):
         self.answerBox.setAlignment(QtCore.Qt.AlignCenter)
         self.answerBox.setObjectName("answerBox")
         self.verticalLayout_2.addWidget(self.answerBox)
+        self.showAnswer = QtWidgets.QPushButton(self.centralwidget)
+        self.showAnswer.setMinimumSize(QtCore.QSize(0, 75))
+        self.showAnswer.setObjectName("showAnswer")
+        self.verticalLayout_2.addWidget(self.showAnswer)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.correctResponse = QtWidgets.QPushButton(self.centralwidget)
-        self.correctResponse.setMinimumSize(QtCore.QSize(0, 125))
-        self.correctResponse.setObjectName("correctResponse")
-        self.horizontalLayout_4.addWidget(self.correctResponse)
-        self.wrongResponse = QtWidgets.QPushButton(self.centralwidget)
-        self.wrongResponse.setMinimumSize(QtCore.QSize(0, 125))
-        self.wrongResponse.setObjectName("wrongResponse")
-        self.horizontalLayout_4.addWidget(self.wrongResponse)
         self.verticalLayout_2.addLayout(self.horizontalLayout_4)
-        spacerItem3 = QtWidgets.QSpacerItem(20, 35, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        spacerItem3 = QtWidgets.QSpacerItem(20, 85, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         self.verticalLayout_2.addItem(spacerItem3)
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
@@ -121,7 +117,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addLayout(self.horizontalLayout_3)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 416, 24))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1299, 24))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -129,6 +125,10 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
+        self.showAnswer.clicked.connect(self.centralwidget.hide)
+        self.sortMode.clicked.connect(self.centralwidget.hide)
+        self.reviewMode.clicked.connect(self.centralwidget.hide)
+        self.ignoreAnswer.clicked.connect(self.centralwidget.hide)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -143,8 +143,7 @@ class Ui_MainWindow(object):
         self.vocabularyCountToDo.setText(_translate("MainWindow", "Voc:"))
         self.promptType.setText(_translate("MainWindow", "Prompt Type"))
         self.answerBox.setPlaceholderText(_translate("MainWindow", "Answer"))
-        self.correctResponse.setText(_translate("MainWindow", "Correct Answer"))
-        self.wrongResponse.setText(_translate("MainWindow", "Wrong Answer"))
+        self.showAnswer.setText(_translate("MainWindow", "Show Answer"))
         self.sortMode.setText(_translate("MainWindow", "Sort Mode"))
         self.reviewMode.setText(_translate("MainWindow", "Anki Mode"))
         self.ignoreAnswer.setText(_translate("MainWindow", "Ignore Answer"))

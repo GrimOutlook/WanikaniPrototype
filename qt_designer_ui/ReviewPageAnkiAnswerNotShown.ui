@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>416</width>
-    <height>511</height>
+    <width>1299</width>
+    <height>991</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -212,34 +212,20 @@
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_4">
-      <item>
-       <widget class="QPushButton" name="correctResponse">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>125</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Correct Answer</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="wrongResponse">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>125</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Wrong Answer</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+     <widget class="QPushButton" name="showAnswer">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>75</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Show Answer</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_4"/>
     </item>
     <item>
      <spacer name="horizontalSpacer_4">
@@ -252,7 +238,7 @@
       <property name="sizeHint" stdset="0">
        <size>
         <width>20</width>
-        <height>35</height>
+        <height>85</height>
        </size>
       </property>
      </spacer>
@@ -302,7 +288,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>416</width>
+     <width>1299</width>
      <height>24</height>
     </rect>
    </property>
@@ -310,5 +296,70 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>showAnswer</sender>
+   <signal>clicked()</signal>
+   <receiver>centralwidget</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>649</x>
+     <y>786</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>649</x>
+     <y>495</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sortMode</sender>
+   <signal>clicked()</signal>
+   <receiver>centralwidget</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1050</x>
+     <y>943</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>649</x>
+     <y>495</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>reviewMode</sender>
+   <signal>clicked()</signal>
+   <receiver>centralwidget</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1136</x>
+     <y>943</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>649</x>
+     <y>495</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ignoreAnswer</sender>
+   <signal>clicked()</signal>
+   <receiver>centralwidget</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1235</x>
+     <y>943</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>649</x>
+     <y>495</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

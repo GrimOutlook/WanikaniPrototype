@@ -118,6 +118,9 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
+        self.sortMode.clicked.connect(self.centralwidget.hide)
+        self.reviewMode.clicked.connect(self.centralwidget.hide)
+        self.ignoreAnswer.clicked.connect(self.centralwidget.hide)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
