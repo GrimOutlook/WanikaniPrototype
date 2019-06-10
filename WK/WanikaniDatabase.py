@@ -1,8 +1,11 @@
 import sqlite3
 from sqlite3 import Error
 
+import datetime # For calculating timestamps
+import ast # This is for converting the returned database info into dictonaries easier
+
 class WanikaniDatabase():
-    def __init__( self, database_filename="wanikani.db" ):
+    def __init__( self, database_filename="../wanikani.db" ):
         """
         Items with multiple data points will be stored as text and be parsed as json for manipulation
 
@@ -130,7 +133,7 @@ class WanikaniDatabase():
                 subject_id integer,
                 subject_type text,
                 srs_stage integer,
-                srs_subject_name text,
+                srs_stage_name text,
                 unlocked_datetime text,
                 started_datetime text,
                 passed_datetime text,
@@ -346,7 +349,7 @@ class WanikaniDatabase():
                 subject_id,
                 subject_type,
                 srs_stage,
-                srs_subject_name,
+                srs_stage_name,
                 unlocked_datetime,
                 started_datetime,
                 passed_datetime,
@@ -447,6 +450,158 @@ class WanikaniDatabase():
         c.execute( "SELECT * FROM {}".format(item_type ) )
         return( c.fetchall() )
 
-    def removeFromDownloadQueue( self, item_id ):
+    def removeFromTableByID( self, item_id, table ):
+        if( not self.itemTypeIsValid( table ) ):
+            raise Exception("Provided item type is not supported. Item is of type {}".format(item_type))
+
         c = self.conn.cursor()
-        c.execute( "DELETE FROM download_queue WHERE id=?", (item_id,) )
+        c.execute( "DELETE FROM {} WHERE id=?".format( table ), (item_id,) )
+
+    def getValidReviewsFromList( self, l, index ):
+        return( [ i for i in l if( i[ index ] != None and datetime.datetime.fromisoformat( i[ index ].strip("Z") ) < datetime.datetime.now() ) ] )
+
+    def getReviews( self ):
+        """
+        This function will return a dictonary element containing
+        :subject_id: taken from assignments and subjects own table
+        :subject: type such as "radical" taken from assignments
+        :srs_stage_name: such as "Guru I" taken from assignments
+
+        ## Radicals
+        :amalgamation_subject_ids:
+        :auxilary_meanings:
+        :characters:
+        :character_images_path:
+        :level:
+        :meaning:
+        :meaning_mnemonic:
+
+        ## Kanji
+
+        """
+
+        reviews = []
+
+        c = self.conn.cursor()
+        c.execute(
+            """ SELECT
+                    assignment.id,
+                    assignment.subject_id,
+                    assignment.subject_type,
+                    assignment.srs_stage_name,
+                    assignment.available_datetime,
+                    radical.amalgamation_subject_ids,
+                    radical.auxiliary_meanings,
+                    radical.characters,
+                    radical.character_images_path,
+                    radical.level,
+                    radical.meanings,
+                    radical.meaning_mnemonic
+
+                FROM assignment INNER JOIN radical ON assignment.subject_id = radical.id
+            """)
+        radicals = self.getValidReviewsFromList( c.fetchall(), 4 )
+        for item in radicals:
+            reviews.append({
+                "assignment_id"             : item[0],
+                "subject_id"                : item[1],
+                "subject_type"              : item[2],
+                "srs_stage_name"            : item[3],
+                "available_datetime"        : item[4],
+                "amalgamation_subject_ids"  : ast.literal_eval( item[5] ),
+                "auxilary_meanings"         : ast.literal_eval( item[6] ),
+                "characters"                : item[7],
+                "character_images_path"     : item[8],
+                "level"                     : item[9],
+                "meanings"                  : ast.literal_eval( item[10] ),
+                "meaning_mnemonic"          : item[11]
+            })
+
+
+        c.execute(
+            """ SELECT
+                    assignment.id,
+                    assignment.subject_id,
+                    assignment.subject_type,
+                    assignment.srs_stage_name,
+                    assignment.available_datetime,
+                    kanji.amalgamation_subject_ids,
+                    kanji.auxiliary_meanings,
+                    kanji.characters,
+                    kanji.component_subject_ids,
+                    kanji.level,
+                    kanji.meanings,
+                    kanji.meaning_hint,
+                    kanji.meaning_mnemonic,
+                    kanji.readings,
+                    kanji.reading_mnemonic,
+                    kanji.reading_hint,
+                    kanji.visually_similar_subject_ids
+
+                FROM assignment INNER JOIN kanji ON assignment.subject_id = kanji.id
+            """)
+        kanji = self.getValidReviewsFromList( c.fetchall(), 4 )
+        for item in kanji:
+            reviews.append({
+                "assignment_id"                 : item[0],
+                "subject_id"                    : item[1],
+                "subject_type"                  : item[2],
+                "srs_stage_name"                : item[3],
+                "available_datetime"            : item[4],
+                "amalgamation_subject_ids"      : ast.literal_eval( item[5] ),
+                "auxilary_meanings"             : ast.literal_eval( item[6] ),
+                "characters"                    : item[7],
+                "component_subject_ids"         : ast.literal_eval( item[8] ),
+                "level"                         : item[9],
+                "meanings"                      : ast.literal_eval( item[10] ),
+                "meaning_hint"                  : item[11],
+                "meaning_mnemonic"              : item[12],
+                "readings"                      : ast.literal_eval( item[13] ),
+                "reading_mnemonic"              : item[14],
+                "reading_hint"                  : item[15],
+                "visually_similar_subject_ids"  : ast.literal_eval( item[16] )
+            })
+
+        c.execute(
+            """ SELECT
+                    assignment.id,
+                    assignment.subject_id,
+                    assignment.subject_type,
+                    assignment.srs_stage_name,
+                    assignment.available_datetime,
+                    vocabulary.auxiliary_meanings,
+                    vocabulary.characters,
+                    vocabulary.component_subject_ids,
+                    vocabulary.context_sentences,
+                    vocabulary.level,
+                    vocabulary.meanings,
+                    vocabulary.meaning_mnemonic,
+                    vocabulary.parts_of_speech,
+                    vocabulary.pronunciation_audio_path,
+                    vocabulary.readings,
+                    vocabulary.reading_mnemonic
+
+                FROM assignment INNER JOIN vocabulary ON assignment.subject_id = vocabulary.id
+            """)
+        vocabulary = self.getValidReviewsFromList( c.fetchall(), 4 )
+        for item in vocabulary:
+            reviews.append({
+                "assignment_id"                 : item[0],
+                "subject_id"                    : item[1],
+                "subject_type"                  : item[2],
+                "srs_stage_name"                : item[3],
+                "available_datetime"            : item[4],
+                "auxilary_meanings"             : ast.literal_eval( item[5] ),
+                "characters"                    : item[6],
+                "component_subject_ids"         : ast.literal_eval( item[7] ),
+                "context_sentences"             : ast.literal_eval( item[8] ),
+                "level"                         : item[9],
+                "meanings"                      : ast.literal_eval( item[10] ),
+                "meaning_mnemonic"              : item[11],
+                "parts_of_speech"               : ast.literal_eval( item[12] ),
+                "pronunciation_audio_path"      : item[13],
+                "readings"                      : ast.literal_eval( item[14] ),
+                "reading_mnemonic"              : item[15]
+            })
+
+        return(reviews)

@@ -11,4 +11,4 @@ obj = wk.getFromAPI(wk.BASE_API_URL + "subjects/2467")
 wk.importObjectIntoItemDatabase( obj, "s" )
 
 wk.importAllCollectionsIntoDatabase()
-# wk.downloadAllWKDataObjects()
+#wk.downloadAllWKDataObjects()
