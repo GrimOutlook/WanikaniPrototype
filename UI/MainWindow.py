@@ -1,37 +1,51 @@
 import sys
+sys.path.append("../")
+sys.path.append("../WK")
+
 from PyQt5.Qt import *
 
+from settings import Settings
 from ReviewWidget import ReviewWidget
 from HomeWidget import HomeWidget
 
 class MainWindow( QMainWindow ):
     def __init__( self, *args ):
+        self.settings = Settings( "main_window" )
         QMainWindow.__init__(self, *args)
 
         self.setWindowTitle("WanikaniPrototype")
-        self.resize( 2000, 1000 )
+
+        startup_height = self.settings.settings["startup_height"]
+        startup_width = self.settings.settings["startup_width"]
+        self.resize( startup_height, startup_width )
+
         self.setObjectName("MainWindow")
-        self.openReviews()
-        self.openHomepage()
+        self.openPage( self.settings.settings["startup_page"] )
 
-    def openReviews( self ):
-        self.cw = ReviewWidget( self )
+    def openPage( self, page ):
+        if( page == "home_page" ):
+            self.cw = HomeWidget( self )
+        elif( page == "review_page" ):
+            self.cw = ReviewWidget( self )
+        else:
+            raise Exception("Unknown page secification. Page spicified is {}".format(page))
+
         self.setCentralWidget( self.cw )
         self.cw.show()
-
-    def openHomepage( self ):
-        self.cw = HomeWidget( self )
-        self.setCentralWidget( self.cw )
-        self.cw.show()
-
 
     def resizeEvent( self, evt ):
         # print( self.size() )
-        pass
+        self.settings.settings["startup_height"] = self.size().height()
+        self.settings.settings["startup_width"] = self.size().width()
 
     def keyPressEvent( self, e ):
         if( e.key() == Qt.Key_Q  and e.modifiers() & Qt.ControlModifier ):
             self.close()
+
+    def closeEvent( self, e ):
+        self.settings.saveSettings()
+        e.accept()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

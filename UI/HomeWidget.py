@@ -7,9 +7,12 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5.Qt import *
+from settings import Settings
 
 class HomeWidget( QWidget ):
     def __init__( self, MainWindow ):
+        self.settings = Settings( "home_page" )
+
         QWidget.__init__(self)
         self.MainWindow = MainWindow
         self.setupUi( self )
@@ -169,7 +172,8 @@ class HomeWidget( QWidget ):
         self.retranslateUi(Form)
         QMetaObject.connectSlotsByName(Form)
 
-        self.reviewsLink.clicked.connect( self.MainWindow.openReviews )
+        # Connect statement requires a callable function so dont put parentheses and if you must include parameters make it lambda
+        self.reviewsLink.clicked.connect( lambda: self.MainWindow.openPage( "review_page" ) )
         #self.lessonsLink.clicked.connect( self.setupLessonsScreen )
         #self.levelsLink.clicked.connect( self.setupLevelsScreeen )
 

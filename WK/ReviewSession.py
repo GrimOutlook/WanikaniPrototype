@@ -1,9 +1,15 @@
+from settings import Settings
 from WanikaniDatabase import WanikaniDatabase
 
-from random import shuffle # For randomizing reviews if not sorting
+from random import shuffle, randint # For randomizing reviews
+from difflib import SequenceMatcher # For checking for string similarity
+from datetime import datetime # For timestamps
+import re # For removing all non alpha-numeric-space characters from strings
+
 
 class ReviewSession():
     def __init__( self, sort_mode=None, queue_size=10 ):
+        settings = Settings( "review_session" )
         """
         :sort_mode: = how the reviews will be sorted
         :amount: = number of items in review queue at a time
@@ -15,13 +21,75 @@ class ReviewSession():
         # Index 12 denotes the available at timestamp and must be less than the current timestamp to be a valid review
         # Index 12 can also be None if the item is burned so we must check for that since the strip method will throw an error
         self.full_review_list = self.wk_db.getReviews()
-        print( len(self.full_review_list) )
         shuffle( self.full_review_list )
 
         self.current_review_queue = []
         self.setSortMode( self.sort_mode )
 
-        self.current_review_item = self.current_review_queue[0]
+        self.current_review_index = 0
+        self.current_review_item = self.current_review_queue[ self.current_review_index ]
+        self.current_question = "meaning"
+
+
+    def answerCurrentQuestion( self, answer, review_mode ):
+        """
+        :review_mode: is either "a" for anki or "t" for typing
+        """
+        if( review_mode == "a" ):
+            result = answer
+        elif( review_mode == "t" ):
+            result = False
+            for meaning in self.current_review_item["meanings"]:
+                if( meaning["accepted_answer"] and self.answerIsCloseEnough( meaning["meaning"], answer ) ):
+                    result = True
+
+        if( result ):
+            # They answered correctly
+            self.current_review_item[ self.current_question + "_answers_done"] == True
+            self.current_review_item[ "completed_datetime" ] = datetime.now().isoformat(timespec="microseconds")
+
+        else:
+            # They answer incorrectly
+            self.current_review_item["incorrect_" + self.current_question + "_answers"] += 1
+
+
+        self.removeDoneItems()
+        self.pickNextItem()
+
+        return( result )
+
+    def removeDoneItems( self ):
+        """
+        This function only checks current item since its the last updated and there is no need to check the others since they cant change
+        without being the current item
+        """
+        if( self.current_review_item["meaning_answers_done"] and self.current_review_item["reading_answers_done"] ):
+            # I need to make an updated_review entry and then remove the current item and add another in
+            # Adding the updated review entry
+
+
+            # Removing the current item and replacing it in the queue
+            del( self.current_review_queue[ self.current_review_index ] )
+            for i in range( self.queue_size - len( self.current_review_queue ) ):
+                self.current_review_queue.append( self.full_review_list[i] )
+
+
+    def pickNextItem( self ):
+        self.current_review_index = randint( 0, self.queue_size - 1 )
+        self.current_review_item = self.current_review_queue[ self.current_review_index ]
+
+    def answerIsCloseEnough( self, key, answer ):
+        re_key = re.sub('[^A-Za-z0-9 ]+', '', key.lower() )
+        re_answer = re.sub('[^A-Za-z0-9 ]+', '', answer.lower() )
+        return( SequenceMatcher(None, re_key, re_answer).ratio() > .70 )
+
+
+
+    """
+    ###################################################################
+    ################### Changing Settings functions ###################
+    ###################################################################
+    """
 
     def setQueueSize( self, queue_size ):
         """
@@ -69,6 +137,7 @@ class ReviewSession():
                         self.full_review_list.sort( key=itemgetter(6) )
                     else:
                         self.full_review_list.sort( key=itemgetter(6), reverse=True )
+
 
                 elif( item[0] == "Subject" ):
                     if( item[1] == "A" ):

@@ -4,8 +4,12 @@ from sqlite3 import Error
 import datetime # For calculating timestamps
 import ast # This is for converting the returned database info into dictonaries easier
 
+from settings import Settings
+
 class WanikaniDatabase():
-    def __init__( self, database_filename="../wanikani.db" ):
+    def __init__( self, database_filename="/home/dom/Code/Projects/WanikaniPrototype/wanikani.db" ):
+
+        self.settings = Settings( "wanikani_database" )
         """
         Items with multiple data points will be stored as text and be parsed as json for manipulation
 
@@ -514,7 +518,12 @@ class WanikaniDatabase():
                 "character_images_path"     : item[8],
                 "level"                     : item[9],
                 "meanings"                  : ast.literal_eval( item[10] ),
-                "meaning_mnemonic"          : item[11]
+                "meaning_mnemonic"          : item[11],
+                "incorrect_meaning_answers" : 0,
+                "incorrect_reading_answers" : 0,
+                "meaning_answers_done"      : False,
+                "reading_answers_done"      : False,
+                "completed_datetime"        : ""
             })
 
 
@@ -559,7 +568,12 @@ class WanikaniDatabase():
                 "readings"                      : ast.literal_eval( item[13] ),
                 "reading_mnemonic"              : item[14],
                 "reading_hint"                  : item[15],
-                "visually_similar_subject_ids"  : ast.literal_eval( item[16] )
+                "visually_similar_subject_ids"  : ast.literal_eval( item[16] ),
+                "incorrect_meaning_answers" : 0,
+                "incorrect_reading_answers" : 0,
+                "meaning_answers_done"      : False,
+                "reading_answers_done"      : False,
+                "completed_datetime"        : ""
             })
 
         c.execute(
@@ -601,7 +615,12 @@ class WanikaniDatabase():
                 "parts_of_speech"               : ast.literal_eval( item[12] ),
                 "pronunciation_audio_path"      : item[13],
                 "readings"                      : ast.literal_eval( item[14] ),
-                "reading_mnemonic"              : item[15]
+                "reading_mnemonic"              : item[15],
+                "incorrect_meaning_answers" : 0,
+                "incorrect_reading_answers" : 0,
+                "meaning_answers_done"      : False,
+                "reading_answers_done"      : False,
+                "completed_datetime"        : ""
             })
 
         return(reviews)

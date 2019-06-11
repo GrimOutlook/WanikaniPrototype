@@ -1,0 +1,19 @@
+{
+    "main_window" : {
+
+        "startup_page" : "home_page",
+        "startup_height" : 2000,
+        "startup_width" : 1000
+    },
+    "wanikani_database" : {},
+    "wanikani_session" : {},
+    "review_session" : {},
+    "home_page" : {},
+    "review_page" : {
+        
+        "lightning" : true,
+        "review_mode" : "t",
+        "sort_mode" : null
+    }
+    
+}

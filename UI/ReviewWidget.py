@@ -6,15 +6,16 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-import sys
-sys.path.append("../WK/")
-sys.path.append(".")
-
 from PyQt5.Qt import *
+from settings import Settings
 from ReviewSession import ReviewSession
+
+from ReviewPromptLabel import ReviewPromptLabel
+from AnswerBox import AnswerBox
 
 class ReviewWidget( QWidget ):
     def __init__(self, MainWindow):
+        self.settings = Settings( "review_page" )
         QWidget.__init__(self)
         self.MainWindow = MainWindow
         self.setupUi( self )
@@ -44,13 +45,13 @@ class ReviewWidget( QWidget ):
         self.horizontalLayout.setObjectName("horizontalLayout")
         spacerItem1 = QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem1)
-        self.promptLabel = QLabel(Form)
+        self.promptLabel = ReviewPromptLabel(Form)
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.promptLabel.sizePolicy().hasHeightForWidth())
         self.promptLabel.setSizePolicy(sizePolicy)
-        self.promptLabel.setMinimumSize(QSize(300, 0))
+        self.promptLabel.setMinimumSize(QSize(0, 0))
         self.promptLabel.setFrameShape(QFrame.Box)
         self.promptLabel.setLineWidth(3)
         self.promptLabel.setAlignment(Qt.AlignCenter)
@@ -95,12 +96,12 @@ class ReviewWidget( QWidget ):
         self.promptType.setAlignment(Qt.AlignCenter)
         self.promptType.setObjectName("promptType")
         self.verticalLayout_2.addWidget(self.promptType)
-        self.answerBox = QLineEdit(Form)
+        self.answerBox = AnswerBox(Form)
         self.answerBox.setMinimumSize(QSize(0, 75))
         self.answerBox.setAlignment(Qt.AlignCenter)
         self.answerBox.setObjectName("answerBox")
         self.verticalLayout_2.addWidget(self.answerBox)
-        spacerItem3 = QSpacerItem(1503, 157, QSizePolicy.Minimum, QSizePolicy.Preferred)
+        spacerItem3 = QSpacerItem(0, 157, QSizePolicy.Minimum, QSizePolicy.Preferred)
         self.verticalLayout_2.addItem(spacerItem3)
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
@@ -120,8 +121,11 @@ class ReviewWidget( QWidget ):
         self.retranslateUi(Form)
         QMetaObject.connectSlotsByName(Form)
 
+        # This will later be loaded by a settings file
+        # This can either be t for typing or a for anki
+        self.review_mode = "t"
         self.rs = ReviewSession()
-        self.promptLabel.setText( rs.current_review_queue["characters"] )
+        self.promptLabel.setText( self.rs.current_review_item["characters"] )
         # self.promptType.setText( rs.current_review_queue[""] )
 
         #self.sortMode.clicked.connect(  )
@@ -143,12 +147,19 @@ class ReviewWidget( QWidget ):
         self.reviewMode.setText(_translate("Form", "Anki Mode"))
         self.ignoreAnswer.setText(_translate("Form", "Ignore Answer"))
 
+    def answerPrompt( self ):
+        self.rs.answerCurrentQuestion( self.answerBox.text() ,review_mode=self.review_mode )
+        self.promptLabel.setText( self.rs.current_review_item["characters"] )
+        # if( self.settings["review_page"]["lightning"] )
+        self.answerBox.clear()
+
+
     def keyPressEvent( self, e ):
         if( type(e) == QKeyEvent ):
             if( e.key() == Qt.Key_Return ):
-                self.answerBox.clear()
-            else:
-                super( ReviewWidget, self ).keyPressEvent(e)
+                self.answerPrompt()
+
+        super( ReviewWidget, self ).keyPressEvent(e)
 
 if __name__ == "__main__":
     import sys
