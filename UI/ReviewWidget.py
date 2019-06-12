@@ -272,6 +272,15 @@ class ReviewWidget( QWidget ):
             if( e.key() == Qt.Key_Return ):
                 self.answerPrompt()
 
+            elif( e.key() == Qt.Key_L ):
+                self.answerPrompt( True )
+
+            elif( e.key() == Qt.Key_Semicolon ):
+                self.answerPrompt( False )
+
+            # elif( e.key() == Qt.Key_Apostrophe ):
+            #     self.showAnswer()
+
         super( ReviewWidget, self ).keyPressEvent(e)
 
 if __name__ == "__main__":

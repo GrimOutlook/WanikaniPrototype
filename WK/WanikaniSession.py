@@ -19,7 +19,6 @@ class WanikaniSession():
 
     BASE_API_URL = "https://api.wanikani.com/v2/"
     valid_collection_types = [ "subjects", "reviews", "assignments" ]
-    rs = None # Initializing the review session as none
 
     def __init__( self, api_token="48768d92-fc9b-4616-9e4a-4fde5318daab" ):
         # Initiallizes the main values necessary for querying to Wanikani API
@@ -378,10 +377,31 @@ class WanikaniSession():
     ##############################################################
     """
 
-    def postReview( self, obj ):
-        # This posts reviews only
-        self.wk_db.getObjectBySubjectID( item_id, "updated_review" )
+    def postAllUpdatedReviews( self ):
+        updated_reviews = self.wk_db.getAllUpdatedReviews()
+        for updated_review in updated_reviews:
+            self.postUpdatedReview( updated_review )
 
-    def postAssignmentByID( self ):
+
+    def postReview( self, updated_review ):
+        # This posts reviews only
+
+        # If review posting isn't allowed don't allow postin to take place
+        if( not settings.settings["allow_review_posting"] ): return
+
+        payload = { "review" : {
+            "subject_id"                : updated_review["subject_id"],
+            "incorrect_meaning_answers" : updated_review["incorrect_meaning_answers"],
+            "incorrect_reading_answers" : updated_review["incorrect_reading_answers"],
+            "created_at"                : updated_review["created_datetime"]
+        }}
+
+        r = requests.post( url, headers=self.header, data=payload, timeout=11 )
+        # This should contain information pretaining to when the review will become available again
+        # Will have to do a review myself to get a good generated response for parsing
+        # The API has a pretty shoddy example
+        self.api_results = r.json()
+
+    def postAssignment( self ):
         # This posts lessons only
         pass

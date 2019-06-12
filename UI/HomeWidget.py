@@ -177,6 +177,52 @@ class HomeWidget( QWidget ):
         #self.lessonsLink.clicked.connect( self.setupLessonsScreen )
         #self.levelsLink.clicked.connect( self.setupLevelsScreeen )
 
+        """
+        Assignment count diplay stuff
+        """
+        ap1Cnt = len( self.wk_db.getAssignmentsBySRSStageName( "Apprentice I" ) )
+        ap2Cnt = len( self.wk_db.getAssignmentsBySRSStageName( "Apprentice II" ) )
+        ap3Cnt = len( self.wk_db.getAssignmentsBySRSStageName( "Apprentice III" ) )
+        ap4Cnt = len( self.wk_db.getAssignmentsBySRSStageName( "Apprentice IV" ) )
+        self.apprenticeCount.setText( str( ap1Cnt + ap2Cnt + ap3Cnt + ap4Cnt ) )
+
+        guru1Cnt = len( self.wk_db.getAssignmentsBySRSStageName( "Guru I" ) )
+        guru2Cnt = len( self.wk_db.getAssignmentsBySRSStageName( "Guru II" ) )
+        self.guruCount.setText( str( guru1Cnt + guru2Cnt ) )
+
+        masterCnt = len( self.wk_db.getAssignmentsBySRSStageName( "Master" ) )
+        self.masterCount.setText( str( masterCnt ) )
+
+        enlightenedCnt = len( self.wk_db.getAssignmentsBySRSStageName( "Enlightened" ) )
+        self.enlightenedCount.setText( str( enlightenedCnt ) )
+
+        burnedCnt = len( self.wk_db.getAssignmentsBySRSStageName( "Burned" ) )
+        self.burnedCount.setText( str(burnedCnt) )
+
+        """
+        Upcoming assignment display stuff
+        """
+
+        """
+        Current level radical progression stuff
+        """
+        clr = self.wk_db.getSubjectObjectsOfCurrentLevel( "radical" )
+
+        index = 0
+        self.current_level_radicals_labels = []
+        for r in clr:
+            # Create object, add it to the layout
+            self.current_level_radicals_labels.append( QLabel(self.mainScrollAreaWidgetContents) )
+            self.current_level_radicals_labels[ index ].setAlignment(Qt.AlignCenter)
+            self.levelRadicalProgressionItemsLocation.addWidget( self.current_level_radicals_labels[ index ] )
+
+        clk = self.wk_db.getSubjectObjectsOfCurrentLevel( "kanji" )
+        for r in clr:
+            # Create object, add it to the layout
+            self.current_level_kanji_labels.append( QLabel(self.mainScrollAreaWidgetContents) )
+            self.current_level_kanji_labels[ index ].setAlignment(Qt.AlignCenter)
+            self.levelKanjiProgressionItemsLocation.addWidget( self.current_level_kanji_labels[ index ] )
+
 
     def retranslateUi(self, Form):
         _translate = QCoreApplication.translate

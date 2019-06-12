@@ -153,6 +153,18 @@ class WanikaniDatabase():
                 subject_id integer,
                 started_datetime text
         );"""
+        sql_create_table_user = """CREATE TABLE IF NOT EXISTS user(
+                id text,
+                username text,
+                level integer,
+                max_level_granted_by_subscription integer,
+                profile_url text,
+                started_datetime text,
+                subscribed bool,
+                current_vacation_started_datetime text,
+                subscription text,
+                preferences text
+        )"""
 
         self.database_filename = database_filename
         # path can equal either :memory: or a database file
@@ -172,6 +184,7 @@ class WanikaniDatabase():
         self.create_table( sql_create_table_updated_review )
         self.create_table( sql_create_table_assignment )
         self.create_table( sql_create_table_updated_assignment )
+        self.create_table( sql_create_table_user )
         self.commitChanges()
 
     def commitChanges( self ):
@@ -408,17 +421,53 @@ class WanikaniDatabase():
             print(e)
             print( "Creating download queue table entry failed..." )
 
+    def createDownloadQueueItem( self, obj ):
+        sql = """ INSERT INTO download_queue(
+                id,
+                username,
+                level,
+                max_level_granted_by_subscription,
+                profile_url,
+                started_datetime,
+                subscribed,
+                current_vacation_started_datetime,
+                subscription,
+                preferences
+        )
+
+        VALUES( ?,?,?,?,?,?,?,?,?,? ) """
+
+        if( self.conn != None ):
+            c = self.conn.cursor()
+
+        try:
+            c.execute( sql, obj )
+        except Error as e:
+            print(e)
+            print( "Creating download queue table entry failed..." )
+
     """
     ############################
     # Data gathering functions #
     ############################
     """
     def itemTypeIsValid( self, item_type ):
-        valid_types = [ "radical", "kanji", "vocabulary", "review", "updated_review", "assignment", "updated_assignment", "download_queue" ]
+        valid_types = [ "radical", "kanji", "vocabulary", "review", "updated_review", "assignment", "updated_assignment", "download_queue", "user" ]
         return ( item_type in valid_types )
 
     def objectExistsInDatabase( self, item_id, item_type ):
         return( len( self.getObjectByID( item_id, item_type ) ) > 0 )
+
+    def getSubjectObjectsOfCurrentLevel( self, subject_type ):
+        user_level = self.getAllOfItemTypeFromTable( "user" )[0]["level"]
+        if( self.itemTypeIsValid( subject_type ) ):
+            c.execute( "SELECT * FROM {} WHERE level=?".format( subject_type ), (level,))
+            return( fetchall() )
+
+    def getObjectsBySRSStageName( self, level ):
+        c = self.conn.cursor()
+        c.execute( "SELECT * FROM assignment WHERE srs_stage_name=?", (level,))
+        return( fetchall() )
 
     def getObjectByID( self, item_id, item_type ):
         if( not self.itemTypeIsValid( item_type ) ):
