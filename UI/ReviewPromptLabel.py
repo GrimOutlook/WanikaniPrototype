@@ -1,5 +1,11 @@
 from PyQt5.Qt import *
 
+"""
+##### TODO ####
+1) Implement changing fonts and implement changing font on every new review item
+2) Fix resizing, its okay right now, but might be made better with more effort
+"""
+
 class ReviewPromptLabel( QLabel ):
     def __init__( self, parent ):
         super().__init__(parent=parent)

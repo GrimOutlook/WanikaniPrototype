@@ -6,14 +6,26 @@ When the question type is reading the box then dynamically converts the text int
 
 from PyQt5.Qt import *
 
+from PseudoJapaneseIME import PseudoJapaneseIME
+
 class AnswerBox( QLineEdit ):
     def __init__( self, parent ):
         super().__init__(parent=parent)
         self.parent = parent
 
-    def keyPressEvent( self, e ):
-        if( e.key() != Qt.Key_Backspace and self.parent.rs.current_question == "reading" ):
-            # Parse english to japanese
-            pass
+        self.IME = PseudoJapaneseIME()
+        self.textChanged.connect( self.romanjiToKana )
 
-        super().keyPressEvent(e)
+        self.stylesheets = {
+            "correct"   :   "background-color : green",
+            "incorrect" :   "background-color : red"
+        }
+
+    def setStyle( self, style ):
+        self.setStyleSheet( self.stylesheets[ style ] )
+
+    def romanjiToKana( self ):
+        if( self.parent.rs.current_question == "reading" ):
+            new_text = self.IME.romanjiToKana( self.text() )
+            self.setText( new_text )
+

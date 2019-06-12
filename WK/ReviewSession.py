@@ -1,25 +1,23 @@
 from settings import Settings
 from WanikaniDatabase import WanikaniDatabase
 
-from random import shuffle, randint # For randomizing reviews
+from random import shuffle, randint, choice # For randomizing reviews
 from difflib import SequenceMatcher # For checking for string similarity
 from datetime import datetime # For timestamps
 import re # For removing all non alpha-numeric-space characters from strings
 
 
 class ReviewSession():
-    def __init__( self, sort_mode=None, queue_size=10 ):
+    def __init__( self ):
         settings = Settings( "review_session" )
         """
         :sort_mode: = how the reviews will be sorted
         :amount: = number of items in review queue at a time
         """
-        self.sort_mode = sort_mode
-        self.queue_size = queue_size
+        self.sort_mode = settings.settings["sort_mode"]
+        self.queue_size = settings.settings["queue_size"]
         self.wk_db = WanikaniDatabase()
 
-        # Index 12 denotes the available at timestamp and must be less than the current timestamp to be a valid review
-        # Index 12 can also be None if the item is burned so we must check for that since the strip method will throw an error
         self.full_review_list = self.wk_db.getReviews()
         shuffle( self.full_review_list )
 
@@ -30,13 +28,24 @@ class ReviewSession():
         self.current_review_item = self.current_review_queue[ self.current_review_index ]
         self.current_question = "meaning"
 
+        """
+        Statistics
+        """
+        self.initial_total_reviews = len( self.full_review_list ) + len( self.current_review_queue )
+        self.total_correct_reviews = 0 # A review is deemed correct in this context if both the reading and meaning questions are answered with no incorrect responses
+        self.total_done_reviews = 0
+        self.total_questions_asked = 0
+        self.total_correct_questions = 0
+
 
     def answerCurrentQuestion( self, answer, review_mode ):
         """
         :review_mode: is either "a" for anki or "t" for typing
         """
         if( review_mode == "a" ):
+
             result = answer
+
         elif( review_mode == "t" ):
             result = False
             for meaning in self.current_review_item["meanings"]:
@@ -45,18 +54,31 @@ class ReviewSession():
 
         if( result ):
             # They answered correctly
-            self.current_review_item[ self.current_question + "_answers_done"] == True
-            self.current_review_item[ "completed_datetime" ] = datetime.now().isoformat(timespec="microseconds")
+            self.current_review_item[ self.current_question + "_answers_done"] = True
+
+            self.total_correct_questions += 1
 
         else:
             # They answer incorrectly
             self.current_review_item["incorrect_" + self.current_question + "_answers"] += 1
 
+        self.total_questions_asked += 1
 
         self.removeDoneItems()
         self.pickNextItem()
+        self.getQuestion()
 
         return( result )
+
+    def getQuestion( self ):
+        if( self.current_review_item["meaning_answers_done"] ):
+            self.current_question = "reading"
+
+        elif( self.current_review_item["reading_answers_done"] ):
+            self.current_question = "meaning"
+
+        else:
+            self.current_question = choice( [ "reading", "meaning" ] )
 
     def removeDoneItems( self ):
         """
@@ -64,6 +86,15 @@ class ReviewSession():
         without being the current item
         """
         if( self.current_review_item["meaning_answers_done"] and self.current_review_item["reading_answers_done"] ):
+            # Set completed timestamp to now
+            self.current_review_item[ "completed_datetime" ] = datetime.now().isoformat(timespec="microseconds")
+
+            # Update statistics
+            if( self.current_review_item["incorrect_meaning_answers"] == 0 and self.current_review_item["incorrect_reading_answers"] == 0 ):
+                self.total_correct_reviews += 1
+
+            self.total_done_reviews += 1
+
             # I need to make an updated_review entry and then remove the current item and add another in
             # Adding the updated review entry
 
@@ -72,6 +103,7 @@ class ReviewSession():
             del( self.current_review_queue[ self.current_review_index ] )
             for i in range( self.queue_size - len( self.current_review_queue ) ):
                 self.current_review_queue.append( self.full_review_list[i] )
+                del( self.full_review_list[i] )
 
 
     def pickNextItem( self ):
@@ -175,3 +207,26 @@ class ReviewSession():
                     item["subject"] == m[0]
 
         return( l )
+
+
+    """
+    #############################################################
+    ################### Custom Sort functions ###################
+    #############################################################
+    """
+    def getPercentCorrectQuestions( self ):
+        if( self.total_questions_asked == 0 ):
+            return( 0 )
+
+        else:
+            return( ( self.total_correct_questions / self.total_questions_asked ) *100 )
+
+    def getPercentCorrectReviews( self ):
+        if( self.total_done_reviews == 0 ):
+            return( 0 )
+
+        else:
+            return( ( self.total_correct_reviews / self.total_done_reviews ) *100 )
+
+    def getTotalReviewsRemaining( self ):
+        return( self.initial_total_reviews - self.total_done_reviews )

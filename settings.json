@@ -1,19 +1,40 @@
 {
     "main_window" : {
 
-        "startup_page" : "home_page",
+        "startup_page" : "review_page",
         "startup_height" : 2000,
         "startup_width" : 1000
     },
-    "wanikani_database" : {},
-    "wanikani_session" : {},
-    "review_session" : {},
+    "wanikani_database" : {
+
+        "purge_database_on_startup" : false,
+        "purge_review_updates_on_startup" : false
+    },
+    "wanikani_session" : {
+
+        "database_file_path" : "",
+        "allow_update_posting": false
+    },
+    "review_session" : {
+
+        "sort_mode" : null,
+        "queue_size" : 1
+    },
     "home_page" : {},
     "review_page" : {
         
-        "lightning" : true,
-        "review_mode" : "t",
-        "sort_mode" : null
+        "sort_mode" : null,
+        "lightning" : false,
+        "review_mode" : "a",
+        "delay_on_incorrect" : false
+    },
+    "settings_module" : {
+
+        "allow_save_settings" : false,
+        "debug_mode" : false
+    },
+    "debug" : {
+        
     }
     
 }

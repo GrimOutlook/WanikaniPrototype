@@ -9,7 +9,11 @@ class Settings():
             self.data = json.load( f )
 
         self.page = page
+        self.all_settings = self.data
         self.settings = self.data[ self.page ]
+
+        # Settings for the settings module
+        self.settings_settings = self.data[ "settings_module" ]
 
     def getSettings( self ):
         return( self.data[ self.page ] )
