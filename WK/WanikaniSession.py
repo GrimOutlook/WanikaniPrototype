@@ -2,6 +2,8 @@ import requests, json, pprint, sys, pathlib, time, os
 from random import shuffle # Used to shuffle reviews
 from operator import itemgetter # Used for sorting lists of lists
 from lxml import html
+
+from settings import Settings
 from WanikaniDatabase import WanikaniDatabase
 #from ReviewSession import ReviewSession
 #from LessonSession import LessonSession
@@ -13,9 +15,10 @@ By convention:
 """
 
 class WanikaniSession():
+    settings = Settings( "wanikani_session" )
+
     BASE_API_URL = "https://api.wanikani.com/v2/"
     valid_collection_types = [ "subjects", "reviews", "assignments" ]
-    queue_size = 10
     rs = None # Initializing the review session as none
 
     def __init__( self, api_token="48768d92-fc9b-4616-9e4a-4fde5318daab" ):
@@ -375,8 +378,10 @@ class WanikaniSession():
     ##############################################################
     """
 
-    def postReviewByID( self, item_id ):
-        self.wk_db.getObjectByID( item_id, "updated_review" )
+    def postReview( self, obj ):
+        # This posts reviews only
+        self.wk_db.getObjectBySubjectID( item_id, "updated_review" )
 
     def postAssignmentByID( self ):
+        # This posts lessons only
         pass

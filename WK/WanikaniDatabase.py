@@ -326,8 +326,8 @@ class WanikaniDatabase():
             print( "Creating review table entry failed..." )
 
     def createUpdatedReview( self, review ):
+        # This is all that is needed to post a review to wanikani
         sql = """ INSERT INTO updated_review(
-                id,
                 created_datetime,
                 assignment_id,
                 subject_id,
@@ -624,3 +624,16 @@ class WanikaniDatabase():
             })
 
         return(reviews)
+
+    def getUpdatedReviews( self ):
+        updated_reviews = []
+        c = self.conn.cursor()
+        unparsed_updated_reviews = c.execute("SELECT * from updated_review").fetchall()
+        for item in unparsed_updated_reviews:
+            update_reviews.append({
+                "completed_datetime"        : item[0],
+                "assignment_id"             : item[1],
+                "subject_id"                : item[2],
+                "incorrect_meaning_answers" : item[3],
+                "incorrect_reading_answers" : item[4]
+            })

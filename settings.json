@@ -1,4 +1,8 @@
 {
+    "general" : {
+
+        "BASE_PATH" : ""
+    },
     "main_window" : {
 
         "startup_page" : "review_page",

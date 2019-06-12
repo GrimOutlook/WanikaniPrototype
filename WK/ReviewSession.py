@@ -95,8 +95,8 @@ class ReviewSession():
 
             self.total_done_reviews += 1
 
-            # I need to make an updated_review entry and then remove the current item and add another in
             # Adding the updated review entry
+            self.addUpdatedReviewToDatabase()
 
 
             # Removing the current item and replacing it in the queue
@@ -115,7 +115,15 @@ class ReviewSession():
         re_answer = re.sub('[^A-Za-z0-9 ]+', '', answer.lower() )
         return( SequenceMatcher(None, re_key, re_answer).ratio() > .70 )
 
-
+    def addUpdatedReviewToDatabase( self ):
+        cri = self.current_review_item
+        self.wk_db.createUpdatedReview((
+            cri["completed_datetime"],
+            cri["assignment_id"],
+            cri["subject_id"],
+            cri["incorrect_meaning_answers"],
+            cri["incorrect_reading_answers"]
+        ))
 
     """
     ###################################################################

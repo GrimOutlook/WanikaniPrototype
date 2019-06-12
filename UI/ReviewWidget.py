@@ -236,20 +236,25 @@ class ReviewWidget( QWidget ):
         self.totalDone.setText( str( self.rs.total_done_reviews ) )
         self.percentCorrect.setText( str( self.rs.getPercentCorrectQuestions() ) + "%" )
 
-    def changeAnswerMode( self ):
-        pass
+    def changeAnswerMode( self, req = None ):
+        if( req != None ):
+            self.review_mode = req
 
-    def toggleAnswerMode( self ):
-        # Change mode from typing to anki and vice versa
+        else:
+            # Change mode from typing to anki and vice versa
+            if( self.review_mode == "a" ):
+                self.review_mode = "t"
+
+            elif( self.review_mode == "t" ):
+                self.review_mode = "a"
+
         if( self.review_mode == "a" ):
-            self.review_mode = "t"
-            # Sets the spacers size back to default
-            self.spacerItem3.changeSize(0, 157, QSizePolicy.Minimum, QSizePolicy.Preferred)
-
-        elif( self.review_mode == "t" ):
-            self.review_mode = "a"
             # Subtracts 75 pixels for the minimum required for the anki buttons and 6 for the layouts margins
             self.spacerItem3.changeSize(0, 157 - 75 -6, QSizePolicy.Minimum, QSizePolicy.Preferred)
+
+        elif( self.review_mode =="t" ):
+            # Sets the spacers size back to default
+            self.spacerItem3.changeSize(0, 157, QSizePolicy.Minimum, QSizePolicy.Preferred)
 
         is_anki_mode = self.review_mode == "a"
         self.ankiYesButton.setVisible( is_anki_mode )
