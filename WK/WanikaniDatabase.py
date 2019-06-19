@@ -38,10 +38,13 @@ class WanikaniDatabase():
         Timestamps are stored in datetime.isoformat(timespec="microseconds") format
         Use datetime.datetime.fromisoformat( variable.strip("Z") ) to get the datetime data
         Possible optimization in storing timestap as posix timestamp but I will hold off for now
+
+        ##### Object will always be the second argument for easier parsing
         """
 
         sql_create_table_radical = """CREATE TABLE IF NOT EXISTS radical (
                 id integer PRIMARY KEY,
+                object text,
                 api_url text,
                 last_updated_datetime text,
                 amalgamation_subject_ids text,
@@ -60,6 +63,7 @@ class WanikaniDatabase():
         );"""
         sql_create_table_kanji = """CREATE TABLE IF NOT EXISTS kanji (
                 id integer PRIMARY KEY,
+                object text,
                 api_url text,
                 last_updated_datetime text,
                 amalgamation_subject_ids text,
@@ -82,6 +86,7 @@ class WanikaniDatabase():
         );"""
         sql_create_table_vocabulary = """CREATE TABLE IF NOT EXISTS vocabulary (
                 id integer PRIMARY KEY,
+                object text,
                 api_url text,
                 last_updated_datetime text,
                 auxiliary_meanings text,
@@ -104,11 +109,13 @@ class WanikaniDatabase():
         );"""
         sql_create_table_download_queue = """CREATE TABLE IF NOT EXISTS download_queue (
                 id integer PRIMARY KEY,
+                object text,
                 url text,
                 filepath text
         );"""
         sql_create_table_review = """CREATE TABLE IF NOT EXISTS review (
                 id integer PRIMARY KEY,
+                object text,
                 api_url text,
                 last_updated_datetime text,
                 created_datetime text,
@@ -123,6 +130,7 @@ class WanikaniDatabase():
         );"""
         sql_create_table_updated_review = """CREATE TABLE IF NOT EXISTS updated_review (
                 id integer PRIMARY KEY,
+                object text,
                 created_datetime text,
                 assignment_id integer,
                 subject_id integer,
@@ -131,6 +139,7 @@ class WanikaniDatabase():
         );"""
         sql_create_table_assignment = """CREATE TABLE IF NOT EXISTS assignment (
                 id integer PRIMARY KEY,
+                object text,
                 api_url integer,
                 last_updated_datetime text,
                 created_datetime text,
@@ -150,21 +159,23 @@ class WanikaniDatabase():
         );"""
         sql_create_table_updated_assignment = """CREATE TABLE IF NOT EXISTS updated_assignment (
                 id integer PRIMARY KEY,
+                object text,
                 subject_id integer,
                 started_datetime text
         );"""
         sql_create_table_user = """CREATE TABLE IF NOT EXISTS user(
                 id text,
+                object text,
                 username text,
                 level integer,
                 max_level_granted_by_subscription integer,
                 profile_url text,
                 started_datetime text,
-                subscribed bool,
+                subscribed text,
                 current_vacation_started_datetime text,
                 subscription text,
                 preferences text
-        )"""
+        );"""
 
         self.database_filename = database_filename
         # path can equal either :memory: or a database file
@@ -215,6 +226,7 @@ class WanikaniDatabase():
     def createRadical( self, radical ):
         sql = """ INSERT INTO radical(
                 id,
+                object,
                 api_url,
                 last_updated_datetime,
                 amalgamation_subject_ids,
@@ -232,7 +244,7 @@ class WanikaniDatabase():
                 slug
         )
 
-        VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ) """
+        VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ) """
 
         if( self.conn != None ):
             c = self.conn.cursor()
@@ -246,6 +258,7 @@ class WanikaniDatabase():
     def createKanji( self, kanji ):
         sql = """ INSERT INTO kanji(
                 id,
+                object,
                 api_url,
                 last_updated_datetime,
                 amalgamation_subject_ids,
@@ -267,7 +280,7 @@ class WanikaniDatabase():
                 visually_similar_subject_ids
         )
 
-        VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ) """
+        VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ) """
 
         if( self.conn != None ):
             c = self.conn.cursor()
@@ -281,6 +294,7 @@ class WanikaniDatabase():
     def createVocabulary( self, vocab ):
         sql = """ INSERT INTO vocabulary(
                 id,
+                object,
                 api_url,
                 last_updated_datetime,
                 auxiliary_meanings,
@@ -302,7 +316,7 @@ class WanikaniDatabase():
                 slug
         )
 
-        VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ) """
+        VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ) """
 
         if( self.conn != None ):
             c = self.conn.cursor()
@@ -316,6 +330,7 @@ class WanikaniDatabase():
     def createReview( self, review ):
         sql = """ INSERT INTO review(
                 id,
+                object,
                 api_url,
                 last_updated_datetime,
                 created_datetime,
@@ -329,7 +344,7 @@ class WanikaniDatabase():
                 incorrect_reading_answers
         )
 
-        VALUES( ?,?,?,?,?,?,?,?,?,?,?,? ) """
+        VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,? ) """
 
         try:
             c = self.conn.cursor()
@@ -342,13 +357,14 @@ class WanikaniDatabase():
         # This is all that is needed to post a review to wanikani
         sql = """ INSERT INTO updated_review(
                 created_datetime,
+                object,
                 assignment_id,
                 subject_id,
                 incorrect_meaning_answers,
                 incorrect_reading_answers
         )
 
-        VALUES( ?,?,?,?,?,? ) """
+        VALUES( ?,?,?,?,?,?,? ) """
 
         try:
             c = self.conn.cursor()
@@ -360,6 +376,7 @@ class WanikaniDatabase():
     def createAssignment( self, assignment ):
         sql = """ INSERT INTO assignment(
                 id,
+                object,
                 api_url,
                 last_updated_datetime,
                 created_datetime,
@@ -378,7 +395,7 @@ class WanikaniDatabase():
                 hidden
         )
 
-        VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ) """
+        VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ) """
 
         try:
             c = self.conn.cursor()
@@ -390,11 +407,12 @@ class WanikaniDatabase():
     def createUpdatedAssignment( self, assignment ):
         sql = """ INSERT INTO updated_assignment(
                 id,
+                object,
                 subject_id,
                 started_datetime
         )
 
-        VALUES( ?,?,? ) """
+        VALUES( ?,?,?,? ) """
 
         try:
             c = self.conn.cursor()
@@ -403,27 +421,29 @@ class WanikaniDatabase():
             print(e)
             print( "Creating updated_assignment table entry failed..." )
 
-    def createDownloadQueueItem( self, item_id, url, filepath ):
+    def createDownloadQueueItem( self, item_id, obj, url, filepath ):
         sql = """ INSERT INTO download_queue(
                 id,
+                object,
                 url,
                 filepath
         )
 
-        VALUES( ?,?,? ) """
+        VALUES( ?,?,?,? ) """
 
         if( self.conn != None ):
             c = self.conn.cursor()
 
         try:
-            c.execute( sql, (item_id, url, filepath) )
+            c.execute( sql, (item_id, obj, url, filepath) )
         except Error as e:
             print(e)
             print( "Creating download queue table entry failed..." )
 
-    def createDownloadQueueItem( self, obj ):
-        sql = """ INSERT INTO download_queue(
+    def createUser( self, user ):
+        sql = """ INSERT INTO user(
                 id,
+                object,
                 username,
                 level,
                 max_level_granted_by_subscription,
@@ -435,13 +455,13 @@ class WanikaniDatabase():
                 preferences
         )
 
-        VALUES( ?,?,?,?,?,?,?,?,?,? ) """
+        VALUES( ?,?,?,?,?,?,?,?,?,?,? ) """
 
         if( self.conn != None ):
             c = self.conn.cursor()
 
         try:
-            c.execute( sql, obj )
+            c.execute( sql, user )
         except Error as e:
             print(e)
             print( "Creating download queue table entry failed..." )
@@ -456,18 +476,27 @@ class WanikaniDatabase():
         return ( item_type in valid_types )
 
     def objectExistsInDatabase( self, item_id, item_type ):
-        return( len( self.getObjectByID( item_id, item_type ) ) > 0 )
+        if( not self.itemTypeIsValid( item_type ) ):
+            raise Exception("Provided item type is not supported. Item is of type {}".format(item_type))
 
-    def getSubjectObjectsOfCurrentLevel( self, subject_type ):
-        user_level = self.getAllOfItemTypeFromTable( "user" )[0]["level"]
+        c = self.conn.cursor()
+        c.execute( "SELECT * FROM {} WHERE id=?".format(item_type), (item_id,) )
+        return( len( c.fetchall() ) > 0 )
+
+    def getUserCurrentLevel( self ):
+        level = self.getAllOfItemTypeFromTable( "user" )[0]["level"]
+        return( level )
+
+    def getSubjectObjectsOfGivenLevel( self, subject_type, level ):
         if( self.itemTypeIsValid( subject_type ) ):
+            c = self.conn.cursor()
             c.execute( "SELECT * FROM {} WHERE level=?".format( subject_type ), (level,))
-            return( fetchall() )
+            return( self.parseDataList( c.fetchall() ) )
 
-    def getObjectsBySRSStageName( self, level ):
+    def getAssignmentsBySRSStageName( self, level ):
         c = self.conn.cursor()
         c.execute( "SELECT * FROM assignment WHERE srs_stage_name=?", (level,))
-        return( fetchall() )
+        return( self.parseDataList( c.fetchall() ) )
 
     def getObjectByID( self, item_id, item_type ):
         if( not self.itemTypeIsValid( item_type ) ):
@@ -475,7 +504,7 @@ class WanikaniDatabase():
 
         c = self.conn.cursor()
         c.execute( "SELECT * FROM {} WHERE id=?".format(item_type), (item_id,) )
-        return( c.fetchall() )
+        return( self.parseData( c.fetchone() ) )
 
     def getObjectBySubjectID( self, item_subject_id, item_type ):
         if( not self.itemTypeIsValid( item_type ) ):
@@ -493,7 +522,7 @@ class WanikaniDatabase():
 
         c = self.conn.cursor()
         c.execute( "SELECT * FROM {0} WHERE {1}=?".format(item_type, item_id_prompt[ item_type ]), (item_subject_id,) )
-        return( c.fetchall() )
+        return( self.parseData( c.fetchone() ) )
 
     def getAllOfItemTypeFromTable( self, item_type ):
         if( not self.itemTypeIsValid( item_type ) ):
@@ -501,7 +530,7 @@ class WanikaniDatabase():
 
         c = self.conn.cursor()
         c.execute( "SELECT * FROM {}".format(item_type ) )
-        return( c.fetchall() )
+        return( self.parseDataList( c.fetchall() ) )
 
     def removeFromTableByID( self, item_id, table ):
         if( not self.itemTypeIsValid( table ) ):
@@ -512,6 +541,166 @@ class WanikaniDatabase():
 
     def getValidReviewsFromList( self, l, index ):
         return( [ i for i in l if( i[ index ] != None and datetime.datetime.fromisoformat( i[ index ].strip("Z") ) < datetime.datetime.now() ) ] )
+
+    def parseData( self, data ):
+        obj = data[1]
+
+        if( obj == "radical" ):
+            parsed_obj = {
+                "id"                        : data[0],
+                "object"                    : data[1],
+                "api_url"                   : data[2],
+                "last_updated_datetime"     : data[3],
+                "amalgamation_subject_ids"  : ast.literal_eval( data[4] ),
+                "auxilary_meanings"         : ast.literal_eval( data[5] ),
+                "characters"                : data[6],
+                "character_images_info"     : data[7],
+                "character_images_path"     : data[8],
+                "created_datetime"          : data[9],
+                "document_url"              : data[10],
+                "hidden_datetime"           : data[11],
+                "lesson_position"           : data[12],
+                "level"                     : data[13],
+                "meanings"                  : ast.literal_eval( data[14] ),
+                "meaning_mnemonic"          : data[15],
+                "slug"                      : data[16]
+            }
+        elif( obj == "kanji" ):
+            parsed_obj = {
+                "id"                            : data[0],
+                "object"                        : data[1],
+                "api_url"                       : data[2],
+                "last_updated_datetime"         : data[3],
+                "amalgamation_subject_ids"      : ast.literal_eval( data[4] ),
+                "auxilary_meanings"             : ast.literal_eval( data[5] ),
+                "characters"                    : data[6],
+                "component_subject_ids"         : ast.literal_eval( data[7] ),
+                "created_datetime"              : data[8],
+                "document_url"                  : data[9],
+                "hidden_datetime"               : data[10],
+                "lesson_position"               : data[11],
+                "level"                         : data[12],
+                "meanings"                      : ast.literal_eval( data[13] ),
+                "meaning_hint"                  : data[14],
+                "meaning_mnemonic"              : data[15],
+                "readings"                      : ast.literal_eval( data[16] ),
+                "reading_mnemonic"              : data[17],
+                "reading_hint"                  : data[18],
+                "slug"                          : data[19],
+                "visually_similar_subject_ids"  : ast.literal_eval( data[20] )
+            }
+        elif( obj == "vocabulary" ):
+            parsed_obj = {
+                "id"                            : data[0],
+                "object"                        : data[1],
+                "api_url"                       : data[2],
+                "last_updated_datetime"         : data[3],
+                "auxilary_meanings"             : ast.literal_eval( data[4] ),
+                "characters"                    : data[5],
+                "component_subject_ids"         : ast.literal_eval( data[6] ),
+                "context_scentences"            : ast.literal_eval( data[7] ),
+                "created_datetime"              : data[8],
+                "document_url"                  : data[9],
+                "hidden_datetime"               : data[10],
+                "lesson_position"               : data[11],
+                "level"                         : data[12],
+                "meanings"                      : ast.literal_eval( data[13] ),
+                "meaning_mnemonic"              : data[14],
+                "parts_of_speech"               : ast.literal_eval( data[15] ),
+                "pronunciation_audio_info"      : data[16],
+                "pronunciation_audio_path"      : data[17],
+                "readings"                      : ast.literal_eval( data[18] ),
+                "reading_mnemonic"              : data[19],
+                "slug"                          : data[20]
+            }
+        elif( obj == "download_item" ):
+            parsed_obj = {
+                "id"                            : data[0],
+                "object"                        : data[1],
+                "url"                           : data[2],
+                "filepath"                      : data[3]
+            }
+        elif( obj == "review" ):
+            parsed_obj = {
+                "id"                            : data[0],
+                "object"                        : data[1],
+                "api_url"                       : data[2],
+                "last_updated_datetime"         : data[3],
+                "created_datetime"              : data[4],
+                "assignment_datetime"           : data[5],
+                "subject_id"                    : data[6],
+                "starting_srs_stage"            : data[7],
+                "starting_srs_stage_name"       : data[8],
+                "ending_srs_stage"              : data[9],
+                "ending_srs_stage_name"         : data[10],
+                "incorrect_meaning_answers"     : data[11],
+                "incorrect_reading_answers"     : data[12]
+            }
+        elif( obj == "updated_review" ):
+            parsed_obj = {
+                "id"                            : data[0],
+                "object"                        : data[1],
+                "created_datetime"              : data[2],
+                "assignment_id"                 : data[3],
+                "subject_id"                    : data[4],
+                "incorrect_meaning_answers"     : data[5],
+                "incorrect_reading_answers"     : data[6]
+            }
+        elif( obj == "assignment" ):
+            parsed_obj = {
+                "id"                            : data[0],
+                "object"                        : data[1],
+                "api_url"                       : data[2],
+                "last_updated_datetime"         : data[3],
+                "created_datetime"              : data[4],
+                "subject_id"                    : data[5],
+                "subject_type"                  : data[6],
+                "srs_stage"                     : data[7],
+                "srs_stage_name"                : data[8],
+                "unlocked_datetime"             : data[9],
+                "started_datetime"              : data[10],
+                "passed_datetime"               : data[11],
+                "burned_datetime"               : data[12],
+                "available_datetime"            : data[13],
+                "resurrected_datetime"          : data[14],
+                "passed"                        : bool( data[15] ),
+                "resurrected"                   : bool( data[16] ),
+                "hidden"                        : bool( data[17] )
+            }
+        elif( obj == "updated_assignment" ):
+            parsed_obj = {
+                "id"                            : data[0],
+                "object"                        : data[1],
+                "subject_id"                    : data[2],
+                "started_datetime"              : data[3]
+            }
+        elif( obj == "user" ):
+            parsed_obj = {
+                "id"                                : data[0],
+                "object"                            : data[1],
+                "username"                          : data[2],
+                "level"                             : data[3],
+                "max_level_granted_by_subscription" : data[4],
+                "profile_url"                       : data[5],
+                "started_datetime"                  : data[6],
+                "subscribed"                        : bool( data[7] ),
+                "current_vacation_started_datetime" : data[8],
+                "subscription"                      : ast.literal_eval( data[9] ),
+                "preferences"                       : ast.literal_eval( data[10] )
+            }
+        else:
+            raise Exception( "Cannot parse object of unknown type. Object is of type {}".format(obj) )
+
+        return( parsed_obj )
+
+
+    def parseDataList( self, data_list ):
+        # return( data_list )
+        parsed_data = []
+        for item in data_list:
+            parsed_data.append( self.parseData( item ) )
+
+        return( parsed_data )
 
     def getReviews( self ):
         """

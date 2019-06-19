@@ -14,8 +14,8 @@ class ReviewSession():
         :sort_mode: = how the reviews will be sorted
         :amount: = number of items in review queue at a time
         """
-        self.sort_mode = settings.settings["sort_mode"]
-        self.queue_size = settings.settings["queue_size"]
+        self.sort_mode = settings.settings["review_session"]["sort_mode"]
+        self.queue_size = settings.settings["review_session"]["queue_size"]
         self.wk_db = WanikaniDatabase()
 
         self.full_review_list = self.wk_db.getReviews()
@@ -37,7 +37,6 @@ class ReviewSession():
         self.total_questions_asked = 0
         self.total_correct_questions = 0
 
-
     def answerCurrentQuestion( self, answer, review_mode ):
         """
         :review_mode: is either "a" for anki or "t" for typing
@@ -48,8 +47,8 @@ class ReviewSession():
 
         elif( review_mode == "t" ):
             result = False
-            for meaning in self.current_review_item["meanings"]:
-                if( meaning["accepted_answer"] and self.answerIsCloseEnough( meaning["meaning"], answer ) ):
+            for correct_answer in self.current_review_item[ self.current_question ]:
+                if( correct_answer["accepted_answer"] and self.answerIsCloseEnough( correct_answer[ self.current_question ], answer ) ):
                     result = True
 
         if( result ):
@@ -110,10 +109,14 @@ class ReviewSession():
         self.current_review_index = randint( 0, self.queue_size - 1 )
         self.current_review_item = self.current_review_queue[ self.current_review_index ]
 
-    def answerIsCloseEnough( self, key, answer ):
-        re_key = re.sub('[^A-Za-z0-9 ]+', '', key.lower() )
-        re_answer = re.sub('[^A-Za-z0-9 ]+', '', answer.lower() )
-        return( SequenceMatcher(None, re_key, re_answer).ratio() > .70 )
+    def answerIsCloseEnough( self, key, answer, question ):
+        if( question == "meaning" ):
+            re_key = re.sub('[^A-Za-z0-9 ]+', '', key.lower() )
+            re_answer = re.sub('[^A-Za-z0-9 ]+', '', answer.lower() )
+            return( SequenceMatcher(None, re_key, re_answer).ratio() > .70 )
+
+        else:
+            return( key == answer )
 
     def addUpdatedReviewToDatabase( self ):
         cri = self.current_review_item
@@ -178,7 +181,6 @@ class ReviewSession():
                     else:
                         self.full_review_list.sort( key=itemgetter(6), reverse=True )
 
-
                 elif( item[0] == "Subject" ):
                     if( item[1] == "A" ):
                         self.full_review_list = subjectSort( valid_reviews )
@@ -192,7 +194,7 @@ class ReviewSession():
     ################### Custom Sort functions ###################
     #############################################################
     """
-    def subjectSort( l ,reverse=False ):
+    def subjectSort( l, reverse=False ):
         """
         :l: list for sorting
         :reverse: whether list should be sorted in reverse order
@@ -215,7 +217,6 @@ class ReviewSession():
                     item["subject"] == m[0]
 
         return( l )
-
 
     """
     #############################################################

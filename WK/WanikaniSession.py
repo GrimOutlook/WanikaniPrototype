@@ -3,6 +3,9 @@ from random import shuffle # Used to shuffle reviews
 from operator import itemgetter # Used for sorting lists of lists
 from lxml import html
 
+sys.path.append("./WK")
+sys.path.append("..")
+
 from settings import Settings
 from WanikaniDatabase import WanikaniDatabase
 #from ReviewSession import ReviewSession
@@ -39,39 +42,45 @@ class WanikaniSession():
         # Does a get request to the Wanikani API and returns the results in dictionary form
         r = requests.get( url, headers=self.header, timeout=11 )
         self.api_results = r.json()
-
-        if( r.status_code == 200 ):
-            return( self.api_results )
-
-        else:
-            time.sleep(5)
-            r = requests.get( url, headers=self.header, timeout=11 )
-            self.api_results = r.json()
-
+        while( True ):
             if( r.status_code == 200 ):
                 return( self.api_results )
 
+            elif( r.status_code == 429 ):
+                time.sleep( 20 )
+
             else:
-                raise Exception("Server returning a status code other than 200. Status code is: {}".format(r.status_code))
+                time.sleep(5)
+                r = requests.get( url, headers=self.header, timeout=11 )
+                self.api_results = r.json()
+
+                if( r.status_code == 200 ):
+                    return( self.api_results )
+
+                else:
+                    raise Exception("Server returning a status code other than 200. Status code is: {}".format(r.status_code))
 
     def postToAPI( self, url, payload ):
         # Does a get request to the Wanikani API and returns the results in dictionary form
-        r = requests.post( url, headers=self.header, timeout=11, data=payload )
+        r = requests.post( url, headers=self.header, data=payload, timeout=11 )
         self.api_results = r.json()
-
-        if( r.status_code == 200 ):
-            return( self.api_results )
-
-        else:
-            time.sleep(5)
-            r = requests.post( url, headers=self.header, timeout=11, data=payload )
-            self.api_results = r.json()
-
+        while( True ):
             if( r.status_code == 200 ):
                 return( self.api_results )
 
+            elif( r.status_code == 429 ):
+                time.sleep( 20 )
+
             else:
-                raise Exception("Server returning a status code other than 200. Status code is: {}".format(r.status_code))
+                time.sleep(5)
+                r = requests.post( url, headers=self.header, data=payload, timeout=11 )
+                self.api_results = r.json()
+
+                if( r.status_code == 200 ):
+                    return( self.api_results )
+
+                else:
+                    raise Exception("Server returning a status code other than 200. Status code is: {}".format(r.status_code))
 
     def printAPIResults( self ):
         pprint.pprint( self.api_results )
@@ -165,7 +174,7 @@ class WanikaniSession():
 
                 filepath = "./object/" + r["object"] + "/" + str(r["id"]) + "_image" + extension
 
-                self.importItemIntoDownloadQueue( r["id"], d["character_images"][pos]["url"], filepath, mode  )
+                self.importItemIntoDownloadQueue( r["id"], "download_item", d["character_images"][pos]["url"], filepath, mode  )
 
             else:
                 filepath = "None"
@@ -173,6 +182,7 @@ class WanikaniSession():
 
             self.wk_db.createRadical((
                 r["id"]                             ,
+                r["object"]                         ,
                 r["url"]                            ,
                 r["data_updated_at"]                ,
                 str( d["amalgamation_subject_ids"] ),
@@ -195,6 +205,7 @@ class WanikaniSession():
 
             self.wk_db.createKanji((
                 r["id"]                             ,
+                r["object"]                         ,
                 r["url"]                            ,
                 r["data_updated_at"]                ,
                 str( d["amalgamation_subject_ids"] ),
@@ -230,7 +241,7 @@ class WanikaniSession():
                 else:
                     raise Exception("Audio is not a known format. Format is: ".format(aud["content_type"]))
                 filepath = "./object/" + r["object"] + "/" + str(r["id"]) + "_audio" + extension
-                self.importItemIntoDownloadQueue( r["id"], aud["url"], filepath, mode )
+                self.importItemIntoDownloadQueue( r["id"], "download_item", aud["url"], filepath, mode )
 
 
             else:
@@ -239,6 +250,7 @@ class WanikaniSession():
 
             self.wk_db.createVocabulary((
                 r["id"]                             ,
+                r["object"]                         ,
                 r["url"]                            ,
                 r["data_updated_at"]                ,
                 str( d["auxiliary_meanings"] )      ,
@@ -264,6 +276,7 @@ class WanikaniSession():
             d = r["data"]
             self.wk_db.createReview((
                 r["id"]                         ,
+                r["object"]                     ,
                 r["url"]                        ,
                 r["data_updated_at"]            ,
                 d["created_at"]                 ,
@@ -277,20 +290,11 @@ class WanikaniSession():
                 d["incorrect_reading_answers"]
             ))
 
-        elif( type_obj == "updated_review" ):
-            self.wk_db.createUpdatedReview((
-                r["id"]                         ,
-                r["created_datetime"]           ,
-                r["assignment_id"]              ,
-                r["subject_id"]                 ,
-                r["incorrect_meaning_answers"]  ,
-                r["incorrect_reading_answers"]
-            ))
-
         elif( type_obj == "assignment" ):
             d = r["data"]
             self.wk_db.createAssignment((
                 r["id"]                         ,
+                r["object"]                     ,
                 r["url"]                        ,
                 r["data_updated_at"]            ,
                 d["created_at"]                 ,
@@ -309,11 +313,20 @@ class WanikaniSession():
                 str( d["hidden"] )
             ))
 
-        elif( type_obj == "updated_assignment" ):
-            self.wk_db.createUpdatedAssignment((
-                r["id"]                         ,
-                d["subject_id"]                 ,
-                d["started_datetime"]           ,
+        elif( type_obj == "user" ):
+            d = r["data"]
+            self.wk_db.createUser((
+                d["id"]                                 ,
+                r["object"]                             ,
+                d["username"]                           ,
+                d["level"]                              ,
+                d["max_level_granted_by_subscription"]  ,
+                d["profile_url"]                        ,
+                d["started_at"]                         ,
+                str( d["subscribed"] )                  ,
+                d["current_vacation_started_at"]        ,
+                str( d["subscription"] )                ,
+                str( d["preferences"] )
             ))
 
         else:
@@ -366,10 +379,14 @@ class WanikaniSession():
         for col in self.valid_collection_types:
             self.importAllFromCollectionIntoDatabase( col )
 
-    def importItemIntoDownloadQueue( self, item_id, url, filepath, mode ):
-        self.wk_db.createDownloadQueueItem( item_id, url, filepath )
+    def importItemIntoDownloadQueue( self, item_id, obj, url, filepath, mode ):
+        self.wk_db.createDownloadQueueItem( item_id, obj, url, filepath )
         if( mode == "s" ):
             self.wk_db.commitChanges()
+
+    def importUserIntoDatabase( self ):
+        r = self.getFromAPI( self.BASE_API_URL + "user/" )
+        self.importObjectIntoItemDatabase( r, "s" )
 
     """
     ##############################################################

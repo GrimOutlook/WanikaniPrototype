@@ -15,12 +15,12 @@ class MainWindow( QMainWindow ):
 
         self.setWindowTitle("WanikaniPrototype")
 
-        startup_height = self.settings.settings["startup_height"]
-        startup_width = self.settings.settings["startup_width"]
+        startup_height = self.settings.settings["main_window"]["startup_height"]
+        startup_width = self.settings.settings["main_window"]["startup_width"]
         self.resize( startup_height, startup_width )
 
         self.setObjectName("MainWindow")
-        self.openPage( self.settings.settings["startup_page"] )
+        self.openPage( self.settings.settings["main_window"]["startup_page"] )
 
     def openPage( self, page ):
         if( page == "home_page" ):
@@ -35,8 +35,8 @@ class MainWindow( QMainWindow ):
 
     def resizeEvent( self, evt ):
         # print( self.size() )
-        self.settings.settings["startup_height"] = self.size().height()
-        self.settings.settings["startup_width"] = self.size().width()
+        self.settings.settings["main_window"]["startup_height"] = self.size().height()
+        self.settings.settings["main_window"]["startup_width"] = self.size().width()
 
     def keyPressEvent( self, e ):
         if( e.key() == Qt.Key_Q  and e.modifiers() & Qt.ControlModifier ):

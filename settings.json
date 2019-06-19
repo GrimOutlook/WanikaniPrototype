@@ -5,7 +5,7 @@
     },
     "main_window" : {
 
-        "startup_page" : "review_page",
+        "startup_page" : "home_page",
         "startup_height" : 2000,
         "startup_width" : 1000
     },
@@ -32,7 +32,7 @@
         "review_mode" : "a",
         "delay_on_incorrect" : false
     },
-    "settings_module" : {
+    "settings" : {
 
         "allow_save_settings" : false,
         "debug_mode" : false
