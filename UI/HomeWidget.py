@@ -22,7 +22,6 @@ class HomeWidget( QWidget ):
 
     def setupUi(self, Form ):
         Form.setObjectName("Form")
-        Form.resize(1118, 666)
 
         self.verticalLayout_2 = QVBoxLayout(Form)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
@@ -81,13 +80,14 @@ class HomeWidget( QWidget ):
 
         self.scrollArea = QScrollArea(Form)
         self.scrollArea.setAutoFillBackground(False)
-        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setWidgetResizable( True )
+        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scrollArea.setAlignment(Qt.AlignCenter)
         self.scrollArea.setObjectName("scrollArea")
 
         self.mainScrollAreaWidgetContents = QWidget()
-        self.mainScrollAreaWidgetContents.setGeometry(QRect(0, 0, 1096, 581))
         self.mainScrollAreaWidgetContents.setObjectName("mainScrollAreaWidgetContents")
+        self.mainScrollAreaWidgetContents.setContentsMargins(0,0,0,0)
 
         self.verticalLayout_12 = QVBoxLayout(self.mainScrollAreaWidgetContents)
         self.verticalLayout_12.setObjectName("verticalLayout_12")
@@ -176,12 +176,15 @@ class HomeWidget( QWidget ):
 
         self.levelRadicalProgressionItemsLocation = QHBoxLayout()
         self.levelRadicalProgressionItemsLocation.setObjectName("levelRadicalProgressionItemsLocation")
+        self.levelRadicalProgressionItemsLocation.setSpacing( 0 )
+        self.levelRadicalProgressionItemsLocation.setContentsMargins( 0,0,0,0 )
         self.levelRadicalVerticalLayout.addLayout(self.levelRadicalProgressionItemsLocation)
         self.verticalLayoutScrolling.addLayout(self.levelRadicalVerticalLayout)
 
         self.levelKanjiVerticalLayout = QVBoxLayout()
         self.levelKanjiVerticalLayout.setObjectName("levelKanjiVerticalLayout")
         self.levelKanjiVerticalLayout.setContentsMargins(100, 0, 100, 0)
+        self.levelKanjiVerticalLayout.setSpacing(0)
 
         self.levelKanjiProgressionLabels = QLabel(self.mainScrollAreaWidgetContents)
         self.levelKanjiProgressionLabels.setAlignment(Qt.AlignCenter)
@@ -190,6 +193,8 @@ class HomeWidget( QWidget ):
 
         self.levelKanjiProgressionItemsLocation = QHBoxLayout()
         self.levelKanjiProgressionItemsLocation.setObjectName("levelKanjiProgressionItemsLocation")
+        self.levelKanjiProgressionItemsLocation.setSpacing( 0 )
+        self.levelKanjiProgressionItemsLocation.setContentsMargins( 0,0,0,0 )
         self.levelKanjiVerticalLayout.addLayout(self.levelKanjiProgressionItemsLocation)
         self.verticalLayoutScrolling.addLayout(self.levelKanjiVerticalLayout)
 
@@ -255,7 +260,7 @@ class HomeWidget( QWidget ):
 
         self.current_level = self.wk_db.getUserCurrentLevel()
 
-        cutoff = 20
+        self.progression_item_cutoff = 20
 
         # clr = self.wk_db.getSubjectObjectsOfGivenLevel( "radical", self.current_level )
 
@@ -267,41 +272,90 @@ class HomeWidget( QWidget ):
             # self.current_level_radicals_labels[ index ].setAlignment(Qt.AlignCenter)
             # self.levelRadicalProgressionItemsLocation.addWidget( self.current_level_radicals_labels[ index ] )
 
-        self.current_level_kanji_labels = []
-        clk = self.wk_db.getSubjectObjectsOfGivenLevel( "kanji", self.current_level )
+        self.generateProgressionKanjiItems()
+        self.generateProgressionRadicalItems()
 
-        if( len(clk) > cutoff ):
+    def generateProgressionRadicalItems( self ):
+        self.current_level_radical_labels = []
+        self.clk = self.wk_db.getSubjectObjectsOfGivenLevel( "radical", self.current_level )
+
+        if( len(self.clk) > self.progression_item_cutoff ):
+            self.levelRadicalProgressionItemsLocation2 = QHBoxLayout()
+            self.levelRadicalProgressionItemsLocation2.setSpacing( 0 )
+            self.levelRadicalProgressionItemsLocation2.setContentsMargins( 0,0,0,0 )
+            self.levelRadicalVerticalLayout.addLayout( self.levelRadicalProgressionItemsLocation2 )
+
+        self.levelRadicalProgressionItemsLeftSpacer = QSpacerItem(80, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
+        self.levelRadicalProgressionItemsLocation.addItem( self.levelRadicalProgressionItemsLeftSpacer )
+
+        self.assignment_info = []
+        for k in range(len(self.clk)):
+            self.clk[k] = [ self.clk[k],  self.wk_db.getObjectBySubjectID( self.clk[k]["id"], "assignment" ) ]
+
+        self.clk = sorted(self.clk, key = lambda i: i[1]["srs_stage"] )
+
+        self.clk_label_size = self.size().width() / self.progression_item_cutoff
+        for index in range( len( self.clk ) ):
+            # Create object, add it to the layout
+            self.current_level_radical_labels.append( ProgressionCircleLabel(self.mainScrollAreaWidgetContents, self, self.clk[index][0], self.clk[index][1] ) )
+
+            if( index < self.progression_item_cutoff ):
+                self.levelRadicalProgressionItemsLocation.addWidget( self.current_level_radical_labels[ index ] )
+
+            else:
+                if( index == self.progression_item_cutoff ):
+                    self.levelRadicalProgressionItemsLeftSpacer2 = QSpacerItem(80, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
+                    self.levelRadicalProgressionItemsLocation2.addItem( self.levelRadicalProgressionItemsLeftSpacer2 )
+
+                self.levelRadicalProgressionItemsLocation2.addWidget( self.current_level_radical_labels[ index ], 0, Qt.AlignHCenter )
+
+        self.levelRadicalProgressionItemsRightSpacer = QSpacerItem(80, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
+        self.levelRadicalProgressionItemsLocation.addItem( self.levelRadicalProgressionItemsRightSpacer )
+
+        if( len(self.clk) > self.progression_item_cutoff ):
+            self.levelRadicalProgressionItemsRightSpacer2 = QSpacerItem(80, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
+            self.levelRadicalProgressionItemsLocation2.addItem( self.levelRadicalProgressionItemsRightSpacer2 )
+
+    def generateProgressionKanjiItems( self ):
+        self.current_level_kanji_labels = []
+        self.clk = self.wk_db.getSubjectObjectsOfGivenLevel( "kanji", self.current_level )
+
+        if( len(self.clk) > self.progression_item_cutoff ):
             self.levelKanjiProgressionItemsLocation2 = QHBoxLayout()
+            self.levelKanjiProgressionItemsLocation2.setSpacing( 0 )
+            self.levelKanjiProgressionItemsLocation2.setContentsMargins( 0,0,0,0 )
             self.levelKanjiVerticalLayout.addLayout( self.levelKanjiProgressionItemsLocation2 )
 
-        self.levelKanjiProgressionItemsLeftSpacer = QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Ignored)
+        self.levelKanjiProgressionItemsLeftSpacer = QSpacerItem(40, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
         self.levelKanjiProgressionItemsLocation.addItem( self.levelKanjiProgressionItemsLeftSpacer )
 
         self.assignment_info = []
-        for k in range(len(clk)):
-            clk[k] = [ clk[k],  self.wk_db.getObjectBySubjectID( clk[k]["id"], "assignment" ) ]
+        for k in range(len(self.clk)):
+            self.clk[k] = [ self.clk[k],  self.wk_db.getObjectBySubjectID( self.clk[k]["id"], "assignment" ) ]
 
-        clk = sorted(clk, key = lambda i: i[1]["srs_stage"] )
+        self.clk = sorted(self.clk, key = lambda i: i[1]["srs_stage"] )
 
-        for index in range( len( clk ) ):
+        self.clk_label_size = self.size().width() / self.progression_item_cutoff
+        for index in range( len( self.clk ) ):
             # Create object, add it to the layout
-            self.current_level_kanji_labels.append( ProgressionCircleLabel(self.mainScrollAreaWidgetContents, clk[index][0], clk[index][1] ) )
+            self.current_level_kanji_labels.append( ProgressionCircleLabel(self.mainScrollAreaWidgetContents, self, self.clk[index][0], self.clk[index][1] ) )
 
-            if( index < cutoff ):
+            if( index < self.progression_item_cutoff ):
                 self.levelKanjiProgressionItemsLocation.addWidget( self.current_level_kanji_labels[ index ] )
-            else:
-                if( index == cutoff ):
-                    self.levelKanjiProgressionItemsLeftSpacer2 = QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Ignored)
-                    self.levelKanjiProgressionItemsLocation2.addItem( self.levelKanjiProgressionItemsLeftSpacer2 )
-                self.levelKanjiProgressionItemsLocation2.addWidget( self.current_level_kanji_labels[ index ] )
 
-        self.levelKanjiProgressionItemsRightSpacer = QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Ignored)
+            else:
+                if( index == self.progression_item_cutoff ):
+                    self.levelKanjiProgressionItemsLeftSpacer2 = QSpacerItem(40, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
+                    self.levelKanjiProgressionItemsLocation2.addItem( self.levelKanjiProgressionItemsLeftSpacer2 )
+
+                self.levelKanjiProgressionItemsLocation2.addWidget( self.current_level_kanji_labels[ index ], 0, Qt.AlignHCenter )
+
+        self.levelKanjiProgressionItemsRightSpacer = QSpacerItem(40, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
         self.levelKanjiProgressionItemsLocation.addItem( self.levelKanjiProgressionItemsRightSpacer )
 
-        if( len(clk) > cutoff ):
-            self.levelKanjiProgressionItemsRightSpacer2 = QSpacerItem(0, 0, QSizePolicy.Preferred, QSizePolicy.Ignored)
+        if( len(self.clk) > self.progression_item_cutoff ):
+            self.levelKanjiProgressionItemsRightSpacer2 = QSpacerItem(40, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
             self.levelKanjiProgressionItemsLocation2.addItem( self.levelKanjiProgressionItemsRightSpacer2 )
-
 
     def retranslateUi(self, Form):
         _translate = QCoreApplication.translate

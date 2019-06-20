@@ -2,27 +2,35 @@ from PyQt5.Qt import *
 from WKColor import WKColor
 
 class ProgressionCircleLabel( QLabel ):
-    def __init__( self, parent, obj, assignment_info ):
+    def __init__( self, parent, HomeWidget, obj, assignment_info ):
         super().__init__( parent = parent )
-        size = 60
-        self.setMinimumSize( 50, 50 )
-        self.setMaximumSize( 150, 150 )
-        self.setSizePolicy( QSizePolicy.Preferred, QSizePolicy.Preferred )
-
+        self.HomeWidget = HomeWidget
         self.obj = obj
         self.assignment_info = assignment_info
         self.text = self.obj["characters"]
         self.subject_type = self.obj["object"]
 
-        #self.paintEvent()
+        size = self.HomeWidget.clk_label_size
+        # self.setMinimumSize( size, size )
+        # self.setMaximumSize( size, size )
+        self.setContentsMargins( 0,0,0,0 )
+        self.setStyleSheet("""
+                           padding: 0px;
+                           margin: 0px;
+                           border-width: 0px;
+                           """)
+        self.setFrameShape(QFrame.Box)
+        self.setSizePolicy( QSizePolicy.MinimumExpanding, QSizePolicy.Preferred )
 
     def paintEvent(self, event):
 
         if( self.subject_type == "radical" ):
             primary_color = WKColor.RADICAL_BLUE
+            done_color = WKColor.RADICAL_PROGRESSION_DONE_BLUE
         elif( self.subject_type == "kanji" ):
             primary_color = WKColor.KANJI_PINK
             mask_color = WKColor.KANJI_PROGRESSION_MASK_PINK
+            done_color = WKColor.KANJI_PROGRESSION_DONE_PINK
 
         pixmap = QPixmap(self.width(), self.height())
         pixmap.fill( Qt.transparent )
@@ -60,12 +68,12 @@ class ProgressionCircleLabel( QLabel ):
                 startAngle = 90 * 16
                 arc_x = 0
                 arc_y = 0
-                painter.setPen( QPen( QColor( mask_color ), 10, Qt.SolidLine) )
+                painter.setPen( QPen( QColor( mask_color ), circle_width/10, Qt.SolidLine) )
                 painter.drawArc( circle_x, circle_y, circle_width, circle_height, startAngle, spanAngle )
         else:
-            primary_color = WKColor.KANJI_PROGRESSION_DONE_PINK
-            painter.setBrush( QBrush( QColor( primary_color ), Qt.SolidPattern) )
-            painter.setPen( QPen( QColor( primary_color ), 0, Qt.SolidLine) )
+            painter.setBrush( QBrush( QColor( done_color ), Qt.SolidPattern) )
+            painter.setPen( QPen( QColor( done_color ), circle_width/10, Qt.SolidLine) )
+
             painter.drawEllipse( circle_x, circle_y, circle_width, circle_height )
 
 
@@ -81,7 +89,9 @@ class ProgressionCircleLabel( QLabel ):
         return( super().paintEvent( event ) )
 
     def resizeEvent( self, event ):
-        self.resize( event.size().width(), event.size().width() )
+        hw_size = self.HomeWidget.size()
+        size = hw_size.width() / self.HomeWidget.clk_label_size
+        self.resize( size, size )
 
 
     def event( self, event ):
@@ -97,12 +107,10 @@ class ProgressionCircleLabel( QLabel ):
         print("clicked Label")
         super().mousePressEvent( evt )
 
-    def sizeHint( self ):
-        width = self.width()
-        return( QSize( width, self.heightForWidth( width ) ) )
-
     def heightForWidth( self, width ):
         return( width )
 
     def sizeHint( self ):
-        return( QSize( 50, 50 ) )
+        width = self.HomeWidget.size().width() / self.HomeWidget.progression_item_cutoff
+        height = self.HomeWidget.size().height() / self.HomeWidget.progression_item_cutoff
+        return( QSize( width, width ) )
