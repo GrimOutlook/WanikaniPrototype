@@ -8,9 +8,12 @@
 
 from PyQt5.Qt import *
 from settings import Settings
+from WK import WK
+from math import ceil
 
 from WanikaniDatabase import WanikaniDatabase
 from ProgressionCircleLabel import ProgressionCircleLabel
+from StatsListItemLabel import StatsListItemLabel
 
 class HomeWidget( QWidget ):
     def __init__( self, MainWindow ):
@@ -23,11 +26,11 @@ class HomeWidget( QWidget ):
     def setupUi(self, Form ):
         Form.setObjectName("Form")
 
-        self.verticalLayout_2 = QVBoxLayout(Form)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.homeWidgetVerticalLayout = QVBoxLayout(Form)
+        self.homeWidgetVerticalLayout.setObjectName("verticalLayout_2")
 
-        self.verticalLayout = QVBoxLayout()
-        self.verticalLayout.setObjectName("verticalLayout")
+        self.verticalLayoutMain = QVBoxLayout()
+        self.verticalLayoutMain.setObjectName("verticalLayout")
 
         self.topBarHorizontalLayout = QHBoxLayout()
         self.topBarHorizontalLayout.setObjectName("topBarHorizontalLayout")
@@ -73,28 +76,10 @@ class HomeWidget( QWidget ):
         self.vocabularyLink.setObjectName("vocabularyLink")
         self.topBarHorizontalLayout.addWidget(self.vocabularyLink)
 
-        self.pushButton = QPushButton(Form)
-        self.pushButton.setObjectName("pushButton")
-        self.topBarHorizontalLayout.addWidget(self.pushButton)
-        self.verticalLayout.addLayout(self.topBarHorizontalLayout)
-
-        self.scrollArea = QScrollArea(Form)
-        self.scrollArea.setAutoFillBackground(False)
-        self.scrollArea.setWidgetResizable( True )
-        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.scrollArea.setAlignment(Qt.AlignCenter)
-        self.scrollArea.setObjectName("scrollArea")
-
-        self.mainScrollAreaWidgetContents = QWidget()
-        self.mainScrollAreaWidgetContents.setObjectName("mainScrollAreaWidgetContents")
-        self.mainScrollAreaWidgetContents.setContentsMargins(0,0,0,0)
-
-        self.verticalLayout_12 = QVBoxLayout(self.mainScrollAreaWidgetContents)
-        self.verticalLayout_12.setObjectName("verticalLayout_12")
-
-        self.verticalLayoutScrolling = QVBoxLayout()
-        self.verticalLayoutScrolling.setSizeConstraint(QLayout.SetMaximumSize)
-        self.verticalLayoutScrolling.setObjectName("verticalLayoutScrolling")
+        self.accountPushButton = QPushButton(Form)
+        self.accountPushButton.setObjectName("pushButton")
+        self.topBarHorizontalLayout.addWidget(self.accountPushButton)
+        self.verticalLayoutMain.addLayout(self.topBarHorizontalLayout)
 
         self.searchBarHorizontalLayout = QHBoxLayout()
         self.searchBarHorizontalLayout.setSizeConstraint(QLayout.SetDefaultConstraint)
@@ -103,73 +88,74 @@ class HomeWidget( QWidget ):
         spacerItem2 = QSpacerItem(40, 0, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.searchBarHorizontalLayout.addItem(spacerItem2)
 
-        self.searchBar = QLineEdit(self.mainScrollAreaWidgetContents)
+        self.searchBar = QLineEdit(Form)
         self.searchBar.setFrame(True)
         self.searchBar.setObjectName("searchBar")
         self.searchBarHorizontalLayout.addWidget(self.searchBar)
-        self.verticalLayoutScrolling.addLayout(self.searchBarHorizontalLayout)
+        self.verticalLayoutMain.addLayout(self.searchBarHorizontalLayout)
 
         self.availabilityHorizontalLayout = QHBoxLayout()
         self.availabilityHorizontalLayout.setObjectName("availabilityHorizontalLayout")
 
-        self.nextReviewAvailable = QLabel(self.mainScrollAreaWidgetContents)
+        self.nextReviewAvailable = QLabel(Form)
         self.nextReviewAvailable.setFrameShape(QFrame.Box)
         self.nextReviewAvailable.setAlignment(Qt.AlignCenter)
         self.nextReviewAvailable.setObjectName("nextReviewAvailable")
         self.availabilityHorizontalLayout.addWidget(self.nextReviewAvailable)
 
-        self.nextHourAvailable = QLabel(self.mainScrollAreaWidgetContents)
+        self.nextHourAvailable = QLabel(Form)
         self.nextHourAvailable.setFrameShape(QFrame.Box)
         self.nextHourAvailable.setAlignment(Qt.AlignCenter)
         self.nextHourAvailable.setObjectName("nextHourAvailable")
         self.availabilityHorizontalLayout.addWidget(self.nextHourAvailable)
 
-        self.nextDayAvailable = QLabel(self.mainScrollAreaWidgetContents)
+        self.nextDayAvailable = QLabel(Form)
         self.nextDayAvailable.setFrameShape(QFrame.Box)
         self.nextDayAvailable.setAlignment(Qt.AlignCenter)
         self.nextDayAvailable.setObjectName("nextDayAvailable")
         self.availabilityHorizontalLayout.addWidget(self.nextDayAvailable)
-        self.verticalLayoutScrolling.addLayout(self.availabilityHorizontalLayout)
+        self.verticalLayoutMain.addLayout(self.availabilityHorizontalLayout)
 
         self.subjectCountHorizontalLayout = QHBoxLayout()
         self.subjectCountHorizontalLayout.setObjectName("subjectCountHorizontalLayout")
 
-        self.apprenticeCount = QLabel(self.mainScrollAreaWidgetContents)
+        self.apprenticeCount = QLabel(Form)
         self.apprenticeCount.setFrameShape(QFrame.Box)
         self.apprenticeCount.setAlignment(Qt.AlignCenter)
         self.apprenticeCount.setObjectName("apprenticeCount")
         self.subjectCountHorizontalLayout.addWidget(self.apprenticeCount)
 
-        self.guruCount = QLabel(self.mainScrollAreaWidgetContents)
+        self.guruCount = QLabel(Form)
         self.guruCount.setFrameShape(QFrame.Box)
         self.guruCount.setAlignment(Qt.AlignCenter)
         self.guruCount.setObjectName("guruCount")
         self.subjectCountHorizontalLayout.addWidget(self.guruCount)
 
-        self.masterCount = QLabel(self.mainScrollAreaWidgetContents)
+        self.masterCount = QLabel(Form)
         self.masterCount.setFrameShape(QFrame.Box)
         self.masterCount.setTextFormat(Qt.AutoText)
         self.masterCount.setAlignment(Qt.AlignCenter)
         self.masterCount.setObjectName("masterCount")
         self.subjectCountHorizontalLayout.addWidget(self.masterCount)
 
-        self.enlightenedCount = QLabel(self.mainScrollAreaWidgetContents)
+        self.enlightenedCount = QLabel(Form)
         self.enlightenedCount.setFrameShape(QFrame.Box)
         self.enlightenedCount.setAlignment(Qt.AlignCenter)
         self.enlightenedCount.setObjectName("enlightenedCount")
         self.subjectCountHorizontalLayout.addWidget(self.enlightenedCount)
 
-        self.burnedCount = QLabel(self.mainScrollAreaWidgetContents)
+        self.burnedCount = QLabel(Form)
         self.burnedCount.setFrameShape(QFrame.Box)
         self.burnedCount.setAlignment(Qt.AlignCenter)
         self.burnedCount.setObjectName("burnedCount")
         self.subjectCountHorizontalLayout.addWidget(self.burnedCount)
-        self.verticalLayoutScrolling.addLayout(self.subjectCountHorizontalLayout)
+        self.verticalLayoutMain.addLayout(self.subjectCountHorizontalLayout)
 
         self.levelRadicalVerticalLayout = QVBoxLayout()
         self.levelRadicalVerticalLayout.setObjectName("levelRadicalVerticalLayout")
+        self.levelRadicalVerticalLayout.setContentsMargins(100, 0, 100, 0)
 
-        self.levelRadicalProgressionLabel = QLabel(self.mainScrollAreaWidgetContents)
+        self.levelRadicalProgressionLabel = QLabel(Form)
         self.levelRadicalProgressionLabel.setAlignment(Qt.AlignCenter)
         self.levelRadicalProgressionLabel.setObjectName("levelRadicalProgressionLabel")
         self.levelRadicalVerticalLayout.addWidget(self.levelRadicalProgressionLabel)
@@ -179,14 +165,14 @@ class HomeWidget( QWidget ):
         self.levelRadicalProgressionItemsLocation.setSpacing( 0 )
         self.levelRadicalProgressionItemsLocation.setContentsMargins( 0,0,0,0 )
         self.levelRadicalVerticalLayout.addLayout(self.levelRadicalProgressionItemsLocation)
-        self.verticalLayoutScrolling.addLayout(self.levelRadicalVerticalLayout)
+        self.verticalLayoutMain.addLayout(self.levelRadicalVerticalLayout)
 
         self.levelKanjiVerticalLayout = QVBoxLayout()
         self.levelKanjiVerticalLayout.setObjectName("levelKanjiVerticalLayout")
         self.levelKanjiVerticalLayout.setContentsMargins(100, 0, 100, 0)
         self.levelKanjiVerticalLayout.setSpacing(0)
 
-        self.levelKanjiProgressionLabels = QLabel(self.mainScrollAreaWidgetContents)
+        self.levelKanjiProgressionLabels = QLabel(Form)
         self.levelKanjiProgressionLabels.setAlignment(Qt.AlignCenter)
         self.levelKanjiProgressionLabels.setObjectName("levelKanjiProgressionLabels")
         self.levelKanjiVerticalLayout.addWidget(self.levelKanjiProgressionLabels)
@@ -196,7 +182,7 @@ class HomeWidget( QWidget ):
         self.levelKanjiProgressionItemsLocation.setSpacing( 0 )
         self.levelKanjiProgressionItemsLocation.setContentsMargins( 0,0,0,0 )
         self.levelKanjiVerticalLayout.addLayout(self.levelKanjiProgressionItemsLocation)
-        self.verticalLayoutScrolling.addLayout(self.levelKanjiVerticalLayout)
+        self.verticalLayoutMain.addLayout(self.levelKanjiVerticalLayout)
 
         self.statsHorizontalLayout = QHBoxLayout()
         self.statsHorizontalLayout.setObjectName("statsHorizontalLayout")
@@ -212,12 +198,22 @@ class HomeWidget( QWidget ):
         self.burnedItemsLayout = QVBoxLayout()
         self.burnedItemsLayout.setObjectName("burnedItemsLayout")
         self.statsHorizontalLayout.addLayout(self.burnedItemsLayout)
+        self.verticalLayoutMain.addLayout(self.statsHorizontalLayout)
 
-        self.verticalLayoutScrolling.addLayout(self.statsHorizontalLayout)
-        self.verticalLayout_12.addLayout(self.verticalLayoutScrolling)
-        self.scrollArea.setWidget(self.mainScrollAreaWidgetContents)
-        self.verticalLayout.addWidget(self.scrollArea)
-        self.verticalLayout_2.addLayout(self.verticalLayout)
+        # self.scrollArea = QScrollArea(Form)
+        # self.scrollArea.setAutoFillBackground(False)
+        # self.scrollArea.setWidgetResizable( True )
+        # self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # self.scrollArea.setAlignment(Qt.AlignCenter)
+        # self.scrollArea.setObjectName("scrollArea")
+        # self.mainScrollAreaWidgetContents = QWidget()
+        # self.mainScrollAreaWidgetContents.setObjectName("mainScrollAreaWidgetContents")
+        # self.mainScrollAreaWidgetContents.setContentsMargins(0,0,0,0)
+
+        # self.scrollArea.setWidget(self.mainScrollAreaWidgetContents)
+        # self.verticalLayoutMain.addWidget(self.scrollArea)
+
+        self.homeWidgetVerticalLayout.addLayout(self.verticalLayoutMain)
 
         self.retranslateUi(Form)
         QMetaObject.connectSlotsByName(Form)
@@ -255,79 +251,84 @@ class HomeWidget( QWidget ):
         """
 
         """
-        Current level radical progression stuff
+        Current level progression stuff
         """
+        self.current_level = 57 #self.wk_db.getUserCurrentLevel()
+        self.clr = self.wk_db.getSubjectObjectsOfGivenLevel( "radical", self.current_level )
+        self.clk = self.wk_db.getSubjectObjectsOfGivenLevel( "kanji", self.current_level )
 
-        self.current_level = self.wk_db.getUserCurrentLevel()
-
-        self.progression_item_cutoff = 20
-
-        # clr = self.wk_db.getSubjectObjectsOfGivenLevel( "radical", self.current_level )
-
-        # index = 0
-        # self.current_level_radicals_labels = []
-        # for r in clr:
-            # # Create object, add it to the layout
-            # self.current_level_radicals_labels.append( QLabel(self.mainScrollAreaWidgetContents) )
-            # self.current_level_radicals_labels[ index ].setAlignment(Qt.AlignCenter)
-            # self.levelRadicalProgressionItemsLocation.addWidget( self.current_level_radicals_labels[ index ] )
-
+        self.getCLPINums()
         self.generateProgressionKanjiItems()
         self.generateProgressionRadicalItems()
 
-    def generateProgressionRadicalItems( self ):
-        self.current_level_radical_labels = []
-        self.clk = self.wk_db.getSubjectObjectsOfGivenLevel( "radical", self.current_level )
+        self.clpi_size_hint = self.size().width() / self.clk_layout_cutoff
 
-        if( len(self.clk) > self.progression_item_cutoff ):
+        """
+        Item stats stuff
+        """
+        self.statsHorizontalLayout.addStretch()
+        self.MAX_STATS_ITEMS = 10
+
+        # NEW UNLOCKS IN THE LAST 30 DAYS STUFF
+        self.generateNewUnlocksList()
+
+        self.statsHorizontalLayout.addStretch()
+
+    def getCLPINums( self ):
+        MAX_KANJI_IN_SINGLE_LEVEL = 42
+        self.MAX_CLPI_ROW = ceil( MAX_KANJI_IN_SINGLE_LEVEL/2 )
+
+
+    def generateProgressionRadicalItems( self ):
+        # 34 is the largest number of radicals in a level, level 2
+        self.current_level_radical_labels = []
+
+        self.clr_layout_cutoff = self.MAX_CLPI_ROW # len( self.clr )
+
+        if( len(self.clr) > self.clr_layout_cutoff ):
             self.levelRadicalProgressionItemsLocation2 = QHBoxLayout()
             self.levelRadicalProgressionItemsLocation2.setSpacing( 0 )
             self.levelRadicalProgressionItemsLocation2.setContentsMargins( 0,0,0,0 )
             self.levelRadicalVerticalLayout.addLayout( self.levelRadicalProgressionItemsLocation2 )
 
-        self.levelRadicalProgressionItemsLeftSpacer = QSpacerItem(80, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
-        self.levelRadicalProgressionItemsLocation.addItem( self.levelRadicalProgressionItemsLeftSpacer )
+        self.levelRadicalProgressionItemsLocation.addStretch()
 
         self.assignment_info = []
-        for k in range(len(self.clk)):
-            self.clk[k] = [ self.clk[k],  self.wk_db.getObjectBySubjectID( self.clk[k]["id"], "assignment" ) ]
+        for r in range(len(self.clr)):
+            self.clr[r] = [ self.clr[r],  self.wk_db.getObjectBySubjectID( self.clr[r]["id"], "assignment" ) ]
 
-        self.clk = sorted(self.clk, key = lambda i: i[1]["srs_stage"] )
+        self.clr = sorted(self.clr, key = lambda i: i[1]["srs_stage"] )
 
-        self.clk_label_size = self.size().width() / self.progression_item_cutoff
-        for index in range( len( self.clk ) ):
+        for index in range( len( self.clr ) ):
             # Create object, add it to the layout
-            self.current_level_radical_labels.append( ProgressionCircleLabel(self.mainScrollAreaWidgetContents, self, self.clk[index][0], self.clk[index][1] ) )
+            self.current_level_radical_labels.append( ProgressionCircleLabel(self, self.clr[index][0], self.clr[index][1] ) )
 
-            if( index < self.progression_item_cutoff ):
+            if( index < self.clr_layout_cutoff ):
                 self.levelRadicalProgressionItemsLocation.addWidget( self.current_level_radical_labels[ index ] )
 
             else:
-                if( index == self.progression_item_cutoff ):
-                    self.levelRadicalProgressionItemsLeftSpacer2 = QSpacerItem(80, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
-                    self.levelRadicalProgressionItemsLocation2.addItem( self.levelRadicalProgressionItemsLeftSpacer2 )
+                if( index == self.clr_layout_cutoff ):
+                    self.levelRadicalProgressionItemsLocation2.addStretch()
 
                 self.levelRadicalProgressionItemsLocation2.addWidget( self.current_level_radical_labels[ index ], 0, Qt.AlignHCenter )
 
-        self.levelRadicalProgressionItemsRightSpacer = QSpacerItem(80, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
-        self.levelRadicalProgressionItemsLocation.addItem( self.levelRadicalProgressionItemsRightSpacer )
+        self.levelRadicalProgressionItemsLocation.addStretch()
 
-        if( len(self.clk) > self.progression_item_cutoff ):
-            self.levelRadicalProgressionItemsRightSpacer2 = QSpacerItem(80, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
-            self.levelRadicalProgressionItemsLocation2.addItem( self.levelRadicalProgressionItemsRightSpacer2 )
+        if( len(self.clr) > self.clr_layout_cutoff ):
+            self.levelRadicalProgressionItemsLocation2.addStretch()
 
     def generateProgressionKanjiItems( self ):
+        # 42 is the largest number of kanji in a single level, in level 5
         self.current_level_kanji_labels = []
-        self.clk = self.wk_db.getSubjectObjectsOfGivenLevel( "kanji", self.current_level )
+        self.clk_layout_cutoff = self.MAX_CLPI_ROW# len(self.clk)//2
 
-        if( len(self.clk) > self.progression_item_cutoff ):
+        if( len(self.clk) > self.clk_layout_cutoff ):
             self.levelKanjiProgressionItemsLocation2 = QHBoxLayout()
             self.levelKanjiProgressionItemsLocation2.setSpacing( 0 )
             self.levelKanjiProgressionItemsLocation2.setContentsMargins( 0,0,0,0 )
             self.levelKanjiVerticalLayout.addLayout( self.levelKanjiProgressionItemsLocation2 )
 
-        self.levelKanjiProgressionItemsLeftSpacer = QSpacerItem(40, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
-        self.levelKanjiProgressionItemsLocation.addItem( self.levelKanjiProgressionItemsLeftSpacer )
+        self.levelKanjiProgressionItemsLocation.addStretch()
 
         self.assignment_info = []
         for k in range(len(self.clk)):
@@ -335,27 +336,37 @@ class HomeWidget( QWidget ):
 
         self.clk = sorted(self.clk, key = lambda i: i[1]["srs_stage"] )
 
-        self.clk_label_size = self.size().width() / self.progression_item_cutoff
         for index in range( len( self.clk ) ):
             # Create object, add it to the layout
-            self.current_level_kanji_labels.append( ProgressionCircleLabel(self.mainScrollAreaWidgetContents, self, self.clk[index][0], self.clk[index][1] ) )
+            self.current_level_kanji_labels.append( ProgressionCircleLabel(self, self.clk[index][0], self.clk[index][1] ) )
 
-            if( index < self.progression_item_cutoff ):
+            if( index < self.clk_layout_cutoff ):
                 self.levelKanjiProgressionItemsLocation.addWidget( self.current_level_kanji_labels[ index ] )
 
             else:
-                if( index == self.progression_item_cutoff ):
-                    self.levelKanjiProgressionItemsLeftSpacer2 = QSpacerItem(40, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
-                    self.levelKanjiProgressionItemsLocation2.addItem( self.levelKanjiProgressionItemsLeftSpacer2 )
+                if( index == self.clk_layout_cutoff ):
+                    self.levelKanjiProgressionItemsLocation2.addStretch()
 
                 self.levelKanjiProgressionItemsLocation2.addWidget( self.current_level_kanji_labels[ index ], 0, Qt.AlignHCenter )
 
-        self.levelKanjiProgressionItemsRightSpacer = QSpacerItem(40, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
-        self.levelKanjiProgressionItemsLocation.addItem( self.levelKanjiProgressionItemsRightSpacer )
+        self.levelKanjiProgressionItemsLocation.addStretch()
 
-        if( len(self.clk) > self.progression_item_cutoff ):
-            self.levelKanjiProgressionItemsRightSpacer2 = QSpacerItem(40, 0, QSizePolicy.Expanding, QSizePolicy.Ignored)
-            self.levelKanjiProgressionItemsLocation2.addItem( self.levelKanjiProgressionItemsRightSpacer2 )
+        if( len(self.clk) > self.clk_layout_cutoff ):
+            self.levelKanjiProgressionItemsLocation2.addStretch()
+
+    def generateNewUnlocksList( self ):
+        self.newUnlockTopLabel = StatsListItemLabel( self, WK.NEW_UNLOCKS, WK.TOP_LABEL )
+        self.newUnlockLayout.addWidget( self.newUnlockTopLabel )
+
+        # rua = recently unlocked assignments
+        rua = self.wk_db.getRecentlyUnlockedAssignments()
+        new_unlock_list_items = []
+        # for i in range( self.MAX_STATS_ITEMS ):
+            # # Add item to the new unlocks list
+            # new_unlock_list_items.append( StatsListItemLabel( self, WK.NEW_UNLOCKS, rua[i] ) )
+
+        self.newUnlockBottomLabel = StatsListItemLabel( self, WK.NEW_UNLOCKS, WK.BOTTOM_LABEL )
+        self.newUnlockLayout.addWidget( self.newUnlockBottomLabel )
 
     def retranslateUi(self, Form):
         _translate = QCoreApplication.translate
@@ -367,7 +378,7 @@ class HomeWidget( QWidget ):
         self.radicalLink.setText(_translate("Form", "Radicals"))
         self.kanjiLink.setText(_translate("Form", "Kanji"))
         self.vocabularyLink.setText(_translate("Form", "Vocabulary"))
-        self.pushButton.setText(_translate("Form", "Account"))
+        self.accountPushButton.setText(_translate("Form", "Account"))
         self.nextReviewAvailable.setText(_translate("Form", "Next Review Available"))
         self.nextHourAvailable.setText(_translate("Form", "Available Next Hour"))
         self.nextDayAvailable.setText(_translate("Form", "Available Next Day"))

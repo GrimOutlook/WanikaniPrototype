@@ -7,6 +7,7 @@ sys.path.append("./WK")
 sys.path.append("..")
 
 from settings import Settings
+from WK import WK
 from WanikaniDatabase import WanikaniDatabase
 #from ReviewSession import ReviewSession
 #from LessonSession import LessonSession
@@ -332,7 +333,7 @@ class WanikaniSession():
         else:
             raise Exception("Not a know object format. Object format is {}".format( type_obj ) )
 
-        if( mode =="s" ):
+        if( mode ==WK.SINGLE_MODE ):
             self.wk_db.commitChanges()
 
     """
@@ -365,7 +366,7 @@ class WanikaniSession():
             for obj in d:
                 print( obj["id"] )
                 if( not self.wk_db.objectExistsInDatabase( obj["id"], obj["object"] ) ):
-                    self.importObjectIntoItemDatabase( obj, "b" )
+                    self.importObjectIntoItemDatabase( obj, WK.BULK_MODE )
 
             next_url = r["pages"]["next_url"]
             self.wk_db.commitChanges()
@@ -381,12 +382,12 @@ class WanikaniSession():
 
     def importItemIntoDownloadQueue( self, item_id, obj, url, filepath, mode ):
         self.wk_db.createDownloadQueueItem( item_id, obj, url, filepath )
-        if( mode == "s" ):
+        if( mode == WK.SINGLE_MODE ):
             self.wk_db.commitChanges()
 
     def importUserIntoDatabase( self ):
         r = self.getFromAPI( self.BASE_API_URL + "user/" )
-        self.importObjectIntoItemDatabase( r, "s" )
+        self.importObjectIntoItemDatabase( r, WK.SINGLE_MODE )
 
     """
     ##############################################################

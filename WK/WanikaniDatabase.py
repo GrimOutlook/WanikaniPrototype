@@ -254,7 +254,6 @@ class WanikaniDatabase():
             print(e)
             print( "Creating radical table entry failed..." )
 
-
     def createKanji( self, kanji ):
         sql = """ INSERT INTO kanji(
                 id,
@@ -875,3 +874,23 @@ class WanikaniDatabase():
                 "incorrect_meaning_answers" : item[3],
                 "incorrect_reading_answers" : item[4]
             })
+
+    def getRecentlyUnlockedAssignments( self ):
+        # Useful for populationg the recently unlocked list in the statistics area
+        c = self.conn.cursor()
+        c.execute( """  SELECT id,subject_type,subject_id,unlocked_datetime
+                        FROM assignment
+                        WHERE unlocked_datetime IS NOT NULL
+                        ORDER BY unlocked_datetime DESC
+                  """)
+        assignments = c.fetchall()
+        parsed_assignments = []
+        for ass in assignments:
+            parsed_assignments.append({
+                "id" : ass[0],
+                "subject_type" : ass[1],
+                "subject_id" : ass[2],
+                "unlocked_datetime" : ass[3]
+            })
+
+        return( parsed_assignments )

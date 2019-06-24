@@ -1,4 +1,7 @@
-class WKColor():
+class WK():
+    """
+    Colors
+    """
     APPRENTICE_PINK     = "#DD0099" # Normal pink, for apprentice
     GURU_PURPLE         = "#882D9E" # Normal purple, for guru
     MASTER_BLUE         = "#294DDB" # Normal dark blue, for master
@@ -17,9 +20,29 @@ class WKColor():
     BACKGROUND_GRAY = "#393B3B" # light - #EFEFEF
     HOMEPAGE_HEADER = "181A1B" # light - F7F7F7
 
+    RADICAL_PROGRESSION_MASK_BLUE = "#82B6CE" # This is just a guess that can be altered later
     RADICAL_PROGRESSION_DONE_BLUE = "#242C4C" # light -"#9AA5CF"
     KANJI_PROGRESSION_MASK_PINK = "#FF99DD" # Used for marking locked kanji in the level kanji progression
     KANJI_PROGRESSION_DONE_PINK = "#3A254B"
     DARK_GRAY   = "#1A1B1C"
     DARK_GREY   = DARK_GRAY
     BLACK       = DARK_GRAY
+
+
+    """
+    WanikaniSessoin modes
+    """
+    SINGLE_MODE = 0
+    BULK_MODE = 1
+
+    """
+    Homepage Stats Categories
+    """
+    NEW_UNLOCKS = 0
+    CRITICAL_CONDITION_ITEMS = 1
+    RECENT_BURNED_ITEMS = 2
+    """
+    Homepage stats Poistion in List
+    """
+    TOP_LABEL = 0       # Resereved fot the top label which says what the stats represent such as "CRITICAL CONDITION ITEMS"
+    BOTTOM_LABEL = 1    # Reserved for the "SEE MORE ___" labels at the bottom of stats lists

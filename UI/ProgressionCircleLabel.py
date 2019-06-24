@@ -1,36 +1,37 @@
 from PyQt5.Qt import *
-from WKColor import WKColor
+from WK import WK
 
 class ProgressionCircleLabel( QLabel ):
-    def __init__( self, parent, HomeWidget, obj, assignment_info ):
+    def __init__( self, parent, obj, assignment_info ):
         super().__init__( parent = parent )
-        self.HomeWidget = HomeWidget
+        self.parent = parent
         self.obj = obj
         self.assignment_info = assignment_info
         self.text = self.obj["characters"]
         self.subject_type = self.obj["object"]
 
-        size = self.HomeWidget.clk_label_size
-        # self.setMinimumSize( size, size )
-        # self.setMaximumSize( size, size )
+        # self.size_hint = self.parent.size().width()/25
+        self.setMinimumSize( 30, 30 )
+        # self.setMaximumSize( self.parent.clpi_size_hint+2, self.parent.clpi_size_hint+2 )
         self.setContentsMargins( 0,0,0,0 )
-        self.setStyleSheet("""
-                           padding: 0px;
-                           margin: 0px;
-                           border-width: 0px;
-                           """)
-        self.setFrameShape(QFrame.Box)
-        self.setSizePolicy( QSizePolicy.MinimumExpanding, QSizePolicy.Preferred )
+        # self.setStyleSheet("""
+                           # padding: 0px;
+                           # margin: 0px;
+                           # border-width: 0px;
+                           # border-color: black;
+                           # """)
+        self.setSizePolicy( QSizePolicy.Preferred, QSizePolicy.Preferred )
 
     def paintEvent(self, event):
 
         if( self.subject_type == "radical" ):
-            primary_color = WKColor.RADICAL_BLUE
-            done_color = WKColor.RADICAL_PROGRESSION_DONE_BLUE
+            primary_color = WK.RADICAL_BLUE
+            mask_color = WK.RADICAL_PROGRESSION_MASK_BLUE
+            done_color = WK.RADICAL_PROGRESSION_DONE_BLUE
         elif( self.subject_type == "kanji" ):
-            primary_color = WKColor.KANJI_PINK
-            mask_color = WKColor.KANJI_PROGRESSION_MASK_PINK
-            done_color = WKColor.KANJI_PROGRESSION_DONE_PINK
+            primary_color = WK.KANJI_PINK
+            mask_color = WK.KANJI_PROGRESSION_MASK_PINK
+            done_color = WK.KANJI_PROGRESSION_DONE_PINK
 
         pixmap = QPixmap(self.width(), self.height())
         pixmap.fill( Qt.transparent )
@@ -89,9 +90,15 @@ class ProgressionCircleLabel( QLabel ):
         return( super().paintEvent( event ) )
 
     def resizeEvent( self, event ):
-        hw_size = self.HomeWidget.size()
-        size = hw_size.width() / self.HomeWidget.clk_label_size
-        self.resize( size, size )
+        event.accept()
+
+        event_height = event.size().height()
+        event_width = event.size().width()
+        self.size_hint = self.parent.size().width()/self.parent.clk_layout_cutoff
+        if( event_width > event_height ):
+            self.resize( event_height, event_height )
+        else:
+            self.resize( event_width, event_width )
 
 
     def event( self, event ):
@@ -111,6 +118,5 @@ class ProgressionCircleLabel( QLabel ):
         return( width )
 
     def sizeHint( self ):
-        width = self.HomeWidget.size().width() / self.HomeWidget.progression_item_cutoff
-        height = self.HomeWidget.size().height() / self.HomeWidget.progression_item_cutoff
-        return( QSize( width, width ) )
+        self.parent.clpi_size_hint = self.parent.size().width()/25 - 10
+        return( QSize( self.parent.clpi_size_hint, self.parent.clpi_size_hint ) )
