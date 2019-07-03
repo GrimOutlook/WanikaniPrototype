@@ -7,7 +7,7 @@ sys.path.append("./WK")
 sys.path.append("..")
 
 from settings import Settings
-from WK import WK
+# from WK import WK
 from WanikaniDatabase import WanikaniDatabase
 #from ReviewSession import ReviewSession
 #from LessonSession import LessonSession
@@ -34,6 +34,9 @@ class WanikaniSession():
         self.wk_db = WanikaniDatabase()
         self.last_API_hit_time = 0
 
+    """
+    The request code is a mess, will hopefully fix it at some point
+    """
     def getFromAPI( self, url ):
         """
         There are two modes of retrieving the results.
@@ -100,8 +103,8 @@ class WanikaniSession():
         r = self.wk_db.getAllOfItemTypeFromTable( "download_queue" )
         for item in r:
             # Returned index 0 is ID, index 1 is url, and index 2 is filepath
-            self.downloadWKDataObject( item[1], item[2], mode )
-            self.wk_db.removeFromTableByID( item[0], "download_queue" )
+            self.downloadWKDataObject( item.url, item.filepath, mode )
+            item.removeFromTableByID( item, "download_queue" )
 
         self.wk_db.commitChanges()
 
@@ -168,170 +171,27 @@ class WanikaniSession():
     def importObjectIntoItemDatabase( self, r, mode ):
         type_obj = r["object"]
         if( type_obj == "radical" ):
-            d = r["data"]
-
-            if( len( d["character_images"] ) > 0 ):
-                pos, extension = self.getBestImagePosition( d["character_images"] )
-
-                filepath = "./object/" + r["object"] + "/" + str(r["id"]) + "_image" + extension
-
-                self.importItemIntoDownloadQueue( r["id"], "download_item", d["character_images"][pos]["url"], filepath, mode  )
-
-            else:
-                filepath = "None"
-
-
-            self.wk_db.createRadical((
-                r["id"]                             ,
-                r["object"]                         ,
-                r["url"]                            ,
-                r["data_updated_at"]                ,
-                str( d["amalgamation_subject_ids"] ),
-                str( d["auxiliary_meanings"] )      ,
-                d["characters"]                     ,
-                str( d["character_images"] )        ,
-                filepath                            ,
-                d["created_at"]                     ,
-                d["document_url"]                   ,
-                d["hidden_at"]                      ,
-                d["lesson_position"]                ,
-                d["level"]                          ,
-                str( d["meanings"] )                ,
-                d["meaning_mnemonic"]               ,
-                d["slug"]
-            ))
+            obj = WKRadical.fromAPI( r, wk_db )
 
         elif( type_obj == "kanji" ):
-            d = r["data"]
-
-            self.wk_db.createKanji((
-                r["id"]                             ,
-                r["object"]                         ,
-                r["url"]                            ,
-                r["data_updated_at"]                ,
-                str( d["amalgamation_subject_ids"] ),
-                str( d["auxiliary_meanings"] )      ,
-                d["characters"]                     ,
-                str( d["component_subject_ids"] )   ,
-                d["created_at"]                     ,
-                d["document_url"]                   ,
-                d["hidden_at"]                      ,
-                d["lesson_position"]                ,
-                d["level"]                          ,
-                str( d["meanings"] )                ,
-                d["meaning_hint"]                   ,
-                d["meaning_mnemonic"]               ,
-                str( d["readings"] )                ,
-                d["reading_mnemonic"]               ,
-                d["reading_hint"]                   ,
-                d["slug"]                           ,
-                str( d["visually_similar_subject_ids"] )
-            ))
+            obj =  WKKanji.fromAPI( r, wk_db )
 
         elif( type_obj == "vocabulary" ):
-            d = r["data"]   # This makes it easier to write in insert. Just data portion of JSON
-
-            # It appears that some vocab may not have audio so i need to fix the out of range error
-            # #4369 throws this error for example
-            if( len( d["pronunciation_audios"] ) > 0 ):
-                aud = d["pronunciation_audios"][0]
-                if( aud["content_type"] == "audio/mpeg" ):
-                    extension = ".mpeg"
-                elif( aud["content_type"] == "audio/ogg" ):
-                    extension = ".ogg"
-                else:
-                    raise Exception("Audio is not a known format. Format is: ".format(aud["content_type"]))
-                filepath = "./object/" + r["object"] + "/" + str(r["id"]) + "_audio" + extension
-                self.importItemIntoDownloadQueue( r["id"], "download_item", aud["url"], filepath, mode )
-
-
-            else:
-                print( "Item of id=" + str(r["id"]) + "has no audio files to be downloaded..." )
-                filepath = "None"
-
-            self.wk_db.createVocabulary((
-                r["id"]                             ,
-                r["object"]                         ,
-                r["url"]                            ,
-                r["data_updated_at"]                ,
-                str( d["auxiliary_meanings"] )      ,
-                d["characters"]                     ,
-                str( d["component_subject_ids"] )   ,
-                str( d["context_sentences"] )       ,
-                d["created_at"]                     ,
-                d["document_url"]                   ,
-                d["hidden_at"]                      ,
-                d["lesson_position"]                ,
-                d["level"]                          ,
-                str( d["meanings"] )                ,
-                d["meaning_mnemonic"]               ,
-                str( d["parts_of_speech"] )         ,
-                str( d["pronunciation_audios"] )    ,
-                filepath                            ,
-                str( d["readings"] )                ,
-                d["reading_mnemonic"]               ,
-                d["slug"]
-            ))
+            obj =  WKVocabulary.fromAPI( r, wk_db )
 
         elif( type_obj == "review" ):
-            d = r["data"]
-            self.wk_db.createReview((
-                r["id"]                         ,
-                r["object"]                     ,
-                r["url"]                        ,
-                r["data_updated_at"]            ,
-                d["created_at"]                 ,
-                d["assignment_id"]              ,
-                d["subject_id"]                 ,
-                d["starting_srs_stage"]         ,
-                d["starting_srs_stage_name"]    ,
-                d["ending_srs_stage"]           ,
-                d["ending_srs_stage_name"]      ,
-                d["incorrect_meaning_answers"]  ,
-                d["incorrect_reading_answers"]
-            ))
+            obj =  WKReview.fromAPI( r, wk_db )
 
         elif( type_obj == "assignment" ):
-            d = r["data"]
-            self.wk_db.createAssignment((
-                r["id"]                         ,
-                r["object"]                     ,
-                r["url"]                        ,
-                r["data_updated_at"]            ,
-                d["created_at"]                 ,
-                d["subject_id"]                 ,
-                d["subject_type"]               ,
-                d["srs_stage"]                  ,
-                d["srs_stage_name"]             ,
-                d["unlocked_at"]                ,
-                d["started_at"]                 ,
-                d["passed_at"]                  ,
-                d["burned_at"]                  ,
-                d["available_at"]               ,
-                d["resurrected_at"]             ,
-                str( d["passed"] )              ,
-                str( d["resurrected"] )         ,
-                str( d["hidden"] )
-            ))
+            obj =  WKAssignment.fromAPI( r, wk_db )
 
         elif( type_obj == "user" ):
-            d = r["data"]
-            self.wk_db.createUser((
-                d["id"]                                 ,
-                r["object"]                             ,
-                d["username"]                           ,
-                d["level"]                              ,
-                d["max_level_granted_by_subscription"]  ,
-                d["profile_url"]                        ,
-                d["started_at"]                         ,
-                str( d["subscribed"] )                  ,
-                d["current_vacation_started_at"]        ,
-                str( d["subscription"] )                ,
-                str( d["preferences"] )
-            ))
+            obj =  WKUser.fromAPI( r, wk_db )
 
         else:
             raise Exception("Not a know object format. Object format is {}".format( type_obj ) )
+
+        obj.insertIntoDatabase()
 
         if( mode ==WK.SINGLE_MODE ):
             self.wk_db.commitChanges()
@@ -354,7 +214,6 @@ class WanikaniSession():
     ################### Bulk insert functions #####################
     ###############################################################
     """
-
     def importAllFromCollectionIntoDatabase( self, collection_type ):
         if( not self.collectionIsOfValidType( collection_type ) ):
             raise Exception( "Invalid collection type. Collection is of type {}".format( collection_type ) )
@@ -380,11 +239,6 @@ class WanikaniSession():
         for col in self.valid_collection_types:
             self.importAllFromCollectionIntoDatabase( col )
 
-    def importItemIntoDownloadQueue( self, item_id, obj, url, filepath, mode ):
-        self.wk_db.createDownloadQueueItem( item_id, obj, url, filepath )
-        if( mode == WK.SINGLE_MODE ):
-            self.wk_db.commitChanges()
-
     def importUserIntoDatabase( self ):
         r = self.getFromAPI( self.BASE_API_URL + "user/" )
         self.importObjectIntoItemDatabase( r, WK.SINGLE_MODE )
@@ -394,7 +248,6 @@ class WanikaniSession():
     ################### Post object functions ####################
     ##############################################################
     """
-
     def postAllUpdatedReviews( self ):
         updated_reviews = self.wk_db.getAllUpdatedReviews()
         for updated_review in updated_reviews:

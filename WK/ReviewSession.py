@@ -47,19 +47,23 @@ class ReviewSession():
 
         elif( review_mode == "t" ):
             result = False
-            for correct_answer in self.current_review_item[ self.current_question ]:
+            current_review_item_question = self.current_review_item.meanings if self.current_question == "meaning" else self.current_review_item.readings
+            for correct_answer in current_review_item_question:
                 if( correct_answer["accepted_answer"] and self.answerIsCloseEnough( correct_answer[ self.current_question ], answer ) ):
                     result = True
 
+
         if( result ):
             # They answered correctly
-            self.current_review_item[ self.current_question + "_answers_done"] = True
+            item_question_to_check = self.current_review_item.meaning_answers_done if self.current_question == "meaning" else self.current_review_item.reading_answers_done
+            item_question_to_check = True
 
             self.total_correct_questions += 1
 
         else:
             # They answer incorrectly
-            self.current_review_item["incorrect_" + self.current_question + "_answers"] += 1
+            item_to_check = self.current_review_item.incorrect_meaning_answers if self.current_question == "meaning" else self.current_review_item.incorrect_reading_answers
+            item_to_check += 1
 
         self.total_questions_asked += 1
 
@@ -70,10 +74,10 @@ class ReviewSession():
         return( result )
 
     def getQuestion( self ):
-        if( self.current_review_item["meaning_answers_done"] ):
+        if( self.current_review_item.meaning_answers_done ):
             self.current_question = "reading"
 
-        elif( self.current_review_item["reading_answers_done"] ):
+        elif( self.current_review_item.reading_answers_done ):
             self.current_question = "meaning"
 
         else:
@@ -84,12 +88,12 @@ class ReviewSession():
         This function only checks current item since its the last updated and there is no need to check the others since they cant change
         without being the current item
         """
-        if( self.current_review_item["meaning_answers_done"] and self.current_review_item["reading_answers_done"] ):
+        if( self.current_review_item.meaning_answers_done and self.current_review_item.reading_answers_done ):
             # Set completed timestamp to now
-            self.current_review_item[ "completed_datetime" ] = datetime.now().isoformat(timespec="microseconds")
+            self.current_review_item.completed_datetime = datetime.now().isoformat(timespec="microseconds")
 
             # Update statistics
-            if( self.current_review_item["incorrect_meaning_answers"] == 0 and self.current_review_item["incorrect_reading_answers"] == 0 ):
+            if( self.current_review_item.incorrect_meaning_answers == 0 and self.current_review_item.incorrect_reading_answers == 0 ):
                 self.total_correct_reviews += 1
 
             self.total_done_reviews += 1
@@ -109,6 +113,7 @@ class ReviewSession():
         self.current_review_index = randint( 0, self.queue_size - 1 )
         self.current_review_item = self.current_review_queue[ self.current_review_index ]
 
+    @staticmethod
     def answerIsCloseEnough( self, key, answer, question ):
         if( question == "meaning" ):
             re_key = re.sub('[^A-Za-z0-9 ]+', '', key.lower() )
@@ -121,11 +126,11 @@ class ReviewSession():
     def addUpdatedReviewToDatabase( self ):
         cri = self.current_review_item
         self.wk_db.createUpdatedReview((
-            cri["completed_datetime"],
-            cri["assignment_id"],
-            cri["subject_id"],
-            cri["incorrect_meaning_answers"],
-            cri["incorrect_reading_answers"]
+            cri.completed_datetime,
+            cri.assignment_id,
+            cri.subject_id,
+            cri.incorrect_meaning_answers,
+            cri.incorrect_reading_answers
         ))
 
     """
@@ -177,9 +182,9 @@ class ReviewSession():
             for item in self.sort_mode:
                 if( item[0] == "SRS" ):
                     if( item[1] == "A" ):
-                        self.full_review_list.sort( key=itemgetter(6) )
+                        self.full_review_list.sort( key=operator.attrgettr("srs_stage") )
                     else:
-                        self.full_review_list.sort( key=itemgetter(6), reverse=True )
+                        self.full_review_list.sort( key=operator.attrgettr("srs_stage"), reverse=True )
 
                 elif( item[0] == "Subject" ):
                     if( item[1] == "A" ):
@@ -206,15 +211,15 @@ class ReviewSession():
         ]
         for item in l:
             for m in mapping:
-                if( item["subject"] == m[0] ):
-                    item["subject"] == m[1]
+                if( item.subject == m[0] ):
+                    item.subject == m[1]
 
-        sorted( l, key=itemgetter("subject"), reverse=reverse )
+        sorted( l, key=operator.attrgetter("subject"), reverse=reverse )
 
         for item in l:
             for m in mapping:
-                if( item["subject"] == m[1] ):
-                    item["subject"] == m[0]
+                if( item.subject == m[1] ):
+                    item.subject == m[0]
 
         return( l )
 
