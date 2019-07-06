@@ -1,4 +1,5 @@
 from WKObject import WKObject
+import ast # This is for converting the returned database info into dictonaries easier
 
 class WKSubject( WKObject ):
     def __init__( self, data, wk_db ):
@@ -10,7 +11,7 @@ class WKSubject( WKObject ):
         self.hidden_datetime        = data["hidden_datetime"]
         self.lesson_position        = data["lesson_position"]
         self.level                  = data["level"]
-        self.auxilary_meanings      = ast.literal_eval( data["auxilary_meanings"] )
+        self.auxilary_meanings      = ast.literal_eval( data["auxiliary_meanings"] )
         self.characters             = data["characters"]
         self.meanings               = ast.literal_eval( data["meanings"] )
         self.slug                   = data["slug"]
@@ -19,5 +20,7 @@ class WKSubject( WKObject ):
 
     def getAssignmentInfo( self ):
         if( self.assignment != None ):
-            self.assignment = self.wk_db.getObjectBySubjectID( self.id, "assignment" )
-            self.assignment.subject = self
+            return
+
+        self.assignment = self.wk_db.getObjectBySubjectID( self.id, "assignment" )
+        self.assignment.subject = self

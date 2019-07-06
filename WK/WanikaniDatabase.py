@@ -10,13 +10,20 @@ sys.path.append("..")
 from settings import Settings
 
 from WKSubject import WKSubject
+from WKRadical import WKRadical
 from WKKanji import WKKanji
+from WKVocabulary import WKVocabulary
+from WKDownloadItem import WKDownloadItem
 from WKAssignment import WKAssignment
+from WKUpdatedAssignment import WKUpdatedAssignment
+from WKReview import WKReview
+from WKUpdatedReview import WKUpdatedReview
 
 class WanikaniDatabase():
-    def __init__( self, database_filename="/home/dom/Code/Projects/WanikaniPrototype/wanikani.db" ):
 
+    def __init__( self, database_filename=None ):
         self.settings = Settings( "wanikani_database" )
+
         """
         Items with multiple data points will be stored as text and be parsed as json for manipulation
 
@@ -184,7 +191,10 @@ class WanikaniDatabase():
                 preferences text
         );"""
 
-        self.database_filename = database_filename
+        if( database_filename != None ):
+            self.database_filename = database_filename
+        else:
+            self.database_filename = self.settings.BASE_PATH + "/wanikani.db"
         # path can equal either :memory: or a database file
         try:
             self.conn = sqlite3.connect( self.database_filename )
@@ -215,201 +225,6 @@ class WanikaniDatabase():
         else:
             self.conn.close()
             self.conn.connect( self.database_filename )
-
-
-    """
-    ############################
-    # Data insertion Functions #
-    ############################
-    """
-
-#   def createRadical( self, radical ):
-#       sql = """ INSERT INTO radical(
-#               id,
-#               object,
-#               api_url,
-#               last_updated_datetime,
-#               amalgamation_subject_ids,
-#               auxiliary_meanings,
-#               characters,
-#               character_images_info,
-#               character_images_path,
-#               created_datetime,
-#               document_url,
-#               hidden_datetime,
-#               lesson_position,
-#               level,
-#               meanings,
-#               meaning_mnemonic,
-#               slug
-#       )
-#
-#       VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ) """
-#
-#       self.sql_exec( sql, radical )
-
-#   def createKanji( self, kanji ):
-#       sql = """ INSERT INTO kanji(
-#               id,
-#               object,
-#               api_url,
-#               last_updated_datetime,
-#               amalgamation_subject_ids,
-#               auxiliary_meanings,
-#               characters,
-#               component_subject_ids,
-#               created_datetime,
-#               document_url,
-#               hidden_datetime,
-#               lesson_position,
-#               level,
-#               meanings,
-#               meaning_hint,
-#               meaning_mnemonic,
-#               readings,
-#               reading_mnemonic,
-#               reading_hint,
-#               slug,
-#               visually_similar_subject_ids
-#       )
-#
-#       VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ) """
-#
-#       self.sql_exec( sql, kanji )
-
-#   def createVocabulary( self, vocab ):
-#       sql = """ INSERT INTO vocabulary(
-#               id,
-#               object,
-#               api_url,
-#               last_updated_datetime,
-#               auxiliary_meanings,
-#               characters,
-#               component_subject_ids,
-#               context_sentences,
-#               created_datetime,
-#               document_url,
-#               hidden_datetime,
-#               lesson_position,
-#               level,
-#               meanings,
-#               meaning_mnemonic,
-#               parts_of_speech,
-#               pronunciation_audio_info,
-#               pronunciation_audio_path,
-#               readings,
-#               reading_mnemonic,
-#               slug
-#       )
-#
-#       VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ) """
-#
-#       self.sql_exec( sql, vocab )
-
-#   def createReview( self, review ):
-#       sql = """ INSERT INTO review(
-#               id,
-#               object,
-#               api_url,
-#               last_updated_datetime,
-#               created_datetime,
-#               assignment_id,
-#               subject_id,
-#               starting_srs_stage,
-#               starting_srs_stage_name,
-#               ending_srs_stage,
-#               ending_srs_stage_name,
-#               incorrect_meaning_answers,
-#               incorrect_reading_answers
-#       )
-#
-#       VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,? ) """
-#
-#       self.sql_exec( sql, review )
-
-#   def createUpdatedReview( self, review ):
-#       # This is all that is needed to post a review to wanikani
-#       sql = """ INSERT INTO updated_review(
-#               created_datetime,
-#               object,
-#               assignment_id,
-#               subject_id,
-#               incorrect_meaning_answers,
-#               incorrect_reading_answers
-#       )
-#
-#       VALUES( ?,?,?,?,?,?,? ) """
-#
-#       self.sql_exec( sql, review )
-
-#   def createAssignment( self, assignment ):
-#       sql = """ INSERT INTO assignment(
-#               id,
-#               object,
-#               api_url,
-#               last_updated_datetime,
-#               created_datetime,
-#               subject_id,
-#               subject_type,
-#               srs_stage,
-#               srs_stage_name,
-#               unlocked_datetime,
-#               started_datetime,
-#               passed_datetime,
-#               burned_datetime,
-#               available_datetime,
-#               resurrected_datetime,
-#               passed,
-#               resurrected,
-#               hidden
-#       )
-#
-#       VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ) """
-#
-#       self.sql_exec( sql, assignment )
-
-#   def createUpdatedAssignment( self, assignment ):
-#       sql = """ INSERT INTO updated_assignment(
-#               id,
-#               object,
-#               subject_id,
-#               started_datetime
-#       )
-#
-#       VALUES( ?,?,?,? ) """
-#
-#       self.sql_exec( sql, assignment )
-
-#   def createDownloadQueueItem( self, item_id, obj, url, filepath ):
-#       sql = """ INSERT INTO download_queue(
-#               id,
-#               object,
-#               url,
-#               filepath
-#       )
-#
-#       VALUES( ?,?,?,? ) """
-#
-#       self.sql_exec( sql, (item_id, obj, url, filepath) )
-
-#    def createUser( self, user ):
-#        sql = """ INSERT INTO user(
-#                id,
-#                object,
-#                username,
-#                level,
-#                max_level_granted_by_subscription,
-#                profile_url,
-#                started_datetime,
-#                subscribed,
-#                current_vacation_started_datetime,
-#                subscription,
-#                preferences
-#        )
-#
-#        VALUES( ?,?,?,?,?,?,?,?,?,?,? ) """
-#
-#        self.sql_exec( sql, user )
 
     def sql_exec( self, sql, values=None ):
         if( self.conn != None ):
@@ -497,23 +312,23 @@ class WanikaniDatabase():
         obj = data["object"]
 
         if( obj == "radical" ):
-            new_obj = WKRadical( data )
+            new_obj = WKRadical( data, self )
         elif( obj == "kanji" ):
-            new_obj = WKKanji( data )
+            new_obj = WKKanji( data, self )
         elif( obj == "vocabulary" ):
-            new_obj = WKVocabulary( data )
+            new_obj = WKVocabulary( data, self )
         elif( obj == "download_item" ):
-            new_obj = WKDownloadItem( data )
+            new_obj = WKDownloadItem( data, self )
         elif( obj == "review" ):
-            new_obj = WKReview( data )
+            new_obj = WKReview( data, self )
         elif( obj == "updated_review" ):
-            new_obj = WKUpdatedReview( data )
+            new_obj = WKUpdatedReview( data, self )
         elif( obj == "assignment" ):
-            new_obj = WKAssignment( data )
+            new_obj = WKAssignment( data, self )
         elif( obj == "updated_assignment" ):
-            new_obj = WKUpdatedAssignment( data )
+            new_obj = WKUpdatedAssignment( data, self )
         elif( obj == "user" ):
-            new_obj = WKUser( data )
+            new_obj = WKUser( data, self )
         else:
             raise Exception( "Cannot parse object of unknown type. Object is of type {}".format(obj) )
 
@@ -538,9 +353,9 @@ class WanikaniDatabase():
 
         reviews = []
         c = self.sql_exec("SELECT * FROM assignment")
-        parsed_reviews = parseDataList( c.fetchall() )
+        parsed_reviews = self.parseDataList( c.fetchall() )
         valid_reviews = [ item for item in parsed_reviews if item.isAvailableNow() ]
-        for item in radicals:
+        for item in reviews:
             item.getSubject()
 
         return(reviews)

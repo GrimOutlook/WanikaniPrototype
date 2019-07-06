@@ -1,3 +1,4 @@
+import datetime
 from WKObject import WKObject
 
 class WKAssignment( WKObject ):

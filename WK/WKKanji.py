@@ -1,11 +1,12 @@
 from WKSubject import WKSubject
+import ast # This is for converting the returned database info into dictonaries easier
 
 class WKKanji( WKSubject ):
     def __init__( self, data, wk_db ):
         """
         The init function gets the parameters from a static list usually returned from an sql inquiry
         """
-        WKSubject.__init__( self, data  )
+        WKSubject.__init__( self, data, wk_db  )
         self.amalgamation_subject_ids      = ast.literal_eval( data["amalgamation_subject_ids"] )
         self.component_subject_ids         = ast.literal_eval( data["component_subject_ids"] )
         self.meaning_hint                  = data["meaning_hint"]

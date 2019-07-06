@@ -5,7 +5,7 @@
     },
     "main_window" : {
 
-        "startup_page" : "home_page",
+        "startup_page" : "review_page",
         "startup_height" : 2000,
         "startup_width" : 1000
     },

@@ -293,15 +293,14 @@ class HomeWidget( QWidget ):
 
         self.levelRadicalProgressionItemsLocation.addStretch()
 
-        self.assignment_info = []
-        for r in range(len(self.clr)):
-            self.clr[r] = [ self.clr[r],  self.wk_db.getObjectBySubjectID( self.clr[r]["id"], "assignment" ) ]
+        for r in self.clr:
+            r.getAssignmentInfo()
 
-        self.clr = sorted(self.clr, key = lambda i: i[1]["srs_stage"] )
+        self.clr = sorted(self.clr, key = lambda i: i.assignment.srs_stage )
 
         for index in range( len( self.clr ) ):
             # Create object, add it to the layout
-            self.current_level_radical_labels.append( ProgressionCircleLabel(self, self.clr[index][0], self.clr[index][1] ) )
+            self.current_level_radical_labels.append( ProgressionCircleLabel(self, self.clr[index] ) )
 
             if( index < self.clr_layout_cutoff ):
                 self.levelRadicalProgressionItemsLocation.addWidget( self.current_level_radical_labels[ index ] )
@@ -330,15 +329,14 @@ class HomeWidget( QWidget ):
 
         self.levelKanjiProgressionItemsLocation.addStretch()
 
-        self.assignment_info = []
-        for k in range(len(self.clk)):
-            self.clk[k] = [ self.clk[k],  self.wk_db.getObjectBySubjectID( self.clk[k]["id"], "assignment" ) ]
+        for k in self.clk:
+            k.getAssignmentInfo()
 
-        self.clk = sorted(self.clk, key = lambda i: i[1]["srs_stage"] )
+        self.clk = sorted(self.clk, key = lambda i: i.assignment.srs_stage )
 
         for index in range( len( self.clk ) ):
             # Create object, add it to the layout
-            self.current_level_kanji_labels.append( ProgressionCircleLabel(self, self.clk[index][0], self.clk[index][1] ) )
+            self.current_level_kanji_labels.append( ProgressionCircleLabel(self, self.clk[index]) )
 
             if( index < self.clk_layout_cutoff ):
                 self.levelKanjiProgressionItemsLocation.addWidget( self.current_level_kanji_labels[ index ] )

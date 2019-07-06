@@ -1,4 +1,5 @@
 from WKSubject import WKSubject
+import ast # This is for converting the returned database info into dictonaries easier
 
 class WKRadical( WKSubject ):
     # This constructor you use when pulling from database
@@ -10,7 +11,6 @@ class WKRadical( WKSubject ):
         self.character_images_info         = data["character_images_info"]
         self.character_images_path         = data["character_images_path"]
         self.amalgamation_subject_ids      = ast.literal_eval( data["amalgamation_subject_ids"] )
-        self.component_subject_ids         = ast.literal_eval( data["component_subject_ids"] )
         self.meaning_mnemonic              = data["meaning_mnemonic"]
 
     # This constructor you use when pulling from the API
@@ -30,26 +30,26 @@ class WKRadical( WKSubject ):
         dl.insertIntoDatabase()
 
 
-    data = {
-        "id"                        : r["id"],
-        "object"                    : r["object"],
-        "api_url"                   : r["url"],
-        "last_updated_datetime"     : r["data_updated_at"],
-        "amalgamation_subject_ids"  : str( d["amalgamation_subject_ids"]),
-        "auxilary_meanings"         : str( d["auxiliary_meanings"]),
-        "characters"                : d["characters"],
-        "character_images_info"     : str( d["character_images"]),
-        "character_images_path"     : filepath,
-        "created_datetime"          : d["created_at"],
-        "document_url"              : d["document_url"],
-        "hidden_datetime"           : d["hidden_at"],
-        "lesson_position"           : d["lesson_position"],
-        "level"                     : d["level"],
-        "meanings"                  : str( d["meanings"]),
-        "meaning_mnemonic"          : d["meaning_mnemonic"],
-        "slug"                      : d["slug"]
-    }
-    cls( data, wk_db )
+        data = {
+            "id"                        : r["id"],
+            "object"                    : r["object"],
+            "api_url"                   : r["url"],
+            "last_updated_datetime"     : r["data_updated_at"],
+            "amalgamation_subject_ids"  : str( d["amalgamation_subject_ids"]),
+            "auxiliary_meanings"        : str( d["auxiliary_meanings"]),
+            "characters"                : d["characters"],
+            "character_images_info"     : str( d["character_images"]),
+            "character_images_path"     : filepath,
+            "created_datetime"          : d["created_at"],
+            "document_url"              : d["document_url"],
+            "hidden_datetime"           : d["hidden_at"],
+            "lesson_position"           : d["lesson_position"],
+            "level"                     : d["level"],
+            "meanings"                  : str( d["meanings"]),
+            "meaning_mnemonic"          : d["meaning_mnemonic"],
+            "slug"                      : d["slug"]
+        }
+        cls( data, wk_db )
 
     def insertIntoDatabase( self ):
         sql = """ INSERT INTO radical(

@@ -1,4 +1,4 @@
-from WKDownloadItem import WKDownloadItem
+from WKObject import WKObject
 
 class WKDownloadItem( WKObject ):
     def __init__( self, data, wk_db ):

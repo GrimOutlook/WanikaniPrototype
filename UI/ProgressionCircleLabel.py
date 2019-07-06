@@ -2,13 +2,16 @@ from PyQt5.Qt import *
 from WK import WK
 
 class ProgressionCircleLabel( QLabel ):
-    def __init__( self, parent, obj, assignment_info ):
+    def __init__( self, parent, obj ):
         super().__init__( parent = parent )
         self.parent = parent
         self.obj = obj
-        self.assignment_info = assignment_info
-        self.text = self.obj["characters"]
-        self.subject_type = self.obj["object"]
+        self.text = self.obj.characters
+        self.subject_type = self.obj.object
+
+        self.srs_stage = self.obj.assignment.srs_stage
+        self.available_datetime = self.obj.assignment.available_datetime
+        print( self.obj.wk_db )
 
         # self.size_hint = self.parent.size().width()/25
         self.setMinimumSize( 30, 30 )
@@ -45,29 +48,29 @@ class ProgressionCircleLabel( QLabel ):
         circle_width = self.width() * 0.9
         circle_height = self.height() * 0.9
 
-        if( self.assignment_info["srs_stage"] < 5 ):
+        if( self.obj.assignment.srs_stage < 5 ):
             painter.setBrush( QBrush( QColor( primary_color ), Qt.SolidPattern) )
             painter.setPen( QPen( QColor( primary_color ), 0, Qt.SolidLine) )
             painter.drawEllipse( circle_x, circle_y, circle_width, circle_height )
 
-            if( self.assignment_info["available_datetime"] == None ):
+            if( self.available_datetime == None ):
                 painter.setBrush( QBrush( QColor( mask_color ), Qt.BDiagPattern) )
                 painter.drawEllipse( circle_x, circle_y, circle_width, circle_height )
 
             else:
                 # This is where I will later make the semicircles that go around shoing the progress to guru for the object
                 # Angles must be multiplied by 16 since every unit is 1/16 of a degree
-                if( self.assignment_info["srs_stage"] == 2 ):
+                if( self.srs_stage == 2 ):
                     spanAngle = -90 * 16
-                elif( self.assignment_info["srs_stage"] == 3 ):
+                elif( self.srs_stage == 3 ):
                     spanAngle = -180 * 16
-                elif( self.assignment_info["srs_stage"] == 4 ):
+                elif( self.srs_stage == 4 ):
                     spanAngle = -270 * 16
                 else:
                     spanAngle = 0
 
                 startAngle = 90 * 16
-                arc_x = 0
+                rc_x = 0
                 arc_y = 0
                 painter.setPen( QPen( QColor( mask_color ), circle_width/10, Qt.SolidLine) )
                 painter.drawArc( circle_x, circle_y, circle_width, circle_height, startAngle, spanAngle )
