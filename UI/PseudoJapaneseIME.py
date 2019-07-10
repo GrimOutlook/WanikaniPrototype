@@ -1,3 +1,7 @@
+"""
+I understand that this is kind of ugly but it seems to be a simple and fast solution rather than importing a whole library.
+It's also relatively easily modifiable should I choose to allow other characters or methods of input
+"""
 class PseudoJapaneseIME():
     def __init__( self ):
         self.mappings = [
@@ -25,6 +29,7 @@ class PseudoJapaneseIME():
             [ "mya"  , "みゃ"   , "ミャ" ], [ "myu" , "みゅ"    , "ミュ" ], [ "myo" , "みょ"    , "ミョ" ],
             [ "rya"  , "りゃ"   , "リャ" ], [ "ryu" , "りゅ"    , "リュ" ], [ "ryo" , "りょ"    , "リョ" ],
             [ "ja"   , "じゃ"   , "ジャ" ], [ "ju"  , "じゅ"    , "ジュ" ], [ "je"  , "じぇ"    , "ジェ" ], [ "jo"   , "じょ"    , "ジョ" ],
+            [ "jya"  , "じゃ"   , "ジャ" ], [ "jyu" , "じゅ"    , "ジュ" ], [ "jye" , "じぇ"    , "ジェ" ], [ "jyo" , "じょ"    , "ジョ" ],
             [ "cha"  , "ちゃ"   , "チャ" ], [ "chu" , "ちゅ"    , "チュ" ], [ "che" , "ちぇ"    , "チェ" ], [ "cho"  , "ちょ"    , "チョ" ],
             [ "sha"  , "しゃ"   , "シャ" ], [ "shu" , "しゅ"    , "シュ" ], [ "she" , "しぇ"    , "シェ" ], [ "sho"  , "しょ"    , "ショ" ]
         ]
@@ -35,6 +40,7 @@ class PseudoJapaneseIME():
         }
 
     def romanjiToKana( self, text ):
+        # Always takes in atleast the last character input
         slices = [ text[ -1 : ] ]
         if( len(text) >= 2 ):
             # Slices the last 2 characters
@@ -44,23 +50,36 @@ class PseudoJapaneseIME():
             # Slices the last 3 characters
             slices.insert( 0, text[ -3 : ] )
 
+        # Checks the largest slice first the moves on to the next biggest slice
         for sl in slices:
+            # Checks every mapping for a match to the character sequence
             for mapp in self.mappings:
-                if( sl == mapp[0] ):
+                # If the slice matches the lowercase version of the character sequence
+                if( sl == mapp[0].lower() ):
+                    # We replace the slice with the hiragana that the slice represents and return the text with the replaced text
                     new_text = text.replace( sl, mapp[1] )
                     return(new_text)
 
+                # If it matches the uppercase version of the character sequence we sliced
                 elif( sl == mapp[0].upper() ):
+                    # We replace the slice with the katakana that the slice represents and return the text with the replaced text
                     new_text = text.replace( sl, mapp[2] )
                     return(new_text)
 
+            # If the slice doesn't match any of the mappings we then look to see if it matches a sokuon sequence
+            # Checks every mapping in for the english representation of a sokuon
             for item in self.sokuon["english"]:
-                if( sl == item ):
+                # If the slice matches the lowercase representation of sokuon mapping
+                if( sl == item.lower() ):
+                    # We replace the slice with the hiragana version of sokuon and return the text
                     new_text = text.replace( sl, self.sokuon["sokuon"] ) + sl[0]
                     return( new_text )
 
+                # If the slice matches the uppercase version of the mapping
                 elif( sl == item.upper() ):
+                    # We return the text with the slice replaced with the katakana sokuon
                     new_text = text.replace( sl, self.sokuon["sokuon_cap"] ) + sl[0]
                     return( new_text )
 
+        # If all of these searches fail we return the text as-is with no modification
         return( text )

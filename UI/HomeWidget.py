@@ -12,6 +12,7 @@ from WK import WK
 from math import ceil
 
 from WanikaniDatabase import WanikaniDatabase
+from WanikaniLogoLabel import WanikaniLogoLabel
 from ProgressionCircleLabel import ProgressionCircleLabel
 from StatsListItemLabel import StatsListItemLabel
 
@@ -38,14 +39,7 @@ class HomeWidget( QWidget ):
         spacerItem = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.topBarHorizontalLayout.addItem(spacerItem)
 
-        self.wanikaniLogo = QLabel(Form)
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.wanikaniLogo.sizePolicy().hasHeightForWidth())
-        self.wanikaniLogo.setSizePolicy(sizePolicy)
-        self.wanikaniLogo.setMinimumSize(QSize(0, 55))
-        self.wanikaniLogo.setBaseSize(QSize(0, 0))
+        self.wanikaniLogo = WanikaniLogoLabel(Form)
         self.wanikaniLogo.setObjectName("wanikaniLogo")
         self.topBarHorizontalLayout.addWidget(self.wanikaniLogo)
 

@@ -3,7 +3,9 @@ import json, os
 """
 I need to think about users with slower hard drives when I program this so no saving
 every time a setting is changed and especially don't make it so the file must be read
-every time a setting configuration is needed
+every time a setting configuration is needed.
+Honestly this may be a non issue since the program and especcialy the settings will be
+rather small in size but I'd rather take it into consideration now rather than later.
 """
 
 class Settings():

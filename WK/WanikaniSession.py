@@ -46,28 +46,32 @@ class WanikaniSession():
         # Does a get request to the Wanikani API and returns the results in dictionary form
         r = requests.get( url, headers=self.header, timeout=11 )
         self.api_results = r.json()
+
+        MAX_TRIES = 5
+        tries = 1
         while( True ):
             if( r.status_code == 200 ):
                 return( self.api_results )
 
             elif( r.status_code == 429 ):
+                # Sleeps for 20 seconds if error code is 429 because this code is displayed 
+                # if you hit the rate limit
                 time.sleep( 20 )
 
             else:
-                time.sleep(5)
-                r = requests.get( url, headers=self.header, timeout=11 )
-                self.api_results = r.json()
-
-                if( r.status_code == 200 ):
-                    return( self.api_results )
-
-                else:
+                if( tries > MAX_TRIES  ):
                     raise Exception("Server returning a status code other than 200. Status code is: {}".format(r.status_code))
+
+                time.sleep(5)
+                tries += 1
 
     def postToAPI( self, url, payload ):
         # Does a get request to the Wanikani API and returns the results in dictionary form
         r = requests.post( url, headers=self.header, data=payload, timeout=11 )
         self.api_results = r.json()
+
+        MAX_TRIES = 5
+        tries = 1
         while( True ):
             if( r.status_code == 200 ):
                 return( self.api_results )
@@ -76,15 +80,12 @@ class WanikaniSession():
                 time.sleep( 20 )
 
             else:
-                time.sleep(5)
-                r = requests.post( url, headers=self.header, data=payload, timeout=11 )
-                self.api_results = r.json()
-
-                if( r.status_code == 200 ):
-                    return( self.api_results )
-
-                else:
+                if( tries > MAX_TRIES ):
                     raise Exception("Server returning a status code other than 200. Status code is: {}".format(r.status_code))
+
+                time.sleep(5)
+                tries += 1
+
 
     def printAPIResults( self ):
         pprint.pprint( self.api_results )
