@@ -7,6 +7,9 @@ from PyQt5.Qt import *
 from settings import Settings
 from ReviewWidget import ReviewWidget
 from HomeWidget import HomeWidget
+"""
+##################### TODO: Replace window and page names with WK Enum objects #######################
+"""
 
 class MainWindow( QMainWindow ):
     def __init__( self, *args ):
