@@ -1,5 +1,5 @@
 from PyQt5.Qt import *
-from WK import WK
+from WK import WKColor, HomepageStatsCategories, HomepageStatsListItems
 
 class StatsListItemLabel( QLabel ):
     def __init__( self, parent, typ, item ):
@@ -11,28 +11,28 @@ class StatsListItemLabel( QLabel ):
         self.setSizePolicy( QSizePolicy.Preferred, QSizePolicy.Preferred )
 
     def getColorScheme( self ):
-        if( self.item == WK.TOP_LABEL or self.item == WK.BOTTOM_LABEL ):
-            fill_color =  WK.ACCENT_GRAY
+        if( self.item == HomepageStatsListItems.TOP_LABEL or self.item == HomepageStatsListItems.BOTTOM_LABEL ):
+            fill_color =  WKColor.ACCENT_GRAY
         elif( self.item["subject_type"] == "radical" ):
-            fill_color = WK.RADICAL_BLUE
+            fill_color = WKColor.RADICAL_BLUE
         elif( self.item["subject_type"] == "kanji" ):
-            fill_color = WK.KANJI_PINK
+            fill_color = WKColor.KANJI_PINK
         elif( self.item["subject_type"] == "vocabulary" ):
-            fill_color = WK.VOCABULARY_PURPLE
+            fill_color = WKColor.VOCABULARY_PURPLE
         else:
             raise Exception("Unknown item type. Item type is {}".format( self.item ))
 
         return( fill_color )
 
     def getText( self ):
-        if( self.item == WK.TOP_LABEL):
+        if( self.item == HomepageStatsListItems.TOP_LABEL):
             return("NEW UNLOCKS IN THE LAST 30 DAYS")
 
-        elif(self.item == WK.BOTTOM_LABEL ):
+        elif(self.item == HomepageStatsListItems.BOTTOM_LABEL ):
             return( "SEE MORE UNLOCKS..." )
 
         else:
-            if( self.typ == WK.NEW_UNLOCKS ):
+            if( self.typ == HomepageStatsCategories.NEW_UNLOCKS ):
                 subject_info = self.parent.wk_db.getObjectBySubjectID( self.item["subject_id"], self.item["subject_type"] )
                 return( subject_info["characters"], self.item["unlocked_datetime"] )
 
@@ -50,7 +50,7 @@ class StatsListItemLabel( QLabel ):
         painter.setRenderHint(QPainter.Antialiasing)
 
         painter.setFont( QFont("Arial", self.size().height()/3 ) );
-        if( self.item == WK.TOP_LABEL or self.item == WK.BOTTOM_LABEL ):
+        if( self.item == HomepageStatsListItems.TOP_LABEL or self.item == HomepageStatsListItems.BOTTOM_LABEL ):
             painter.setPen( QPen( QColor( 24, 26, 27, 0.8 ), 1, Qt.SolidLine) )
             painter.drawText( QRect( 0, 0+1, self.width(), self.height() ), Qt.AlignCenter, text );
 

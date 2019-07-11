@@ -1,5 +1,6 @@
 from settings import Settings
 from WanikaniDatabase import WanikaniDatabase
+from WK import ReviewMode
 
 from random import shuffle, randint, choice # For randomizing reviews
 from difflib import SequenceMatcher # For checking for string similarity
@@ -9,6 +10,7 @@ import re # For removing all non alpha-numeric-space characters from strings
 
 class ReviewSession():
     def __init__( self ):
+        # print("Initiallizing review session...")
         settings = Settings( "review_session" )
         """
         :sort_mode: = how the reviews will be sorted
@@ -38,32 +40,34 @@ class ReviewSession():
         self.total_correct_questions = 0
 
     def answerCurrentQuestion( self, answer, review_mode ):
-        """
-        :review_mode: is either "a" for anki or "t" for typing
-        """
-        if( review_mode == "a" ):
-
+        # print( "Answering current question..." )
+        if( review_mode == ReviewMode.ANKI ):
             result = answer
 
-        elif( review_mode == "t" ):
+        elif( review_mode == ReviewMode.TYPING ):
             result = False
-            current_review_item_question = self.current_review_item.meanings if self.current_question == "meaning" else self.current_review_item.readings
-            for correct_answer in current_review_item_question:
-                if( correct_answer["accepted_answer"] and self.answerIsCloseEnough( correct_answer[ self.current_question ], answer ) ):
+            correct_answers = self.getCorrectAnswer()
+            for correct_answer in correct_answers:
+                # This just cheks that the answer is close enough to the correct value to be deemed correct
+                if( self.answerIsCloseEnough( correct_answer[ self.current_question ], answer ) ):
                     result = True
-
 
         if( result ):
             # They answered correctly
-            item_question_to_check = self.current_review_item.meaning_answers_done if self.current_question == "meaning" else self.current_review_item.reading_answers_done
-            item_question_to_check = True
+            if( self.current_question == "meaning" ):
+                self.current_review_item.current_review.meaning_answers_done = True
+            elif( self.current_question == "reading" ):
+                self.current_review_item.current_review.reading_answers_done = True
 
+            # print( "Meaning answers done: {} -- Reading answers done: {}".format( self.current_review_item.current_review.meaning_answers_done, self.current_review_item.current_review.reading_answers_done ) )
             self.total_correct_questions += 1
 
         else:
             # They answer incorrectly
-            item_to_check = self.current_review_item.incorrect_meaning_answers if self.current_question == "meaning" else self.current_review_item.incorrect_reading_answers
-            item_to_check += 1
+            if( self.current_question == "meaning" ):
+                self.current_review_item.current_review.incorrect_meaning_answers += 1
+            elif(self.current_question == "reading" ):
+                self.current_review_item.current_review.incorrect_reading_answers += 1
 
         self.total_questions_asked += 1
 
@@ -74,10 +78,11 @@ class ReviewSession():
         return( result )
 
     def getQuestion( self ):
-        if( self.current_review_item.meaning_answers_done ):
+        # print("Getting next question...")
+        if( self.current_review_item.current_review.meaning_answers_done ):
             self.current_question = "reading"
 
-        elif( self.current_review_item.reading_answers_done ):
+        elif( self.current_review_item.current_review.reading_answers_done ):
             self.current_question = "meaning"
 
         else:
@@ -88,33 +93,44 @@ class ReviewSession():
         This function only checks current item since its the last updated and there is no need to check the others since they cant change
         without being the current item
         """
-        if( self.current_review_item.meaning_answers_done and self.current_review_item.reading_answers_done ):
+        if( self.current_review_item.current_review.meaning_answers_done and self.current_review_item.current_review.reading_answers_done ):
+            # print( "Removing done item..." )
             # Set completed timestamp to now
-            self.current_review_item.completed_datetime = datetime.now().isoformat(timespec="microseconds")
+            self.current_review_item.current_review.created_datetime = datetime.now().isoformat(timespec="microseconds")
+
+            # Can be updated here to automatically upload the review to the api if so chosen
+            # Add new review to database
+            self.current_review_item.current_review.insertIntoDatabase()
 
             # Update statistics
-            if( self.current_review_item.incorrect_meaning_answers == 0 and self.current_review_item.incorrect_reading_answers == 0 ):
+            if( self.current_review_item.current_review.incorrect_meaning_answers == 0 and self.current_review_item.current_review.incorrect_reading_answers == 0 ):
                 self.total_correct_reviews += 1
 
             self.total_done_reviews += 1
 
-            # Adding the updated review entry
-            self.addUpdatedReviewToDatabase()
-
-
-            # Removing the current item and replacing it in the queue
+            # Removing the current item from the current review queue
             del( self.current_review_queue[ self.current_review_index ] )
+            # For the number of items missing from current review queue
             for i in range( self.queue_size - len( self.current_review_queue ) ):
+                # Add an item from the full review list to the current review queue
                 self.current_review_queue.append( self.full_review_list[i] )
+                # Removes the item from the full review list so it isn't chosen again
                 del( self.full_review_list[i] )
+
+        # print( self.current_review_queue )
 
 
     def pickNextItem( self ):
+        # print("Picking next item...")
+        # Picks a random number between 0 and the max queue size
         self.current_review_index = randint( 0, self.queue_size - 1 )
+        # Gets the item stored at that index from the current review queue
         self.current_review_item = self.current_review_queue[ self.current_review_index ]
+        # print( "Current characters: {}".format( self.current_review_item.subject.characters ) )
 
     @staticmethod
     def answerIsCloseEnough( self, key, answer, question ):
+        # print("Checking if answer is close enough...")
         if( question == "meaning" ):
             re_key = re.sub('[^A-Za-z0-9 ]+', '', key.lower() )
             re_answer = re.sub('[^A-Za-z0-9 ]+', '', answer.lower() )
@@ -122,16 +138,6 @@ class ReviewSession():
 
         else:
             return( key == answer )
-
-    def addUpdatedReviewToDatabase( self ):
-        cri = self.current_review_item
-        self.wk_db.createUpdatedReview((
-            cri.completed_datetime,
-            cri.assignment_id,
-            cri.subject_id,
-            cri.incorrect_meaning_answers,
-            cri.incorrect_reading_answers
-        ))
 
     """
     ###################################################################
@@ -144,6 +150,7 @@ class ReviewSession():
         Resize the review queue while keeping the current order and expanding or shrinking as demanded
         Call this after sorting or else this is meaningless
         """
+        # print( "Setting queue size..." )
         if( queue_size < self.queue_size ):
             # Simply slices queue down to new size
             cut_items = self.current_review_queue[ queue_size: ]
@@ -171,6 +178,7 @@ class ReviewSession():
         if "(("SRS","A"),("Subject","A"))" is passed in then you would get apprentince 1 reviews and inside of apprentice 1 it
         would be sorted by Level highest first and the inside level it would be sorted by radicals first then go on to kanji and vocabulary
         """
+        # print( "Setting sort mode..." )
 
         if( sort_mode != None ):
             for i in range( len( self.current_review_queue ) ):
@@ -193,6 +201,8 @@ class ReviewSession():
                         self.full_review_list = subjectSort( valid_reviews, reverse=True )
 
         self.current_review_queue = [ self.full_review_list[i] for i in range( self.queue_size ) ]
+        for i in range( self.queue_size ):
+            del( self.full_review_list[i] )
 
     """
     #############################################################
@@ -204,6 +214,8 @@ class ReviewSession():
         :l: list for sorting
         :reverse: whether list should be sorted in reverse order
         """
+        # print( "Sorting by subject..." )
+
         mapping = [
             [ "radical",    0 ],
             [ "kanji",      1 ],
@@ -225,9 +237,22 @@ class ReviewSession():
 
     """
     #############################################################
-    ################### Custom Sort functions ###################
+    ################### Getting functions #######################
     #############################################################
     """
+    def getCorrectAnswer( self ):
+        if( self.current_question == "meaning" ):
+            question = self.current_review_item.subject.meanings
+        elif( self.current_question == "reading" ):
+            question = self.current_review_item.subject.readings
+
+        correct_answers = []
+        for answer in question:
+            if( answer["accepted_answer"] ):
+                correct_answers.append( answer[ self.current_question ] )
+
+        return( correct_answers )
+
     def getPercentCorrectQuestions( self ):
         if( self.total_questions_asked == 0 ):
             return( 0 )

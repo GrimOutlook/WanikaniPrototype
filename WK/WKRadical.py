@@ -16,19 +16,10 @@ class WKRadical( WKSubject ):
     # This constructor you use when pulling from the API
     # Takes response object dictionary rather than database dictionary
     @classmethod
-    def fromAPI( self, r, wk_db ):
+    def fromAPI( cls, r, wk_db ):
         d = r["data"]
 
-        if( len( d["character_images"] ) > 0 ):
-            pos, extension = self.getBestImagePosition( d["character_images"] )
-
-            filepath = "./object/" + self.object + "/" + str(self.id) + "_image" + extension
-        else:
-            filepath = "None"
-
-        dl = WKDownloadItem.fromAPI( self.id, "download_item", d["character_images"][pos]["url"], filepath )
-        dl.insertIntoDatabase()
-
+        filepath = None
 
         data = {
             "id"                        : r["id"],
@@ -49,7 +40,7 @@ class WKRadical( WKSubject ):
             "meaning_mnemonic"          : d["meaning_mnemonic"],
             "slug"                      : d["slug"]
         }
-        cls( data, wk_db )
+        return( cls( data, wk_db ) )
 
     def insertIntoDatabase( self ):
         sql = """ INSERT INTO radical(
@@ -79,19 +70,50 @@ class WKRadical( WKSubject ):
                 self.object,
                 self.api_url,
                 self.last_updated_datetime,
-                self.amalgamation_subject_ids,
-                self.auxiliary_meanings,
+                str( self.amalgamation_subject_ids ),
+                str( self.auxiliary_meanings ),
                 self.characters,
-                self.character_images_info,
+                str( self.character_images_info ),
                 self.character_images_path,
                 self.created_datetime,
                 self.document_url,
                 self.hidden_datetime,
                 self.lesson_position,
                 self.level,
-                self.meanings,
+                str( self.meanings ),
                 self.meaning_mnemonic,
                 self.slug
         )
 
         self.wk_db.sql_exec( sql, radical )
+
+    def getDownloadable( self ):
+        if( len( d["character_images"] ) > 0 ):
+            pos, extension = self.getBestImagePosition( self.character_images_info )
+
+            filepath = "./object/" + self.object + "/" + str(self.id) + "_image" + extension
+        else:
+            filepath = "None"
+
+        dl = WKDownloadItem.fromAPI( self.id, "download_item", d["character_images"][pos]["url"], filepath )
+        dl.insertIntoDatabase()
+
+    @staticmethod
+    def getBestImagePosition( c_i ):
+        ranked = [ "without-css-original", "image/svg+xml", "\'original\'", "\'1024x1024\'" ]
+        for item in ranked:
+            pos = 0
+            for image in c_i:
+                if( item in str( image ) ):
+                    break
+                pos += 1
+
+        if( c_i[pos]["content_type"] == "image/png" ):
+            extension = ".png"
+        elif( c_i[pos]["content_type"] == "image/svg+xml" ):
+            extension = ".svg"
+        else:
+            raise Exception("Image is not a known format. Format is: ".format(c_i[pos]["metadata"]["content_type"]))
+
+        return( pos, extension )
+

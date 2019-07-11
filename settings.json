@@ -29,7 +29,7 @@
         
         "sort_mode" : null,
         "lightning" : false,
-        "review_mode" : "a",
+        "review_mode" : 1,
         "delay_on_incorrect" : false
     },
     "settings" : {

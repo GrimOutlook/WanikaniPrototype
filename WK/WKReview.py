@@ -2,9 +2,9 @@ from WKObject import WKObject
 
 class WKReview( WKObject ):
     def __init__( self, data, wk_db ):
-        WKObject.__init__( self, data )
+        WKObject.__init__( self, data, wk_db )
         self.api_url                    = data["api_url"]
-        self.last_updated_datetime      = data["last_updated_url"]
+        self.last_updated_datetime      = data["last_updated_datetime"]
         self.created_datetime           = data["created_datetime"]
         self.assignment_id              = data["id"]
         self.subject_id                 = data["subject_id"]
@@ -18,14 +18,14 @@ class WKReview( WKObject ):
         self.reading_answers_done       = False
 
     @classmethod
-    def fromAPI( self, r, wk_db ):
+    def fromAPI( cls, r, wk_db ):
         d = r["data"]
         data = {
             "id"                        : r["id"],
             "object"                    : r["object"],
-            "url"                       : r["url"],
+            "api_url"                   : r["url"],
             "last_updated_datetime"     : r["data_updated_at"],
-            "created_at"                : d["created_at"],
+            "created_datetime"          : d["created_at"],
             "assignment_id"             : d["assignment_id"],
             "subject_id"                : d["subject_id"],
             "starting_srs_stage"        : d["starting_srs_stage"],
@@ -35,7 +35,7 @@ class WKReview( WKObject ):
             "incorrect_meaning_answers" : d["incorrect_meaning_answers"],
             "incorrect_reading_answers" : d["incorrect_reading_answers"]
         }
-        cls( data, wk_db )
+        return( cls( data, wk_db ) )
 
     def insertIntoDatabase( self ):
         sql = """ INSERT INTO review(

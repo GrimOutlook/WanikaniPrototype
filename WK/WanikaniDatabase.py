@@ -18,6 +18,7 @@ from WKAssignment import WKAssignment
 from WKUpdatedAssignment import WKUpdatedAssignment
 from WKReview import WKReview
 from WKUpdatedReview import WKUpdatedReview
+from WKUser import WKUser
 
 class WanikaniDatabase():
 
@@ -143,10 +144,9 @@ class WanikaniDatabase():
                 incorrect_reading_answers integer
         );"""
         sql_create_table_updated_review = """CREATE TABLE IF NOT EXISTS updated_review (
-                id integer PRIMARY KEY,
+                assignment_id integer PRIMARY KEY,
                 object text,
                 created_datetime text,
-                assignment_id integer,
                 subject_id integer,
                 incorrect_meaning_answers integer,
                 incorrect_reading_answers integer
@@ -350,15 +350,12 @@ class WanikaniDatabase():
         :subject: type such as "radical" taken from assignments
         :srs_stage_name: such as "Guru I" taken from assignments
         """
-
         reviews = []
         c = self.sql_exec("SELECT * FROM assignment")
         parsed_reviews = self.parseDataList( c.fetchall() )
-        valid_reviews = [ item for item in parsed_reviews if item.isAvailableNow() ]
-        for item in reviews:
-            item.getSubject()
+        valid_reviews = [ item.getSubject().getNewReview() for item in parsed_reviews if item.isAvailableNow() ] # Gets items that are currently available and gets the coresponding subject object and creates a new review object as well
 
-        return(reviews)
+        return(valid_reviews)
 
     def getUpdatedReviews( self ):
         updated_reviews = []

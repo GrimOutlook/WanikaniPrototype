@@ -1,5 +1,6 @@
 import datetime
 from WKObject import WKObject
+from WKUpdatedReview import WKUpdatedReview
 
 class WKAssignment( WKObject ):
     def __init__( self, data, wk_db ):
@@ -7,6 +8,8 @@ class WKAssignment( WKObject ):
         The init function gets the parameters from a static list usually returned from an sql inquiry
         """
         WKObject.__init__( self, data, wk_db )
+        self.api_url                = data["api_url"]
+        self.last_updated_datetime  = data["last_updated_datetime"]
         self.created_datetime       = data["created_datetime"]
         self.subject_id             = data["subject_id"]
         self.subject_type           = data["subject_type"]
@@ -24,17 +27,18 @@ class WKAssignment( WKObject ):
 
         self.last_review = None
         self.current_review = None
+        self.assignment = self
         self.subject = None
 
     @classmethod
-    def fromAPI( self, r, wk_db ):
+    def fromAPI( cls, r, wk_db ):
         d = r["data"]
         data = {
             "id"                    : r["id"],
             "object"                : r["object"],
             "api_url"               : r["url"],
             "last_updated_datetime" : r["data_updated_at"],
-            "created_at"            : d["created_at"],
+            "created_datetime"      : d["created_at"],
             "subject_id"            : d["subject_id"],
             "subject_type"          : d["subject_type"],
             "srs_stage"             : d["srs_stage"],
@@ -49,19 +53,24 @@ class WKAssignment( WKObject ):
             "resurrected"           : str( d["resurrected"]),
             "hidden"                : str( d["hidden"])
         }
-        cls( data, wk_db )
+        return( cls( data, wk_db ) )
 
     def getSubject( self ):
         # Sets subject attribute to subject and returns subject just in case thats more convenient
-        if( self.subject != None ):
-            self.subject = self.wk_db.getObjectBySubjectID( self.id, self.object )
-            self.subject.assignment = self
+        self.subject = self.wk_db.getObjectBySubjectID( self.subject_id, self.subject_type )
+        self.subject.assignment = self
+
+        return( self )
+
+    def getNewReview( self ):
+        self.current_review = WKUpdatedReview.fromAssignment( self.id, self.object, self.subject_id, self.wk_db )
+        return( self )
 
     def isAvailableNow( self ):
         return( self.available_datetime != None and
                datetime.datetime.fromisoformat( self.available_datetime.strip("Z") ) < datetime.datetime.now() )
 
-    def insertIntoDatabase( self, wk_db ):
+    def insertIntoDatabase( self ):
         sql = """ INSERT INTO assignment(
                 id,
                 object,
@@ -101,9 +110,9 @@ class WKAssignment( WKObject ):
                 self.burned_datetime,
                 self.available_datetime,
                 self.resurrected_datetime,
-                self.passed,
-                self.resurrected,
-                self.hidden
+                str( self.passed ),
+                str( self.resurrected ),
+                str( self.hidden )
         )
 
         self.wk_db.sql_exec( sql, assignment )

@@ -14,7 +14,7 @@ class WKUser( WKObject ):
         self.preferences                        = data["preferences"]
 
     @classmethod
-    def fromAPI( self, data, wk_db ):
+    def fromAPI( cls, r, wk_db ):
         d = r["data"]
         data = {
             "id"                                : d["id"],
@@ -29,7 +29,7 @@ class WKUser( WKObject ):
             "subscription"                      : str( d["subscription"]),
             "preferences"                       : str( d["preferences"])
         }
-        cls( data, wk_db )
+        return( cls( data, wk_db ) )
 
     def insertIntoDatabase( self ):
         sql = """ INSERT INTO user(
@@ -56,9 +56,9 @@ class WKUser( WKObject ):
                self.max_level_granted_by_subscription,
                self.profile_url,
                self.started_datetime,
-               self.subscribed,
+               str( self.subscribed ),
                self.current_vacation_started_datetime,
-               self.subscription,
-               self.preferences
+               str( self.subscription ),
+               str( self.preferences )
         )
         self.wk_db.sql_exec( sql, user )

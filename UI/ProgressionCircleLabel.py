@@ -1,5 +1,5 @@
 from PyQt5.Qt import *
-from WK import WK
+from WK import WKColor
 
 class ProgressionCircleLabel( QLabel ):
     def __init__( self, parent, obj ):
@@ -28,13 +28,13 @@ class ProgressionCircleLabel( QLabel ):
     def paintEvent(self, event):
 
         if( self.subject_type == "radical" ):
-            primary_color = WK.RADICAL_BLUE
-            mask_color = WK.RADICAL_PROGRESSION_MASK_BLUE
-            done_color = WK.RADICAL_PROGRESSION_DONE_BLUE
+            primary_color = WKColor.RADICAL_BLUE
+            mask_color = WKColor.RADICAL_PROGRESSION_MASK_BLUE
+            done_color = WKColor.RADICAL_PROGRESSION_DONE_BLUE
         elif( self.subject_type == "kanji" ):
-            primary_color = WK.KANJI_PINK
-            mask_color = WK.KANJI_PROGRESSION_MASK_PINK
-            done_color = WK.KANJI_PROGRESSION_DONE_PINK
+            primary_color = WKColor.KANJI_PINK
+            mask_color = WKColor.KANJI_PROGRESSION_MASK_PINK
+            done_color = WKColor.KANJI_PROGRESSION_DONE_PINK
 
         pixmap = QPixmap(self.width(), self.height())
         pixmap.fill( Qt.transparent )

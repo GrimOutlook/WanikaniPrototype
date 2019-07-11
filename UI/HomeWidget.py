@@ -8,7 +8,7 @@
 
 from PyQt5.Qt import *
 from settings import Settings
-from WK import WK
+import WK
 from math import ceil
 
 from WanikaniDatabase import WanikaniDatabase
@@ -353,7 +353,7 @@ class HomeWidget( QWidget ):
             self.levelKanjiProgressionItemsLocation2.addStretch()
 
     def generateNewUnlocksList( self ):
-        self.newUnlockTopLabel = StatsListItemLabel( self, WK.NEW_UNLOCKS, WK.TOP_LABEL )
+        self.newUnlockTopLabel = StatsListItemLabel( self, HomepageStatsCategories.NEW_UNLOCKS, HomepageStatsListItems.TOP_LABEL )
         self.newUnlockLayout.addWidget( self.newUnlockTopLabel )
 
         # rua = recently unlocked assignments
@@ -361,9 +361,9 @@ class HomeWidget( QWidget ):
         new_unlock_list_items = []
         # for i in range( self.MAX_STATS_ITEMS ):
             # # Add item to the new unlocks list
-            # new_unlock_list_items.append( StatsListItemLabel( self, WK.NEW_UNLOCKS, rua[i] ) )
+            # new_unlock_list_items.append( StatsListItemLabel( self, HomepageStatsCategories.NEW_UNLOCKS, rua[i] ) )
 
-        self.newUnlockBottomLabel = StatsListItemLabel( self, WK.NEW_UNLOCKS, WK.BOTTOM_LABEL )
+        self.newUnlockBottomLabel = StatsListItemLabel( self, HomepageStatsCategories.NEW_UNLOCKS, HomepageStatsListItems.BOTTOM_LABEL )
         self.newUnlockLayout.addWidget( self.newUnlockBottomLabel )
 
     def retranslateUi(self, Form):

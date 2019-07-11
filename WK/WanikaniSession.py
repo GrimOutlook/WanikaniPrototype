@@ -4,6 +4,7 @@ from operator import itemgetter # Used for sorting lists of lists
 from lxml import html
 
 sys.path.append("./WK")
+sys.path.append("./UI")
 sys.path.append("..")
 
 from settings import Settings
@@ -11,6 +12,16 @@ from settings import Settings
 from WanikaniDatabase import WanikaniDatabase
 #from ReviewSession import ReviewSession
 #from LessonSession import LessonSession
+from WKSubject import WKSubject
+from WKRadical import WKRadical
+from WKKanji import WKKanji
+from WKVocabulary import WKVocabulary
+from WKDownloadItem import WKDownloadItem
+from WKAssignment import WKAssignment
+from WKUpdatedAssignment import WKUpdatedAssignment
+from WKReview import WKReview
+from WKUpdatedReview import WKUpdatedReview
+from WKUser import WKUser
 
 """
 By convention:
@@ -103,64 +114,10 @@ class WanikaniSession():
         r = self.wk_db.getAllOfItemTypeFromTable( "download_queue" )
         for item in r:
             # Returned index 0 is ID, index 1 is url, and index 2 is filepath
-            self.downloadWKDataObject( item.url, item.filepath, mode )
+            item.downloadWKDataObject()
             item.removeFromTableByID( item, "download_queue" )
 
         self.wk_db.commitChanges()
-
-    """
-    ##############################################################
-    ####################### Static methods #######################
-    ##############################################################
-    """
-
-    @staticmethod
-    def downloadWKDataObject( url, filepath, mode ):
-        """
-        :mode: can be "o" for overwrite.
-        """
-        if( mode != "o" and os.path.exists( filepath ) and os.path.getsize(filepath) > 0 ):
-            return
-
-        try:
-            res = requests.get( url, timeout=10 )
-        except requests.exceptions.ConnectTimeout:
-            try:
-                res = requests.get( url, timeout=10 )
-            except requests.exceptions.ConnectTimeout:
-                print( "Connection timed out. Stopping program..." )
-                raise
-
-        path = filepath.split("/")
-        del(path[-1])
-        path = "/".join(path)
-
-        pathlib.Path( path ).mkdir( parents=True, exist_ok=True )
-
-        with open( filepath, "wb" ) as f:
-            for chunk in res.iter_content(1000):
-                f.write( chunk )
-
-    @staticmethod
-    def getBestImagePosition( c_i ):
-        ranked = [ "without-css-original", "image/svg+xml", "\'original\'", "\'1024x1024\'" ]
-        for item in ranked:
-            print(item)
-            pos = 0
-            for image in c_i:
-                if( item in str( image ) ):
-                    break
-                pos += 1
-
-        if( c_i[pos]["content_type"] == "image/png" ):
-            extension = ".png"
-        elif( c_i[pos]["content_type"] == "image/svg+xml" ):
-            extension = ".svg"
-        else:
-            raise Exception("Image is not a known format. Format is: ".format(c_i[pos]["metadata"]["content_type"]))
-
-        return( pos, extension )
-
 
     """
     #################################################################
@@ -168,33 +125,28 @@ class WanikaniSession():
     #################################################################
     """
 
-    def importObjectIntoItemDatabase( self, r, mode ):
+    def importObjectIntoItemDatabase( self, r ):
         type_obj = r["object"]
         if( type_obj == "radical" ):
-            obj = WKRadical.fromAPI( r, wk_db )
-
+            obj = WKRadical.fromAPI( r, self.wk_db )
         elif( type_obj == "kanji" ):
-            obj =  WKKanji.fromAPI( r, wk_db )
-
+            obj = WKKanji.fromAPI( r, self.wk_db )
         elif( type_obj == "vocabulary" ):
-            obj =  WKVocabulary.fromAPI( r, wk_db )
-
+            obj = WKVocabulary.fromAPI( r, self.wk_db )
         elif( type_obj == "review" ):
-            obj =  WKReview.fromAPI( r, wk_db )
-
+            obj = WKReview.fromAPI( r, self.wk_db )
         elif( type_obj == "assignment" ):
-            obj =  WKAssignment.fromAPI( r, wk_db )
-
+            obj = WKAssignment.fromAPI( r, self.wk_db )
         elif( type_obj == "user" ):
-            obj =  WKUser.fromAPI( r, wk_db )
-
+            obj = WKUser.fromAPI( r, self.wk_db )
         else:
             raise Exception("Not a know object format. Object format is {}".format( type_obj ) )
 
         obj.insertIntoDatabase()
 
-        if( mode ==WK.SINGLE_MODE ):
-            self.wk_db.commitChanges()
+    def importSingleObjectIntoItemDatabase( self, r ):
+        self.importObjectIntoItemDatabase( r )
+        self.wk_db.commitChanges()
 
     """
     ##############################################################
@@ -223,9 +175,8 @@ class WanikaniSession():
         while( True ): # Pseudo do-while loop
             d = r["data"]
             for obj in d:
-                print( obj["id"] )
                 if( not self.wk_db.objectExistsInDatabase( obj["id"], obj["object"] ) ):
-                    self.importObjectIntoItemDatabase( obj, WK.BULK_MODE )
+                    self.importObjectIntoItemDatabase( obj )
 
             next_url = r["pages"]["next_url"]
             self.wk_db.commitChanges()
@@ -241,7 +192,7 @@ class WanikaniSession():
 
     def importUserIntoDatabase( self ):
         r = self.getFromAPI( self.BASE_API_URL + "user/" )
-        self.importObjectIntoItemDatabase( r, WK.SINGLE_MODE )
+        self.importSingleObjectIntoItemDatabase( r )
 
     """
     ##############################################################

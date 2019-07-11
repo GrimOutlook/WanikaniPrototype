@@ -17,7 +17,7 @@ class WKKanji( WKSubject ):
         self.visually_similar_subject_ids  = ast.literal_eval( data["visually_similar_subject_ids"] )
 
     @classmethod
-    def fromAPI( self, r, wk_db ):
+    def fromAPI( cls, r, wk_db ):
         d = r["data"]
 
         data = {
@@ -43,7 +43,7 @@ class WKKanji( WKSubject ):
             "slug"                          : d["slug"],
             "visually_similar_subject_ids"  : str( d["visually_similar_subject_ids"])
         }
-        cls( data, wk_db )
+        return( cls( data, wk_db ) )
 
     def insertIntoDatabase( self ):
         sql = """ INSERT INTO kanji(
@@ -77,23 +77,23 @@ class WKKanji( WKSubject ):
                 self.object,
                 self.api_url,
                 self.last_updated_datetime,
-                self.amalgamation_subject_ids,
-                self.auxiliary_meanings,
+                str( self.amalgamation_subject_ids ),
+                str( self.auxiliary_meanings ),
                 self.characters,
-                self.component_subject_ids,
+                str( self.component_subject_ids ),
                 self.created_datetime,
                 self.document_url,
                 self.hidden_datetime,
                 self.lesson_position,
                 self.level,
-                self.meanings,
+                str( self.meanings ),
                 self.meaning_hint,
                 self.meaning_mnemonic,
-                self.readings,
+                str( self.readings ),
                 self.reading_mnemonic,
                 self.reading_hint,
                 self.slug,
-                self.visually_similar_subject_ids
+                str( self.visually_similar_subject_ids )
         )
 
         self.wk_db.sql_exec( sql, kanji )

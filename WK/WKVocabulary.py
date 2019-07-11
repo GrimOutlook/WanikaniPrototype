@@ -1,3 +1,4 @@
+import ast
 from WKSubject import WKSubject
 
 class WKVocabulary( WKSubject ):
@@ -7,6 +8,7 @@ class WKVocabulary( WKSubject ):
         """
         WKSubject.__init__( self, data, wk_db  )
         self.component_subject_ids          = ast.literal_eval( data["component_subject_ids"] )
+        self.context_sentences              = ast.literal_eval( data["context_sentences"] )
         self.parts_of_speech                = ast.literal_eval( data["parts_of_speech"] )
         self.pronunciation_audio_info       = data["pronunciation_audio_info"]
         self.pronunciation_audio_path       = data["pronunciation_audio_path"]
@@ -15,28 +17,10 @@ class WKVocabulary( WKSubject ):
         self.reading_mnemonic               = data["reading_mnemonic"]
 
     @classmethod
-    def fromAPI( self, r, wk_db ):
+    def fromAPI( cls, r, wk_db ):
         d = r["data"]   # This makes it easier to write in insert. Just data portion of JSON
 
-        # It appears that some vocab may not have audio so i need to fix the out of range error
-        # #4369 throws this error for example
-        if( len( d["pronunciation_audios"] ) > 0 ):
-            aud = d["pronunciation_audios"][0]
-            if( aud["content_type"] == "audio/mpeg" ):
-                extension = ".mpeg"
-            elif( aud["content_type"] == "audio/ogg" ):
-                extension = ".ogg"
-            else:
-                raise Exception("Audio is not a known format. Format is: ".format(aud["content_type"]))
-            filepath = "./object/" + self.object + "/" + str(self.id) + "_audio" + extension
-
-        else:
-            print( "Item of id=" + str(self.id) + "has no audio files to be downloaded..." )
-            filepath = "None"
-
-        dl = WKDownloadItem.fromAPI( self.id, "download_item", aud["url"], filepath )
-        dl.insertIntoDatabase()
-
+        filepath = None
 
         data = {
             "id"                        : r["id"],
@@ -61,7 +45,7 @@ class WKVocabulary( WKSubject ):
             "reading_mnemonic"          : d["reading_mnemonic"],
             "slug"                      : d["slug"]
         }
-        cls( data, wk_db )
+        return( cls( data, wk_db ) )
 
     def insertIntoDatabase( self ):
         sql = """ INSERT INTO vocabulary(
@@ -95,23 +79,44 @@ class WKVocabulary( WKSubject ):
                 self.object,
                 self.api_url,
                 self.last_updated_datetime,
-                self.auxiliary_meanings,
+                str( self.auxiliary_meanings ),
                 self.characters,
-                self.component_subject_ids,
-                self.context_sentences,
+                str( self.component_subject_ids ),
+                str( self.context_sentences ),
                 self.created_datetime,
                 self.document_url,
                 self.hidden_datetime,
                 self.lesson_position,
                 self.level,
-                self.meanings,
+                str( self.meanings ),
                 self.meaning_mnemonic,
-                self.parts_of_speech,
-                self.pronunciation_audio_info,
+                str( self.parts_of_speech ),
+                str( self.pronunciation_audio_info ),
                 self.pronunciation_audio_path,
-                self.readings,
+                str( self.readings ),
                 self.reading_mnemonic,
                 self.slug
         )
 
-        self.wk_db.sql_exec( sql, kanji )
+        self.wk_db.sql_exec( sql, vocabulary )
+
+    def downloadWKDataObject( self ):
+
+        # It appears that some vocab may not have audio so i need to fix the out of range error
+        # #4369 throws this error for example
+        if( len( self.pronunciation_audios ) > 0 ):
+            aud = self.pronunciation_audios[0]
+            if( aud["content_type"] == "audio/mpeg" ):
+                extension = ".mpeg"
+            elif( aud["content_type"] == "audio/ogg" ):
+                extension = ".ogg"
+            else:
+                raise Exception("Audio is not a known format. Format is: ".format(aud["content_type"]))
+            filepath = "./object/" + self.object + "/" + str(self.id) + "_audio" + extension
+
+        else:
+            print( "Item of id=" + str(self.id) + "has no audio files to be downloaded..." )
+            filepath = "None"
+
+        dl = WKDownloadItem.fromAPI( self.id, "download_item", aud["url"], filepath )
+        dl.insertIntoDatabase()

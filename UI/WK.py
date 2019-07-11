@@ -1,4 +1,16 @@
-class WK():
+from enum import Enum
+
+class ReviewState( Enum ):
+    READY_FOR_ANSWER = 0
+    ANSWER_SHOWN = 1
+    ANSWER_GIVEN = 2
+    WAITING_FOR_INCORRECT_DELAY = 3
+
+class ReviewMode( Enum ):
+    TYPING = 0
+    ANKI = 1
+
+class WKColor():
     """
     Colors
     """
@@ -35,12 +47,15 @@ class WK():
     SINGLE_MODE = 0
     BULK_MODE = 1
 
+class HomepageStatsCategories( Enum ):
     """
     Homepage Stats Categories
     """
     NEW_UNLOCKS = 0
     CRITICAL_CONDITION_ITEMS = 1
     RECENT_BURNED_ITEMS = 2
+
+class HomepageStatsListItems( Enum ):
     """
     Homepage stats Poistion in List
     """
