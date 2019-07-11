@@ -1,4 +1,5 @@
 import json, os
+from WK import Pages
 
 """
 I need to think about users with slower hard drives when I program this so no saving

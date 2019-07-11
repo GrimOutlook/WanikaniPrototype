@@ -9,7 +9,7 @@
 from PyQt5.Qt import *
 from settings import Settings
 from ReviewSession import ReviewSession
-from WK import ReviewState, ReviewMode
+from WK import Pages, ReviewState, ReviewMode
 
 from AnswerBox import AnswerBox
 from ReviewPromptLabel import ReviewPromptLabel
@@ -17,7 +17,7 @@ from PromptTypeLabel import PromptTypeLabel
 
 class ReviewWidget( QWidget ):
     def __init__(self, MainWindow):
-        self.settings = Settings( "review_page" )
+        self.settings = Settings( Pages.REVIEW_PAGE )
         QWidget.__init__(self)
         self.MainWindow = MainWindow
         self.setupUi( self )
@@ -208,7 +208,7 @@ class ReviewWidget( QWidget ):
         # Updates the review stats in side bar
         self.updateStats()
 
-        self.homeButton.clicked.connect( lambda: self.changePage("home_page") )
+        self.homeButton.clicked.connect( lambda: self.changePage(Pages.HOME_PAGE) )
         self.reviewMode.clicked.connect( self.changeAnswerMode )
 
         # Functions in connect statements must be callable so

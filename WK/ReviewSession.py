@@ -1,6 +1,9 @@
+import sys
+sys.path.append("..")
+
 from settings import Settings
 from WanikaniDatabase import WanikaniDatabase
-from WK import ReviewMode
+from WK import ReviewMode, Pages
 
 from random import shuffle, randint, choice # For randomizing reviews
 from difflib import SequenceMatcher # For checking for string similarity
@@ -11,7 +14,7 @@ import re # For removing all non alpha-numeric-space characters from strings
 class ReviewSession():
     def __init__( self ):
         # print("Initiallizing review session...")
-        settings = Settings( "review_session" )
+        settings = Settings( Pages.REVIEW_SESSION )
         """
         :sort_mode: = how the reviews will be sorted
         :amount: = number of items in review queue at a time

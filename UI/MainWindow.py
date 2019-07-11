@@ -4,16 +4,14 @@ sys.path.append("../WK")
 
 from PyQt5.Qt import *
 
+from WK import Pages
 from settings import Settings
 from ReviewWidget import ReviewWidget
 from HomeWidget import HomeWidget
-"""
-##################### TODO: Replace window and page names with WK Enum objects #######################
-"""
 
 class MainWindow( QMainWindow ):
     def __init__( self, *args ):
-        self.settings = Settings( "main_window" )
+        self.settings = Settings( Pages.MAIN_WINDOW )
         QMainWindow.__init__(self, *args)
 
         self.setWindowTitle("WanikaniPrototype")
@@ -26,9 +24,9 @@ class MainWindow( QMainWindow ):
         self.openPage( self.settings.settings["main_window"]["startup_page"] )
 
     def openPage( self, page ):
-        if( page == "home_page" ):
+        if( page == Pages.HOME_PAGE ):
             self.cw = HomeWidget( self )
-        elif( page == "review_page" ):
+        elif( page == Pages.REVIEW_PAGE ):
             self.cw = ReviewWidget( self )
         else:
             raise Exception("Unknown page secification. Page spicified is {}".format(page))

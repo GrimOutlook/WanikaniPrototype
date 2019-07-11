@@ -9,6 +9,7 @@ sys.path.append("..")
 
 from settings import Settings
 
+from WK import Pages
 from WKSubject import WKSubject
 from WKRadical import WKRadical
 from WKKanji import WKKanji
@@ -23,7 +24,7 @@ from WKUser import WKUser
 class WanikaniDatabase():
 
     def __init__( self, database_filename=None ):
-        self.settings = Settings( "wanikani_database" )
+        self.settings = Settings( Pages.WANIKANI_DATABASE )
 
         """
         Items with multiple data points will be stored as text and be parsed as json for manipulation
@@ -214,6 +215,7 @@ class WanikaniDatabase():
         self.sql_exec( sql_create_table_assignment )
         self.sql_exec( sql_create_table_updated_assignment )
         self.sql_exec( sql_create_table_user )
+
         self.commitChanges()
 
     def commitChanges( self ):
@@ -362,14 +364,14 @@ class WanikaniDatabase():
         unparsed_updated_reviews = self.sql_exec("SELECT * from updated_review").fetchall()
         return( parseDataList( unparsed_updated_reviews ) )
 
-
     def getRecentlyUnlockedAssignments( self ):
         # Useful for populationg the recently unlocked list in the statistics area
-        c = self.sql_exec( """  SELECT id,subject_type,subject_id,unlocked_datetime
-                        FROM assignment
-                        WHERE unlocked_datetime IS NOT NULL
-                        ORDER BY unlocked_datetime DESC
-                  """)
+        c = self.sql_exec(
+            """ SELECT id,subject_type,subject_id,unlocked_datetime
+                FROM assignment
+                WHERE unlocked_datetime IS NOT NULL
+                ORDER BY unlocked_datetime DESC
+            """)
         assignments = c.fetchall()
         parsed_assignments = []
         for ass in assignments:

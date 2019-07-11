@@ -8,7 +8,7 @@ sys.path.append("./UI")
 sys.path.append("..")
 
 from settings import Settings
-# from WK import WK
+from WK import Pages
 from WanikaniDatabase import WanikaniDatabase
 #from ReviewSession import ReviewSession
 #from LessonSession import LessonSession
@@ -30,7 +30,7 @@ By convention:
 """
 
 class WanikaniSession():
-    settings = Settings( "wanikani_session" )
+    settings = Settings( Pages.WANIKANI_SESSION )
 
     BASE_API_URL = "https://api.wanikani.com/v2/"
     valid_collection_types = [ "subjects", "reviews", "assignments" ]

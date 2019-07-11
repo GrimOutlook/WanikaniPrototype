@@ -8,7 +8,7 @@
 
 from PyQt5.Qt import *
 from settings import Settings
-import WK
+from WK import HomepageStatsCategories, HomepageStatsListItems, Pages
 from math import ceil
 
 from WanikaniDatabase import WanikaniDatabase
@@ -18,7 +18,7 @@ from StatsListItemLabel import StatsListItemLabel
 
 class HomeWidget( QWidget ):
     def __init__( self, MainWindow ):
-        self.settings = Settings( "home_page" )
+        self.settings = Settings( Pages.HOME_PAGE )
 
         QWidget.__init__(self)
         self.MainWindow = MainWindow
