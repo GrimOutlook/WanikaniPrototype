@@ -17,6 +17,7 @@ class AnswerBox( QLineEdit ):
         self.textChanged.connect( self.romanjiToKana )
 
         self.stylesheets = {
+            "default"   :   "",
             "correct"   :   "background-color : green",
             "incorrect" :   "background-color : red"
         }

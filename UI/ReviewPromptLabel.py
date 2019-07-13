@@ -4,6 +4,8 @@ from PyQt5.Qt import *
 ##### TODO ####
 1) Implement changing fonts and implement changing font on every new review item
 2) Fix resizing, its okay right now, but might be made better with more effort
+3) Implement custom context menu (right-click) so that you can copy the kanji from the prompt
+4) Convert text label into pixmap label so color changin is easier
 """
 
 class ReviewPromptLabel( QLabel ):

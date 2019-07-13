@@ -5,6 +5,7 @@ sys.path.append("../WK")
 
 from WanikaniSession import WanikaniSession
 from ReviewSession import ReviewSession
+from WK import ReviewMode
 
 """
 Probably need to check if necessary fonts are installed for language
@@ -20,29 +21,37 @@ class WKTUI():
         self.height, self.width = self.scr.getmaxyx()
 
         self.rs = ReviewSession()
+        # Get default from settings here
+        self.review_mode = ReviewMode.TYPING
+        self.text = ""
 
     def drawReviewScreen( self ):
         try:
-            k = 0
+            ch = 0
 
             curses.start_color()
             curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
             curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
             curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
-            while( k != ord("~") ):
+            while( ch != ord("~") ):
                 # Get blank canvas
                 self.scr.clear()
                 self.height, self.width = self.scr.getmaxyx()
 
                 self.drawKanji()
-                self.drawRightStatsBar()
+                self.drawTopStatsBar()
                 self.drawStatusBar()
+
+                if( ch not in bad_chars ):
+                    self.text += ch
+
+                self.drawAnswerBox()
 
                 # Refresh screen
                 self.scr.refresh()
                 # Wait for next input
-                k = self.scr.getch()
+                ch = self.scr.getch()
 
         except KeyboardInterrupt:
             return
@@ -75,19 +84,15 @@ class WKTUI():
             total_done_reviews = self.rs.total_done_reviews
             percent_correct = self.rs.getPercentCorrectReviews()
 
-            TRL_str = "Total: {}".format( total_reviews_left )
-            TDR_str = "Done: {}".format( total_done_reviews )
-            PC_str  = "Pct: {}".format( percent_correct )
+            top_stats_bar_str = "To Do: {} -- Done: {} -- Pct: {}".format( total_reviews_left, total_done_reviews, percent_correct )
 
             # 
-            start_x = int( self.width - len( top_stats_bar_str ) )
+            start_x = int( self.width - len( top_stats_bar_str ) - 1 )
             # We start the list at the top
             start_y = int( 0 )
 
             # 
-            self.scr.addstr( start_y, start_x, TRL_str )
-            self.scr.addstr( start_y+2, start_x, TDR_str )
-            self.scr.addstr( start_y+4, start_x, PC_str )
+            self.scr.addstr( start_y, start_x, top_stats_bar_str )
 
         except KeyboardInterrupt:
             return
@@ -114,6 +119,20 @@ class WKTUI():
             curses.endwin()
             print( e )
 
+    def drawAnswerBox( self ):
+        try:
+            spacing = " " * int( (self.width//2) - (len( self.text )//2) - (len(text)%2) )
+            answer_box_str = "{}{}{}".format( spacing, self.text, spacing )
+            y = int( self.height//2 )
+            x = 0
+            self.scr.addstr( y, x, answer_box_str, curses.color_pair(3) )
+
+        except KeyboardInterrupt:
+            return
+
+        except Exception as e:
+            curses.endwin()
+            print( e )
 
     def __del__(self):
         curses.nocbreak()

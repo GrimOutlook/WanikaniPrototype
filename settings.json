@@ -29,7 +29,7 @@
         
         "sort_mode" : null,
         "lightning" : false,
-        "review_mode" : 1,
+        "review_mode" : "anki",
         "delay_on_incorrect" : false
     },
     "settings" : {

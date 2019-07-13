@@ -89,9 +89,9 @@ class WKRadical( WKSubject ):
 
     def getDownloadable( self ):
         if( len( d["character_images"] ) > 0 ):
-            pos, extension = self.getBestImagePosition( self.character_images_info )
+            pos, ext = self.getBestImagePosition( self.character_images_info )
 
-            filepath = "./object/" + self.object + "/" + str(self.id) + "_image" + extension
+            filepath = "./object/" + self.object + "/" + str(self.id) + "_image" + ext
         else:
             filepath = "None"
 
@@ -108,12 +108,7 @@ class WKRadical( WKSubject ):
                     break
                 pos += 1
 
-        if( c_i[pos]["content_type"] == "image/png" ):
-            extension = ".png"
-        elif( c_i[pos]["content_type"] == "image/svg+xml" ):
-            extension = ".svg"
-        else:
-            raise Exception("Image is not a known format. Format is: ".format(c_i[pos]["metadata"]["content_type"]))
+        WKDownloadItem.getExtension( c_i[ pos ] )
 
-        return( pos, extension )
+        return( pos, ext )
 

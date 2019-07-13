@@ -1,5 +1,5 @@
 import json, os
-from WK import Pages
+from WK import Pages, ReviewMode
 
 """
 I need to think about users with slower hard drives when I program this so no saving
@@ -16,6 +16,8 @@ class Settings():
         settings_file = self.BASE_PATH + "/settings.json"
         with open( settings_file, "r" ) as f:
             self.settings = json.load( f )
+
+        self.convert()
 
         # Settings for the settings module
 
@@ -34,6 +36,28 @@ class Settings():
         if( self.settings["settings"]["allow_save_settings"] ):
             with open( settings_file, "w" ) as f:
                 f.write( json.dumps( self.settings ) )
+
+    def convert( self ):
+        self.convertReviewMode()
+        self.convertPages()
+
+    def convertReviewMode( self ):
+        review_mode = self.settings["review_page"]["review_mode"]
+        if( review_mode == "anki" ):
+            review_mode = ReviewMode.ANKI
+        elif( review_mode == "typing" ):
+            review_mode = ReviewMode.TYPING
+
+        self.settings["review_page"]["review_mode"] = review_mode
+
+    def convertPages( self ):
+        page = self.settings["main_window"]["startup_page"]
+        if( page == "review_page" ):
+            page = Pages.REVIEW_PAGE
+        elif( page == "home_page" ):
+            page = Pages.HOME_PAGE
+
+        self.settings["main_window"]["startup_page"] = page
 
     @staticmethod
     def getBasePath():

@@ -14,6 +14,7 @@ from WK import Pages, ReviewState, ReviewMode
 from AnswerBox import AnswerBox
 from ReviewPromptLabel import ReviewPromptLabel
 from PromptTypeLabel import PromptTypeLabel
+from LightningButton import LightningButton
 
 class ReviewWidget( QWidget ):
     def __init__(self, MainWindow):
@@ -23,8 +24,11 @@ class ReviewWidget( QWidget ):
         self.setupUi( self )
 
     def setupUi(self, Form):
+
+        self.lightning = self.settings.settings["review_page"]["lightning"]
+        self.delay_on_incorrect = self.settings.settings["review_page"]["delay_on_incorrect"]
+
         Form.setObjectName("Form")
-        Form.resize(1616, 837)
 
         self.verticalLayout_2 = QVBoxLayout(Form)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
@@ -36,7 +40,7 @@ class ReviewWidget( QWidget ):
         self.homeButton.setObjectName("homeButton")
         self.horizontalLayout_2.addWidget( self.homeButton )
 
-        self.lightningButton = QPushButton("Z")
+        self.lightningButton = LightningButton( self.lightning )
         self.lightningButton.setObjectName("lightningButton")
         self.horizontalLayout_2.addWidget( self.lightningButton )
 
@@ -191,14 +195,10 @@ class ReviewWidget( QWidget ):
         # This will later be loaded by a settings file
         # This can either be t for typing or a for anki
         self.review_mode = self.settings.settings["review_page"]["review_mode"]
-        if( self.review_mode == 1 ):
-            self.review_mode = ReviewMode.ANKI
-        else:
-            self.review_mode = ReviewMode.TYPING
 
         print( self.review_mode )
 
-        self.changeAnswerMode( self.review_mode )
+        self.setAnswerMode( self.review_mode )
 
         self.rs = ReviewSession()
         self.promptLabel.setText( self.rs.current_review_item.subject.characters )
@@ -209,7 +209,7 @@ class ReviewWidget( QWidget ):
         self.updateStats()
 
         self.homeButton.clicked.connect( lambda: self.changePage(Pages.HOME_PAGE) )
-        self.reviewMode.clicked.connect( self.changeAnswerMode )
+        self.reviewMode.clicked.connect( self.toggleAnswerMode )
 
         # Functions in connect statements must be callable so
         # if you need to pass in arguments make it a lambda function
@@ -217,6 +217,8 @@ class ReviewWidget( QWidget ):
         self.ankiYesButton.clicked.connect( lambda: self.answerPrompt( True ) )
         self.ankiNoButton.clicked.connect( lambda: self.answerPrompt( False ) )
         self.ankiNextQuestionButton.clicked.connect( self.nextReview )
+
+        self.lightningButton.clicked.connect( self.toggleLightning )
 
         # Intializes delay on incorrect timer
         self.delayOnIncorrectTimer = QTimer()
@@ -248,7 +250,7 @@ class ReviewWidget( QWidget ):
     def showAnswer( self  ):
         print( "Answer being shown..." )
         if( self.review_mode == ReviewMode.ANKI ):
-            # Show answer buttons and hide show answer button
+            # Show answer buttons and hide the "show answer" button
             self.ankiShowAnswerButton.hide()
             self.ankiYesButton.show()
             self.ankiNoButton.show()
@@ -265,30 +267,34 @@ class ReviewWidget( QWidget ):
 
         # Gets result from checking answer
         result = self.rs.answerCurrentQuestion( answer_content ,review_mode=self.review_mode )
-        if( self.settings.settings["review_page"]["lightning"] ):  # If lightning mode is enabled
-            # Answer was wrong and delay on incorrect is enabled
-            if( not result and self.settings.settings["review_page"]["delay_on_incorrect"] ):
-                self.answerBox.setStyle("incorrect")
-                # Start timer and check timer on enter and answer button
-                # presses to make sure it has passed
-                self.delayOnIncorrectTimer.singleShot( 1000, self.setAnswerGiven )
-                self.state = ReviewState.WAITING_FOR_INCORRECT_DELAY
+
+        if( result == True ):
+            self.setState( ReviewState.ANSWER_GIVEN )
+
+            if( self.lightning ):  # If lightning mode is enabled
+                self.nextReview()
+                return
+
             else:
-                self.answerBox.setStyle( "incorrect" )
-                self.state = ReviewState.ANSWER_GIVEN
+                self.answerBox.setStyle( "correct" )
 
         else:
-            if( result == True ):
-                self.answerBox.setStyle( "correct" )
-            else:
-                self.answerBox.setStyle( "incorrect" )
+            self.answerBox.setStyle( "incorrect" )
+            if( self.delay_on_incorrect ):
+                # Start timer for when you are allowed to move on to the next review item
+                self.delayOnIncorrectTimer.singleShot( 1000, self.setAnswerGiven )
+                self.setState( ReviewState.WAITING_FOR_INCORRECT_DELAY )
 
-            self.setState( ReviewState.ANSWER_GIVEN )
+            else:
+                self.setState( ReviewState.ANSWER_GIVEN )
 
         if( self.review_mode == ReviewMode.ANKI ):
             self.ankiYesButton.hide()
             self.ankiNoButton.hide()
             self.ankiNextQuestionButton.show()
+
+        elif( self.review_mode == ReviewMode.TYPING ):
+            self.answerBox.setReadOnly( True )
 
         self.updateStats()
 
@@ -305,7 +311,9 @@ class ReviewWidget( QWidget ):
 
             # If we are reviewing in ankj mode
             if( self.review_mode == ReviewMode.ANKI ):
-                # hide the next question button
+                # hide all buttons except show answer button
+                self.ankiNoButton.hide()
+                self.ankiYesButton.hide()
                 self.ankiNextQuestionButton.hide()
                 # Show the show answer button
                 self.ankiShowAnswerButton.show()
@@ -313,28 +321,44 @@ class ReviewWidget( QWidget ):
                 # If in typing mode remove the read only flag on the answer box
                 self.answerBox.setReadOnly( False )
 
+            # Set prompt type label back to default color
+            self.answerBox.setStyle( "default" )
+
+            # Set state to ready for next answer
             self.setState( ReviewState.READY_FOR_ANSWER )
+
         else:
-            print( "Current state is: {}".format( self.state ) )
+            print( "Cannot get next review since current state is: {}".format( self.state ) )
 
     def updateStats( self ): # Result required to determine if question was answered correctly
         self.totalToDo.setText( str( self.rs.getTotalReviewsRemaining() ) )
         self.totalDone.setText( str( self.rs.total_done_reviews ) )
         self.percentCorrect.setText( str( self.rs.getPercentCorrectQuestions() ) + "%" )
 
-    def changeAnswerMode( self, req = None ):
+    def toggleAnswerMode( self ):
+        # Change mode from typing to anki and vice versa
+        if( self.review_mode == ReviewMode.ANKI ):
+            self.review_mode = ReviewMode.TYPING
+
+        elif( self.review_mode == ReviewMode.TYPING ):
+            self.review_mode = ReviewMode.ANKI
+
+        self.changeAnswerModeAttributes()
+
+    def setAnswerMode( self, mode ):
         # For changine answer mode to given value or cycling through them
-        if( req != None ):
-            self.review_mode = req
+        self.review_mode = mode
 
-        else:
-            # Change mode from typing to anki and vice versa
-            if( self.review_mode == ReviewMode.ANKI ):
-                self.review_mode = ReviewMode.TYPING
+        # Change mode from typing to anki and vice versa
+        if( self.review_mode == ReviewMode.ANKI ):
+            self.review_mode = ReviewMode.TYPING
 
-            elif( self.review_mode == ReviewMode.TYPING ):
-                self.review_mode = ReviewMode.ANKI
+        elif( self.review_mode == ReviewMode.TYPING ):
+            self.review_mode = ReviewMode.ANKI
 
+        self.changeAnswerModeAttributes()
+
+    def changeAnswerModeAttributes( self ):
         if( self.review_mode == ReviewMode.ANKI ):
             # Subtracts 75 pixels for the minimum required for the anki buttons and 6 for the layouts margins
             self.spacerItem3.changeSize(0, 157-75-6, QSizePolicy.Minimum, QSizePolicy.Preferred)
@@ -346,6 +370,15 @@ class ReviewWidget( QWidget ):
         is_anki_mode = self.review_mode == ReviewMode.ANKI
         self.ankiShowAnswerButton.setVisible( is_anki_mode )
         self.answerBox.setReadOnly( is_anki_mode )
+
+    def toggleLightning( self ):
+        if( self.lightning == False ):
+            self.lightning = True
+
+        else:
+            self.lightning = False
+
+        self.lightningButton.setLightning( self.lightning )
 
     def changePage( self, page ):
         # If page == None then we are exiting the application
