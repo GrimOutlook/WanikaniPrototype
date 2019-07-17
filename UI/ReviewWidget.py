@@ -30,45 +30,42 @@ class ReviewWidget( QWidget ):
 
         Form.setObjectName("Form")
 
-        self.verticalLayout_2 = QVBoxLayout(Form)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.mainVLayout = QVBoxLayout(Form)
+        self.mainVLayout.setObjectName("mainVLayout")
 
-        self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.topBarHLayout = QHBoxLayout()
+        self.topBarHLayout.setObjectName("topBarHLayout")
 
         self.homeButton = QPushButton("Home")
         self.homeButton.setObjectName("homeButton")
-        self.horizontalLayout_2.addWidget( self.homeButton )
+        self.topBarHLayout.addWidget( self.homeButton )
 
         self.lightningButton = LightningButton( self.lightning )
         self.lightningButton.setObjectName("lightningButton")
-        self.horizontalLayout_2.addWidget( self.lightningButton )
+        self.topBarHLayout.addWidget( self.lightningButton )
 
         spacerItem = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem)
+        self.topBarHLayout.addItem(spacerItem)
 
         self.percentCorrect = QLabel(Form)
         self.percentCorrect.setObjectName("percentCorrect")
-        self.horizontalLayout_2.addWidget(self.percentCorrect)
+        self.topBarHLayout.addWidget(self.percentCorrect)
 
         self.totalDone = QLabel(Form)
         self.totalDone.setObjectName("totalDone")
-        self.horizontalLayout_2.addWidget(self.totalDone)
+        self.topBarHLayout.addWidget(self.totalDone)
 
         self.totalToDo = QLabel(Form)
         self.totalToDo.setObjectName("totalToDo")
-        self.horizontalLayout_2.addWidget(self.totalToDo)
+        self.topBarHLayout.addWidget(self.totalToDo)
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+        self.mainVLayout.addLayout(self.topBarHLayout)
 
-        self.verticalLayout = QVBoxLayout()
-        self.verticalLayout.setObjectName("verticalLayout")
-
-        self.horizontalLayout = QHBoxLayout()
-        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.promptAreaHLayout = QHBoxLayout()
+        self.promptAreaHLayout.setObjectName("promptAreaHLayout")
 
         spacerItem1 = QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem1)
+        self.promptAreaHLayout.addItem(spacerItem1)
 
         self.promptLabel = ReviewPromptLabel(Form)
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
@@ -81,10 +78,10 @@ class ReviewWidget( QWidget ):
         self.promptLabel.setLineWidth(3)
         self.promptLabel.setAlignment(Qt.AlignCenter)
         self.promptLabel.setObjectName("promptLabel")
-        self.horizontalLayout.addWidget(self.promptLabel)
+        self.promptAreaHLayout.addWidget(self.promptLabel)
 
-        self.verticalLayout_3 = QVBoxLayout()
-        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.rightStatsBarVLayout = QVBoxLayout()
+        self.rightStatsBarVLayout.setObjectName("rightStatsBarVLayout")
 
         self.radicalCountToDo = QLabel(Form)
         sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
@@ -94,7 +91,7 @@ class ReviewWidget( QWidget ):
         self.radicalCountToDo.setSizePolicy(sizePolicy)
         self.radicalCountToDo.setMinimumSize(QSize(40, 0))
         self.radicalCountToDo.setObjectName("radicalCountToDo")
-        self.verticalLayout_3.addWidget(self.radicalCountToDo)
+        self.rightStatsBarVLayout.addWidget(self.radicalCountToDo)
 
         self.kanjiCountToDo = QLabel(Form)
         sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
@@ -104,7 +101,7 @@ class ReviewWidget( QWidget ):
         self.kanjiCountToDo.setSizePolicy(sizePolicy)
         self.kanjiCountToDo.setMinimumSize(QSize(40, 0))
         self.kanjiCountToDo.setObjectName("kanjiCountToDo")
-        self.verticalLayout_3.addWidget(self.kanjiCountToDo)
+        self.rightStatsBarVLayout.addWidget(self.kanjiCountToDo)
 
         self.vocabularyCountToDo = QLabel(Form)
         sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
@@ -114,80 +111,105 @@ class ReviewWidget( QWidget ):
         self.vocabularyCountToDo.setSizePolicy(sizePolicy)
         self.vocabularyCountToDo.setMinimumSize(QSize(40, 0))
         self.vocabularyCountToDo.setObjectName("vocabularyCountToDo")
-        self.verticalLayout_3.addWidget(self.vocabularyCountToDo)
+        self.rightStatsBarVLayout.addWidget(self.vocabularyCountToDo)
 
         spacerItem2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.verticalLayout_3.addItem(spacerItem2)
+        self.rightStatsBarVLayout.addItem(spacerItem2)
 
-        self.horizontalLayout.addLayout(self.verticalLayout_3)
-        self.verticalLayout.addLayout(self.horizontalLayout)
-        self.verticalLayout_2.addLayout(self.verticalLayout)
+        self.promptAreaHLayout.addLayout(self.rightStatsBarVLayout)
+        self.mainVLayout.addLayout(self.promptAreaHLayout)
 
         self.promptType = PromptTypeLabel(Form)
         self.promptType.setMinimumSize(QSize(0, 75))
         self.promptType.setAlignment(Qt.AlignCenter)
         self.promptType.setObjectName("promptType")
-        self.verticalLayout_2.addWidget(self.promptType)
+        self.mainVLayout.addWidget(self.promptType)
 
         self.answerBox = AnswerBox(Form)
         self.answerBox.setMinimumSize(QSize(0, 75))
         self.answerBox.setAlignment(Qt.AlignCenter)
         self.answerBox.setObjectName("answerBox")
-        self.verticalLayout_2.addWidget(self.answerBox)
+        self.mainVLayout.addWidget(self.answerBox)
 
-        self.ankiButtonsHorizontalLayout = QHBoxLayout()
-        self.verticalLayout_2.addLayout( self.ankiButtonsHorizontalLayout )
+        self.ankiButtonsHLayout = QHBoxLayout()
+        self.mainVLayout.addLayout( self.ankiButtonsHLayout )
 
         self.ankiShowAnswerButton = QPushButton(Form)
         self.ankiShowAnswerButton.setText( "Show Answer" )
         self.ankiShowAnswerButton.setMinimumSize(QSize(0,75))
         self.ankiShowAnswerButton.setObjectName("ankiShowAnswerButton")
-        self.ankiButtonsHorizontalLayout.addWidget(self.ankiShowAnswerButton)
+        self.ankiButtonsHLayout.addWidget(self.ankiShowAnswerButton)
         self.ankiShowAnswerButton.hide()
 
         self.ankiYesButton = QPushButton(Form)
         self.ankiYesButton.setText( "Correct" )
         self.ankiYesButton.setMinimumSize(QSize(0,75))
         self.ankiYesButton.setObjectName("ankiYesButton")
-        self.ankiButtonsHorizontalLayout.addWidget(self.ankiYesButton)
+        self.ankiButtonsHLayout.addWidget(self.ankiYesButton)
         self.ankiYesButton.hide()
 
         self.ankiNoButton = QPushButton(Form)
         self.ankiNoButton.setText( "Incorrect" )
         self.ankiNoButton.setMinimumSize(QSize(0,75))
         self.ankiNoButton.setObjectName("ankiNoButton")
-        self.ankiButtonsHorizontalLayout.addWidget(self.ankiNoButton)
+        self.ankiButtonsHLayout.addWidget(self.ankiNoButton)
         self.ankiNoButton.hide()
 
         self.ankiNextQuestionButton = QPushButton(Form)
         self.ankiNextQuestionButton.setText( "Next Question" )
         self.ankiNextQuestionButton.setMinimumSize(QSize(0,75))
         self.ankiNextQuestionButton.setObjectName("ankiNextQuestionButton")
-        self.ankiButtonsHorizontalLayout.addWidget(self.ankiNextQuestionButton)
+        self.ankiButtonsHLayout.addWidget(self.ankiNextQuestionButton)
         self.ankiNextQuestionButton.hide()
 
-        self.spacerItem3 = QSpacerItem(0, 157, QSizePolicy.Minimum, QSizePolicy.Preferred)
-        self.verticalLayout_2.addItem(self.spacerItem3)
+        # self.scrollArea = QScrollArea(Form)
+        # self.scrollArea.setAutoFillBackground(False)
+        # self.scrollArea.setWidgetResizable( True )
+        # self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # self.scrollArea.setAlignment(Qt.AlignCenter)
+        # self.scrollArea.setObjectName("scrollArea")
+        # self.mainScrollAreaWidgetContents = QWidget()
+        # self.mainScrollAreaWidgetContents.setObjectName("mainScrollAreaWidgetContents")
+        # self.mainScrollAreaWidgetContents.setContentsMargins(0,0,0,0)
 
-        self.horizontalLayout_3 = QHBoxLayout()
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        # self.scrollArea.setWidget(self.mainScrollAreaWidgetContents)
+        # self.verticalLayoutMain.addWidget(self.scrollArea)
+
+        self.infoScrollArea = QScrollArea( Form )
+        self.infoScrollArea.setAutoFillBackground(False)
+        self.infoScrollArea.setWidgetResizable( True )
+        self.infoScrollArea.setAlignment(Qt.AlignCenter)
+        self.infoScrollArea.setObjectName("infoScrollArea")
+        self.infoScrollAreaContents = QWidget()
+        self.infoScrollAreaContents.setObjectName("mainScrollAreaWidgetContents")
+        self.infoScrollAreaContents.setContentsMargins(0,0,0,0)
+
+        self.infoScrollArea.setWidget(self.infoScrollAreaContents)
+        self.mainVLayout.addWidget( self.infoScrollArea )
+        self.infoScrollArea.hide()
+
+        self.spacerItem3 = QSpacerItem(0, 157, QSizePolicy.Minimum, QSizePolicy.Preferred)
+        self.mainVLayout.addItem(self.spacerItem3)
+
+        self.extraButtonsHLayout = QHBoxLayout()
+        self.extraButtonsHLayout.setObjectName("extraButtonsHLayout")
 
         spacerItem4 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.horizontalLayout_3.addItem(spacerItem4)
+        self.extraButtonsHLayout.addItem(spacerItem4)
 
         self.sortMode = QPushButton(Form)
         self.sortMode.setObjectName("sortMode")
-        self.horizontalLayout_3.addWidget(self.sortMode)
+        self.extraButtonsHLayout.addWidget(self.sortMode)
 
         self.reviewMode = QPushButton(Form)
         self.reviewMode.setObjectName("reviewMode")
-        self.horizontalLayout_3.addWidget(self.reviewMode)
+        self.extraButtonsHLayout.addWidget(self.reviewMode)
 
         self.ignoreAnswer = QPushButton(Form)
         self.ignoreAnswer.setObjectName("ignoreAnswer")
-        self.horizontalLayout_3.addWidget(self.ignoreAnswer)
+        self.extraButtonsHLayout.addWidget(self.ignoreAnswer)
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout_3)
+        self.mainVLayout.addLayout(self.extraButtonsHLayout)
 
         self.retranslateUi(Form)
         QMetaObject.connectSlotsByName(Form)
