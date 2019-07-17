@@ -1,4 +1,4 @@
-import json, os
+import json, logging, os
 from WK import Pages
 
 """
@@ -10,7 +10,9 @@ rather small in size but I'd rather take it into consideration now rather than l
 """
 
 class Settings():
-    def __init__( self, page ):
+    def __init__( self, page=None ):
+        logging.basicConfig(filename='WanikaniPrototype.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s')
+        self.logging = logging.getLogger(__name__)
 
         self.BASE_PATH = self.getBasePath()
         settings_file = self.BASE_PATH + "/settings.json"
@@ -48,4 +50,3 @@ class Settings():
                 del( cwd_split[i] )
 
         return( "/".join( cwd_split ) )
-

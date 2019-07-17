@@ -1,0 +1,10 @@
+2019-07-17 14:29:13,910 - ERROR - Exception occured during drawTopStatsBar.
+Traceback (most recent call last):
+  File "WKTUI.py", line 94, in drawTopStatsBar
+    start_x = int( self.width - len( top_stats_bar_str ) )
+NameError: name 'top_stats_bar_str' is not defined
+2019-07-17 14:29:21,895 - ERROR - Exception occured during drawTopStatsBar.
+Traceback (most recent call last):
+  File "WKTUI.py", line 94, in drawTopStatsBar
+    start_x = int( self.width - len( top_stats_bar_str ) )
+NameError: name 'top_stats_bar_str' is not defined

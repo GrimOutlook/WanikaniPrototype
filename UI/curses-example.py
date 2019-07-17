@@ -6,10 +6,6 @@ def draw_menu(stdscr):
     cursor_x = 0
     cursor_y = 0
 
-    # Clear and refresh the screen for a blank canvas
-    stdscr.clear()
-    stdscr.refresh()
-
     # Start colors in curses
     curses.start_color()
     curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
@@ -42,7 +38,6 @@ def draw_menu(stdscr):
         title = "Curses example"[:width-1]
         subtitle = "Written by Clay McLeod"[:width-1]
         keystr = "Last key pressed: {}".format(k)[:width-1]
-        statusbarstr = "Press 'q' to exit | STATUS BAR | Pos: {}, {}".format(cursor_x, cursor_y)
         if k == 0:
             keystr = "No key press detected..."[:width-1]
 
@@ -55,12 +50,6 @@ def draw_menu(stdscr):
         # Rendering some text
         whstr = "Width: {}, Height: {}".format(width, height)
         stdscr.addstr(0, 0, whstr, curses.color_pair(1))
-
-        # Render status bar
-        stdscr.attron(curses.color_pair(3))
-        stdscr.addstr(height-1, 0, statusbarstr)
-        stdscr.addstr(height-1, len(statusbarstr), " " * (width - len(statusbarstr) - 1))
-        stdscr.attroff(curses.color_pair(3))
 
         # Turning on attributes for title
         stdscr.attron(curses.color_pair(2))

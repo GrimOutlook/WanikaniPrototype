@@ -3,6 +3,7 @@ import sys
 sys.path.append("..")
 sys.path.append("../WK")
 
+from settings import Settings
 from WanikaniSession import WanikaniSession
 from ReviewSession import ReviewSession
 
@@ -11,6 +12,11 @@ Probably need to check if necessary fonts are installed for language
 """
 class WKTUI():
     def __init__( self ):
+        self.settings = Settings()
+        self.log = self.settings.logging
+
+        self.log.debug( 'WKTUI Started Initializing.' )
+
         self.scr = curses.initscr()
         self.scr.border()
         curses.cbreak()
@@ -20,6 +26,7 @@ class WKTUI():
         self.height, self.width = self.scr.getmaxyx()
 
         self.rs = ReviewSession()
+        self.log.debug( 'WKTUI Finished Initializing.' )
 
     def drawReviewScreen( self ):
         try:
@@ -36,7 +43,7 @@ class WKTUI():
                 self.height, self.width = self.scr.getmaxyx()
 
                 self.drawKanji()
-                self.drawRightStatsBar()
+                self.drawTopStatsBar()
                 self.drawStatusBar()
 
                 # Refresh screen
@@ -45,9 +52,11 @@ class WKTUI():
                 k = self.scr.getch()
 
         except KeyboardInterrupt:
+            self.log.exception( 'Keyboard interrupt occured during drawReviewScreen.', exc_info=True )
             return
 
         except Exception as e:
+            self.log.exception( 'Exception occured during drawReviewScreen.', exc_info=True )
             curses.endwin()
             print( e )
 
@@ -63,9 +72,11 @@ class WKTUI():
             self.scr.addstr( kanji_y, kanji_x, kanji )
 
         except KeyboardInterrupt:
+            self.log.exception( 'Keyboard interrupt occured during drawKanji.', exc_info=True )
             return
 
         except Exception as e:
+            self.log.exception( 'Exception occured during drawKanji.', exc_info=True )
             curses.endwin()
             print( e )
 
@@ -90,9 +101,11 @@ class WKTUI():
             self.scr.addstr( start_y+4, start_x, PC_str )
 
         except KeyboardInterrupt:
+            self.log.exception( 'Keyboard interrupt occured during drawTopStatsBar.', exc_info=True )
             return
 
         except Exception as e:
+            self.log.exception( 'Exception occured during drawTopStatsBar.', exc_info=True )
             curses.endwin()
             print( e )
 
@@ -108,9 +121,11 @@ class WKTUI():
             self.scr.attroff(curses.color_pair(3))
 
         except KeyboardInterrupt:
+            self.log.exception( 'Keyboard interrupt occured during drawStatusBar.', exc_info=True )
             return
 
         except Exception as e:
+            self.log.exception( 'Exception occured during drawStatusBar.', exc_info=True )
             curses.endwin()
             print( e )
 
