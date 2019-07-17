@@ -100,23 +100,23 @@ class WKVocabulary( WKSubject ):
 
         self.wk_db.sql_exec( sql, vocabulary )
 
-    def downloadWKDataObject( self ):
-
-        # It appears that some vocab may not have audio so i need to fix the out of range error
-        # #4369 throws this error for example
-        if( len( self.pronunciation_audios ) > 0 ):
-            aud = self.pronunciation_audios[0]
-            if( aud["content_type"] == "audio/mpeg" ):
-                extension = ".mpeg"
-            elif( aud["content_type"] == "audio/ogg" ):
-                extension = ".ogg"
-            else:
-                raise Exception("Audio is not a known format. Format is: ".format(aud["content_type"]))
-            filepath = "./object/" + self.object + "/" + str(self.id) + "_audio" + extension
+    def getDownloadable( self ):
+        if( len( self.pronunciation_audio_info ) > 0 ):
+            aud = self.pronunciation_audio_info[0]
+            ext = WKDownloadItem.getExtension( aud["content_type"] )
+            filepath = "./object/" + self.object + "/" + str(self.id) + "_audio" + ext
+            dl = WKDownloadItem.fromAPI( self.id, "download_item", aud["url"], filepath )
+            dl.insertIntoDatabase()
 
         else:
-            print( "Item of id=" + str(self.id) + "has no audio files to be downloaded..." )
-            filepath = "None"
+            print( "Item of id={} has no audio files to be downloaded...".format( str(self.id) ) )
 
-        dl = WKDownloadItem.fromAPI( self.id, "download_item", aud["url"], filepath )
-        dl.insertIntoDatabase()
+    def getAllDownloadables( self ):
+        for aud in self.pronunciation_audio_info:
+            ext = WKDownloadItem.getExtension( aud["content_type"] )
+            filepath = "./object/" + self.object + "/" + str(self.id) + "_audio" + ext
+            dl = WKDownloadItem.fromAPI( self.id, "download_item", aud["url"], filepath )
+            dl.insertIntoDatabase()
+
+        if( len( self.pronunciation_audio_info ) <= 0 ):
+            print( "Item of id={} has no audio files to be downloaded...".format( str(self.id) ) )

@@ -52,7 +52,7 @@ class ReviewSession():
             correct_answers = self.getCorrectAnswer()
             for correct_answer in correct_answers:
                 # This just cheks that the answer is close enough to the correct value to be deemed correct
-                if( self.answerIsCloseEnough( correct_answer[ self.current_question ], answer ) ):
+                if( self.answerIsCloseEnough( correct_answer, answer, self.current_question ) ):
                     result = True
 
         if( result ):
@@ -132,7 +132,7 @@ class ReviewSession():
         # print( "Current characters: {}".format( self.current_review_item.subject.characters ) )
 
     @staticmethod
-    def answerIsCloseEnough( self, key, answer, question ):
+    def answerIsCloseEnough( key, answer, question ):
         # print("Checking if answer is close enough...")
         if( question == "meaning" ):
             re_key = re.sub('[^A-Za-z0-9 ]+', '', key.lower() )

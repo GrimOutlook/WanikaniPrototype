@@ -213,7 +213,7 @@ class HomeWidget( QWidget ):
         QMetaObject.connectSlotsByName(Form)
 
         # Connect statement requires a callable function so dont put parentheses and if you must include parameters make it lambda
-        self.reviewsLink.clicked.connect( lambda: self.MainWindow.openPage( "review_page" ) )
+        self.reviewsLink.clicked.connect( lambda: self.MainWindow.openPage( Pages.REVIEW_PAGE ) )
         #self.lessonsLink.clicked.connect( self.setupLessonsScreen )
         #self.levelsLink.clicked.connect( self.setupLevelsScreeen )
 

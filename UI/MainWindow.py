@@ -29,7 +29,7 @@ class MainWindow( QMainWindow ):
         elif( page == Pages.REVIEW_PAGE ):
             self.cw = ReviewWidget( self )
         else:
-            raise Exception("Unknown page secification. Page spicified is {}".format(page))
+            raise Exception("Unknown page specification. Page specified is {}".format(page))
 
         self.setCentralWidget( self.cw )
         self.cw.show()

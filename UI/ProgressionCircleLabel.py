@@ -1,6 +1,11 @@
 from PyQt5.Qt import *
 from WK import WKColor
 
+"""
+##### TODO #####
+1) Implement custom right click menu to allow copying of kanji
+"""
+
 class ProgressionCircleLabel( QLabel ):
     def __init__( self, parent, obj ):
         super().__init__( parent = parent )

@@ -61,3 +61,13 @@ class WKDownloadItem( WKObject ):
             for chunk in res.iter_content(1000):
                 f.write( chunk )
 
+    @staticmethod
+    def getExtension( content ):
+        media_type, file_type = content["content_type"].split("/")
+        if( media_type == "image" and file_type == "svg+xml"):
+            ext = ".svg"
+
+        else:
+            ext = ".{}".format( file_type )
+
+        return( ext )
