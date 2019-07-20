@@ -11,7 +11,7 @@ rather small in size but I'd rather take it into consideration now rather than l
 
 class Settings():
     def __init__( self, page=None ):
-        logging.basicConfig(filename='WanikaniPrototype.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s')
+        logging.basicConfig(filename='WanikaniPrototype.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s', level=logging.DEBUG )
         self.logging = logging.getLogger(__name__)
 
         self.BASE_PATH = self.getBasePath()

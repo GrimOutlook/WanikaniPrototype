@@ -24,6 +24,16 @@ class WKUpdatedReview( WKObject ):
         }
         return( cls( data, wk_db ) )
 
+    def resetReview( self ):
+        self.created_datetime           = None
+        self.incorrect_meaning_answers  = 0
+        self.incorrect_reading_answers  = 0
+        self.meaning_answers_done       = False
+        self.reading_answers_done       = False
+
+    def reviveReview( self ):
+        pass
+
     def insertIntoDatabase( self ):
         # This is all that is needed to post a review to wanikani
         sql = """ INSERT INTO updated_review(
@@ -46,3 +56,7 @@ class WKUpdatedReview( WKObject ):
         )
 
         self.wk_db.sql_exec( sql, updated_review )
+
+    def removeFromDatabase( self ):
+        sql = "DELETE FROM updated_review WHERE subject_id=?"
+        self.wk_db.sql_exec( sql, (self.subject_id,) )

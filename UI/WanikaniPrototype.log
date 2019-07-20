@@ -1,10 +1,19 @@
-2019-07-17 14:29:13,910 - ERROR - Exception occured during drawTopStatsBar.
-Traceback (most recent call last):
-  File "WKTUI.py", line 94, in drawTopStatsBar
-    start_x = int( self.width - len( top_stats_bar_str ) )
-NameError: name 'top_stats_bar_str' is not defined
-2019-07-17 14:29:21,895 - ERROR - Exception occured during drawTopStatsBar.
-Traceback (most recent call last):
-  File "WKTUI.py", line 94, in drawTopStatsBar
-    start_x = int( self.width - len( top_stats_bar_str ) )
-NameError: name 'top_stats_bar_str' is not defined
+2019-07-18 17:48:05,528 - DEBUG - WKTUI Started Initializing.
+2019-07-18 17:48:05,529 - DEBUG - Review Session Started Initializing.
+2019-07-18 17:48:06,088 - DEBUG - Review Session Finished Initializing.
+2019-07-18 17:48:06,088 - DEBUG - Setting review modes
+2019-07-18 17:48:06,088 - DEBUG - Setting char values
+2019-07-18 17:48:06,088 - DEBUG - WKTUI Finished Initializing.
+2019-07-18 17:48:06,088 - DEBUG - Drawing review screen
+2019-07-18 17:48:06,088 - DEBUG - Key pressed: None
+2019-07-18 17:48:12,951 - DEBUG - Key pressed: 115
+2019-07-18 17:48:13,014 - DEBUG - Key pressed: 105
+2019-07-18 17:48:13,222 - DEBUG - Key pressed: 108
+2019-07-18 17:48:13,340 - DEBUG - Key pressed: 101
+2019-07-18 17:48:13,457 - DEBUG - Key pressed: 110
+2019-07-18 17:48:13,551 - DEBUG - Key pressed: 99
+2019-07-18 17:48:13,605 - DEBUG - Key pressed: 101
+2019-07-18 17:48:13,741 - DEBUG - Key pressed: 10
+2019-07-18 17:48:13,742 - DEBUG - ReviewState is now ReviewState.ANSWER_GIVEN
+2019-07-18 17:48:15,233 - DEBUG - Key pressed: 10
+2019-07-18 17:48:15,233 - DEBUG - ReviewState is now ReviewState.READY_FOR_ANSWER

@@ -14,33 +14,41 @@ import re # For removing all non alpha-numeric-space characters from strings
 class ReviewSession():
     def __init__( self ):
         # print("Initiallizing review session...")
-        settings = Settings( Pages.REVIEW_SESSION )
+        self.settings = Settings( Pages.REVIEW_SESSION )
+        self.log = self.settings.logging
+
+        self.log.debug( 'Review Session Started Initializing.' )
         """
         :sort_mode: = how the reviews will be sorted
         :amount: = number of items in review queue at a time
         """
-        self.sort_mode = settings.settings["review_session"]["sort_mode"]
-        self.queue_size = settings.settings["review_session"]["queue_size"]
+        self.sort_mode = self.settings.settings["review_session"]["sort_mode"]
+        self.queue_size = self.settings.settings["review_session"]["queue_size"]
         self.wk_db = WanikaniDatabase()
 
         self.full_review_list = self.wk_db.getReviews()
         shuffle( self.full_review_list )
+
+        # This section is for the ignore answer functionality
+        self.previous_reviews = []          # List of previous reviews, will probably limit this in number, used for ignoring answers even after adding to database and continuing on to others
+        self.previous_review_item = None    # This is simply the item that was used for answering the last question, not neccessarily different than the current review item
+        self.previous_question = None       # Last question that was asked
+        self.previous_result = None         # This is the result of the last answer the last question
 
         self.current_review_queue = []
         self.setSortMode( self.sort_mode )
 
         self.current_review_index = 0
         self.current_review_item = self.current_review_queue[ self.current_review_index ]
-        self.current_question = "meaning"
+        self.getQuestion() # Sets current_question internally
 
-        """
-        Statistics
-        """
+        # Statistics stuff
         self.initial_total_reviews = len( self.full_review_list ) + len( self.current_review_queue )
-        self.total_correct_reviews = 0 # A review is deemed correct in this context if both the reading and meaning questions are answered with no incorrect responses
+        self.total_correct_reviews = 0  # A review is deemed correct in this context if both the reading and meaning questions are answered with no incorrect responses
         self.total_done_reviews = 0
         self.total_questions_asked = 0
         self.total_correct_questions = 0
+        self.log.debug( 'Review Session Finished Initializing.' )
 
     def answerCurrentQuestion( self, answer, review_mode ):
         # print( "Answering current question..." )
@@ -55,6 +63,10 @@ class ReviewSession():
                 if( self.answerIsCloseEnough( correct_answer, answer, self.current_question ) ):
                     result = True
 
+        self.previous_review_item = self.current_review_item
+        self.previous_result = result
+        self.previous_question = self.current_question
+
         if( result ):
             # They answered correctly
             if( self.current_question == "meaning" ):
@@ -62,7 +74,8 @@ class ReviewSession():
             elif( self.current_question == "reading" ):
                 self.current_review_item.current_review.reading_answers_done = True
 
-            # print( "Meaning answers done: {} -- Reading answers done: {}".format( self.current_review_item.current_review.meaning_answers_done, self.current_review_item.current_review.reading_answers_done ) )
+            # print( "Meaning answers done: {} -- Reading answers done: {}".format(
+            #         self.current_review_item.current_review.meaning_answers_done, self.current_review_item.current_review.reading_answers_done ) )
             self.total_correct_questions += 1
 
         else:
@@ -111,17 +124,13 @@ class ReviewSession():
 
             self.total_done_reviews += 1
 
-            # Removing the current item from the current review queue
-            del( self.current_review_queue[ self.current_review_index ] )
+            # Moving the current item from the current review queue to the previous_reviews list
+            self.previous_reviews.append( self.current_review_queue.pop( self.current_review_index ) )
             # For the number of items missing from current review queue
             for i in range( self.queue_size - len( self.current_review_queue ) ):
-                # Add an item from the full review list to the current review queue
-                self.current_review_queue.append( self.full_review_list[i] )
-                # Removes the item from the full review list so it isn't chosen again
-                del( self.full_review_list[i] )
-
+                # Move an item from the full review list to the current review queue
+                self.current_review_queue.append( self.full_review_list.pop( i ) )
         # print( self.current_review_queue )
-
 
     def pickNextItem( self ):
         # print("Picking next item...")
@@ -130,6 +139,52 @@ class ReviewSession():
         # Gets the item stored at that index from the current review queue
         self.current_review_item = self.current_review_queue[ self.current_review_index ]
         # print( "Current characters: {}".format( self.current_review_item.subject.characters ) )
+
+    def resetLastAnswer( self ):
+        # Checks if previous review item is none since that is the state it is in right as the program starts and we dont want
+        # a nontype error
+        if( self.previous_review_item == None  ):
+            self.log.debug("Cannot ignore previous answer. No previous answer given")
+            return
+
+        self.log.debug( "Ignoring previous result='{}' for question='{}' for subject of id='{}'".format( self.previous_result, self.previous_question, self.previous_review_item.subject_id ) )
+        if( self.previous_result ):
+            # They answered correctly
+            if( self.previous_question == "meaning" ):
+                self.previous_review_item.current_review.meaning_answers_done = False
+            elif( self.previous_question == "reading" ):
+                self.previous_review_item.current_review.reading_answers_done = False
+
+            # print( "Meaning answers done: {} -- Reading answers done: {}".format( self.previous_review_item.current_review.meaning_answers_done, self.previous_review_item.current_review.reading_answers_done ) )
+            self.total_correct_questions -= 1
+
+        else:
+            # They answer incorrectly
+            if( self.previous_question == "meaning" ):
+                self.previous_review_item.current_review.incorrect_meaning_answers -= 1
+            elif(self.previous_question == "reading" ):
+                self.previous_review_item.current_review.incorrect_reading_answers -= 1
+
+        self.total_questions_asked -= 1
+
+        # If the items aren't the same that means that the previous review has been moved from the current review queue
+        # to the previous review list and must be put back to be reviewed again
+        if( self.previous_review_item != self.current_review_item ):
+            # Put item at front of the full item list
+            self.full_review_list.insert( 0, self.previous_reviews[-1] )
+
+    def resetLastReview( self ):
+        if( len( self.previous_reviews ) <= 0 ):
+            return
+
+        last_review = self.previous_reviews[-1]
+        # Fix statistics before resetting the review
+        last_review.current_review.incorrect_meaning_answers -= 1
+        last_review.current_review.incorrect_reading_answers -= 1
+
+        # Reset review and remove previous review from database
+        last_review.current_review.resetReview()
+        last_review.current_review.removeFromDatabase()
 
     @staticmethod
     def answerIsCloseEnough( key, answer, question ):

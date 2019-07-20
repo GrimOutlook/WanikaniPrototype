@@ -69,3 +69,23 @@ class HomepageStatsListItems( Enum ):
     """
     TOP_LABEL = 0       # Resereved fot the top label which says what the stats represent such as "CRITICAL CONDITION ITEMS"
     BOTTOM_LABEL = 1    # Reserved for the "SEE MORE ___" labels at the bottom of stats lists
+
+class TerminalColorPalette():
+    DEFAULT_HIGHLIGHT    = 1
+    CORRECT_ANSWER_BOX   = 2
+    INCORRECT_ANSWER_BOX = 3
+    IGNORED_ANSWER_BOX   = 4
+    MEANING_QUESTION     = 5
+    READING_QUESTION     = 6
+    REVIEW_VOCABULARY    = 7
+    REVIEW_KANJI         = 8
+
+class TerminalColors():
+    RADICAL_BLUE        = 33
+    KANJI_PINK          = 198
+    VOCABULARY_PURPLE   = 93
+    CORRECT_GREEN       = 46
+    INCORRECT_RED       = 196
+    IGNORED_YELLOW      = 226
+    MEANING_WHITE       = 250
+    READING_BLACK       = 237
