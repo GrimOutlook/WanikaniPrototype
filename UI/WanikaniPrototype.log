@@ -1,15 +1,9 @@
-2019-07-23 22:45:34,298 - DEBUG - Review mode is now: ReviewMode.ANKI
-2019-07-23 22:45:34,298 - DEBUG - Changing review mode to ReviewMode.TYPING
-2019-07-23 22:45:34,298 - DEBUG - Review Session Started Initializing.
-2019-07-23 22:45:35,090 - DEBUG - Getting next question...
-2019-07-23 22:45:35,090 - DEBUG - Review Session Finished Initializing.
-2019-07-23 22:45:35,090 - DEBUG - Current state: ReviewState.READY_FOR_ANSWER
-2019-07-23 22:45:46,288 - DEBUG - Answering current question...
-2019-07-23 22:45:46,289 - DEBUG - Getting next question...
-2019-07-23 22:45:46,289 - DEBUG - Current state: ReviewState.ANSWER_GIVEN
-2019-07-23 22:45:46,289 - DEBUG - Current state: ReviewState.READY_FOR_ANSWER
-2019-07-23 22:45:51,488 - DEBUG - Answering current question...
-2019-07-23 22:45:51,489 - DEBUG - Inserting updated review of subject id: 5418 into database
-2019-07-23 22:45:51,489 - DEBUG - Getting next question...
-2019-07-23 22:45:51,489 - DEBUG - Current state: ReviewState.ANSWER_GIVEN
-2019-07-23 22:45:51,489 - DEBUG - Current state: ReviewState.READY_FOR_ANSWER
+2019-07-24 16:02:01,722 - DEBUG - WKTUI Started Initializing.
+2019-07-24 16:02:01,722 - DEBUG - Review Session Started Initializing.
+2019-07-24 16:02:04,110 - DEBUG - Getting next question...
+2019-07-24 16:02:04,110 - DEBUG - Review Session Finished Initializing.
+2019-07-24 16:02:04,111 - DEBUG - Setting review modes
+2019-07-24 16:02:04,111 - DEBUG - Setting char values
+2019-07-24 16:02:04,111 - DEBUG - WKTUI Finished Initializing.
+2019-07-24 16:02:04,111 - DEBUG - Drawing review screen
+2019-07-24 16:02:04,111 - DEBUG - Key pressed: None

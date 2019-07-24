@@ -324,7 +324,6 @@ class ReviewWidget( QWidget ):
         self.setState( ReviewState.ANSWER_GIVEN )
         if( self.lightning ):  # If lightning mode is enabled
             self.nextReview()
-            return
         else:
             self.answerBox.setStyle( "correct" )
 

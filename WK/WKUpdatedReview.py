@@ -11,9 +11,10 @@ class WKUpdatedReview( WKObject ):
         self.assignment_id              = data["assignment_id"]
         self.subject_id                 = data["subject_id"]
         self.incorrect_meaning_answers  = 0
-        self.incorrect_reading_answers  = 0
         self.meaning_answers_done       = False
-        self.reading_answers_done       = False
+        if( self.object != "radical" ): # Radicals don't have readings
+            self.incorrect_reading_answers  = 0
+            self.reading_answers_done       = False
 
         self.wk_db = wk_db
 
@@ -42,9 +43,9 @@ class WKUpdatedReview( WKObject ):
         self.log.debug("Inserting updated review of subject id: {} into database".format(self.subject_id))
         # This is all that is needed to post a review to wanikani
         sql = """ INSERT INTO updated_review(
+                assignment_id,
                 created_datetime,
                 object,
-                assignment_id,
                 subject_id,
                 incorrect_meaning_answers,
                 incorrect_reading_answers
@@ -53,6 +54,7 @@ class WKUpdatedReview( WKObject ):
         VALUES( ?,?,?,?,?,?,? ) """
 
         updated_review = (
+                self.assignment_id,
                 self.created_datetime,
                 self.object,
                 self.subject_id,

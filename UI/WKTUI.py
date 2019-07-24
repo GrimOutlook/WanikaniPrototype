@@ -30,7 +30,7 @@ class WKTUI():
             # curses.init_pair( TerminalColors.DEFAULT, curses.COLOR_CYAN, curses.COLOR_WHITE)
             # curses.init_pair( 2, curses.COLOR_RED, curses.COLOR_WHITE)
             curses.init_pair( TerminalColorPalette.DEFAULT_HIGHLIGHT, curses.COLOR_BLACK, curses.COLOR_WHITE)               # Default highlight
-            curses.init_pair( TerminalColorPalette.CORRECT_ANSWER_BOX, curses.COLOR_WHITE, TerminalColors.CORRECT_GREEN)    # Correct
+            curses.init_pair( TerminalColorPalette.CORRECT_ANSWER_BOX, curses.COLOR_BLACK, TerminalColors.CORRECT_GREEN)    # Correct
             curses.init_pair( TerminalColorPalette.INCORRECT_ANSWER_BOX, curses.COLOR_WHITE, TerminalColors.INCORRECT_RED)  # Incorrect
             curses.init_pair( TerminalColorPalette.IGNORED_ANSWER_BOX, curses.COLOR_WHITE, TerminalColors.IGNORED_YELLOW)   # Ignored
             curses.init_pair( TerminalColorPalette.MEANING_QUESTION, curses.COLOR_BLACK, TerminalColors.MEANING_WHITE)      # Meaning Question Color
@@ -46,7 +46,7 @@ class WKTUI():
             # Get default from settings here
             self.log.debug("Setting review modes")
             self.setAnswerBoxColorscheme( TerminalColorPalette.DEFAULT_HIGHLIGHT )
-            self.review_mode = ReviewMode.TYPING
+            self.review_mode = ReviewMode.ANKI
             self.review_state = ReviewState.READY_FOR_ANSWER
             self.delay_on_incorrect = True
             self.DELAY_TIME = 1 # 1 Second
@@ -99,6 +99,9 @@ class WKTUI():
             curses.endwin()
             print( e )
 
+    def toggleReviewMode( self ):
+        self.review_mode = ReviewMode.ANKI if self.review_mode == ReviewMode.TYPING else ReviewMode.TYPING
+
     def setState( self, state ):
         self.review_state = state
         self.log.debug( "ReviewState is now {}".format( self.review_state ) )
@@ -114,22 +117,25 @@ class WKTUI():
         if( ch == ord('!') ):
             self.rs.resetLastAnswer()
             self.setAnswerBoxColorscheme( TerminalColorPalette.IGNORED_ANSWER_BOX )
+        elif( ch == ord('`') ):
+            self.toggleReviewMode()
 
         # This is where keys that have effect in context of certain states go
         if( self.review_state == ReviewState.READY_FOR_ANSWER ):
             self.handleKeyReadyForAnswer( ch )
+        elif( self.review_state == ReviewState.ANSWER_SHOWN ):
+            self.handleKeyAnswerShown( ch )
         elif( self.review_state == ReviewState.ANSWER_GIVEN ):
             self.handleKeyAnswerGiven( ch )
         elif( self.review_state == ReviewState.WAITING_FOR_INCORRECT_DELAY ):
             self.handleKeyWaitingForDelay( ch )
 
     def handleKeyReadyForAnswer( self, ch ):
-        if( ch not in self.bad_chars ):
+        if( self.review_mode == ReviewMode.TYPING and ch not in self.bad_chars ):
             self.text += chr( ch )
             if( self.rs.current_question == "reading" ):
                 new_text = self.IME.romanjiToKana( self.text )
                 self.text = new_text
-
         # This is the backspace key, currently hacked together since curses.KEY_BACKSPACE doesn't work
         elif( ch == 127 ):
             self.text = self.text[:-1]
@@ -137,43 +143,64 @@ class WKTUI():
         elif( ch == 10 ):
             self.answerReviewTyping( self.text )
 
+        elif( self.review_mode == ReviewMode.ANKI and ch not in self.bad_chars ):
+            if( ch == ord('3') ): # This key is used to show answer in anki mode
+                self.showAnswer()
+
+    def handleKeyAnswerShown( self, ch ):
+        if( ch == ord('1') ): # This is the number 1 key, used for correct answer in anki mode
+            self.answerReviewAnki( True )
+        elif( ch == ord('2') ): # This is the number 2 key, used for incorrect answer in anki mode
+            self.answerReviewAnki( False ) # False because incorrect answer
+
     def handleKeyAnswerGiven( self, ch ):
         # This is the enter key
-        if( ch == 10 ):
+        if( ch == 10 or (self.review_mode == ReviewMode.ANKI and (ch == ord('1') or ch == ord('2') or ch == ord('3'))) ):
             self.nextReview()
             self.clearText()
             self.setAnswerBoxColorscheme( TerminalColorPalette.DEFAULT_HIGHLIGHT )
 
     def handleKeyWaitingForDelay( self, ch ):
-        if( ch == 10 and time.time() - self.incorrect_start_time > self.DELAY_TIME ):
-            self.nextReview()
-            self.clearText()
-            self.setAnswerBoxColorscheme( TerminalColorPalette.DEFAULT_HIGHLIGHT )
-
-    def answerReviewTyping( self, text ):
-        result = self.rs.answerCurrentQuestion( text ,review_mode=self.review_mode )
-        if( result == True ):
-            self.setState( ReviewState.ANSWER_GIVEN )
-            if( self.lightning ):  # If lightning mode is enabled
+        if( time.time() - self.incorrect_start_time > self.DELAY_TIME ):
+            if( ch == 10 or (self.review_mode == ReviewMode.ANKI and (ch == ord('1') or ch == ord('2') or ch == ord('3'))) ):
                 self.nextReview()
                 self.clearText()
-                return
-            else:
-                # Make answerbox show as correct style such as turning it green
-                self.setAnswerBoxColorscheme( TerminalColorPalette.CORRECT_ANSWER_BOX )
+                self.setAnswerBoxColorscheme( TerminalColorPalette.DEFAULT_HIGHLIGHT )
 
-        elif( result == False ):
-            # Set answebox show as incorrect style such as turning it red here
-            self.setAnswerBoxColorscheme( TerminalColorPalette.INCORRECT_ANSWER_BOX )
-            if( self.delay_on_incorrect ):
-                # Starts the delay
-                self.setState( ReviewState.WAITING_FOR_INCORRECT_DELAY )
-                self.incorrect_start_time = time.time()
-            else:
-                self.setState( ReviewState.ANSWER_GIVEN )
+    def answerReviewAnki( self, boolean ):
+        result = self.rs.answerCurrentQuestionAnki( boolean )
+        self.answerReviewCorrect() if result else self.answerReviewIncorrect()
+
+    def answerReviewTyping( self, text ):
+        result = self.rs.answerCurrentQuestionTyping( text )
+        self.answerReviewCorrect() if result else self.answerReviewIncorrect()
+
+    def answerReviewCorrect( self ):
+        self.setState( ReviewState.ANSWER_GIVEN )
+        if( self.lightning ):  # If lightning mode is enabled
+            self.nextReview()
+            self.clearText()
+            return
+        else:
+            # Make answerbox show as correct style such as turning it green
+            self.setAnswerBoxColorscheme( TerminalColorPalette.CORRECT_ANSWER_BOX )
+
+    def answerReviewIncorrect( self ):
+        # Set answebox show as incorrect style such as turning it red here
+        self.setAnswerBoxColorscheme( TerminalColorPalette.INCORRECT_ANSWER_BOX )
+        if( self.delay_on_incorrect ):
+            # Starts the delay
+            self.setState( ReviewState.WAITING_FOR_INCORRECT_DELAY )
+            self.incorrect_start_time = time.time()
+        else:
+            self.setState( ReviewState.ANSWER_GIVEN )
 
     def nextReview( self ):
         self.setState( ReviewState.READY_FOR_ANSWER )
+
+    def showAnswer( self ):
+        self.text = ", ".join( self.rs.getCorrectAnswer() )
+        self.setState( ReviewState.ANSWER_SHOWN )
 
     def drawSubjectType( self ):
         try:
@@ -223,7 +250,7 @@ class WKTUI():
             total_done_reviews = self.rs.total_done_reviews
             percent_correct = self.rs.getPercentCorrectReviews()
 
-            top_stats_bar_str = "To Do: {} -- Done: {} -- Pct: {}".format( total_reviews_left, total_done_reviews, percent_correct )
+            top_stats_bar_str = "To Do: {} -- Done: {} -- Pct: {:>5.2f}".format( total_reviews_left, total_done_reviews, percent_correct )
 
             # 
             start_x = int( self.width - len( top_stats_bar_str ) - 1 )
@@ -245,7 +272,7 @@ class WKTUI():
     def drawStatusBar( self, message="" ):
         try:
             # Set statusbar string, append message, and slice to width to prevent wrapping
-            statusbarstr = "'~' = exit | '`' = change review mode | '!' = ignore answer |{}".format( message )[:self.width]
+            statusbarstr = "| {} | change mode(`) | ignore answer(!) | exit(~) | {}".format( self.review_mode, message )[:self.width]
 
             # Render status bar
             self.scr.attron(curses.color_pair( TerminalColorPalette.DEFAULT_HIGHLIGHT ))
@@ -315,6 +342,9 @@ class WKTUI():
 
     def getAnswerBoxColorscheme( self ):
         return( self.answer_box_colorscheme )
+
+    def drawReviewInfoSection( self ):
+        pass
 
     def getAbsoluteCenterY( self ):
         return( self.height//2 )

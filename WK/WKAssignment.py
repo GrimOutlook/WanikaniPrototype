@@ -121,3 +121,8 @@ class WKAssignment( WKObject ):
         )
 
         self.wk_db.sql_exec( sql, assignment )
+
+    def removeFromDatabase( self ):
+        sql = "DELETE FROM assignment WHERE subject_id=?"
+        self.wk_db.sql_exec( sql, (self.subject_id,) )
+        self.wk_db.commitChanges()

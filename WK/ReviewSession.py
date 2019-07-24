@@ -50,19 +50,24 @@ class ReviewSession():
         self.total_correct_questions = 0
         self.log.debug( 'Review Session Finished Initializing.' )
 
-    def answerCurrentQuestion( self, answer, review_mode ):
-        self.log.debug( "Answering current question..." )
-        if( review_mode == ReviewMode.ANKI ):
-            result = answer
+    def answerCurrentQuestionTyping( self, answer ):
+        self.log.debug( "Answering current question in typing mode..." )
+        result = False
+        correct_answers = self.getCorrectAnswer()
+        for correct_answer in correct_answers:
+            # This just cheks that the answer is close enough to the correct value to be deemed correct
+            if( self.answerIsCloseEnough( correct_answer, answer, self.current_question ) ):
+                result = True
 
-        elif( review_mode == ReviewMode.TYPING ):
-            result = False
-            correct_answers = self.getCorrectAnswer()
-            for correct_answer in correct_answers:
-                # This just cheks that the answer is close enough to the correct value to be deemed correct
-                if( self.answerIsCloseEnough( correct_answer, answer, self.current_question ) ):
-                    result = True
+        self.answerCurrentQuestion( result )
+        return( result )
 
+    def answerCurrentQuestionAnki( self, boolean ):
+        self.log.debug( "Answering current question in anki mode..." )
+        self.answerCurrentQuestion( boolean )
+        return( boolean )
+
+    def answerCurrentQuestion( self, result ):
         self.previous_review_item = self.current_review_item
         self.previous_result = result
         self.previous_question = self.current_question
@@ -91,8 +96,6 @@ class ReviewSession():
         self.pickNextItem()
         self.getQuestion()
 
-        return( result )
-
     def getQuestion( self ):
         self.log.debug("Getting next question...")
         if( self.current_review_item.current_review.meaning_answers_done ):
@@ -117,6 +120,7 @@ class ReviewSession():
             # Can be updated here to automatically upload the review to the api if so chosen
             # Add new review to database
             self.current_review_item.current_review.insertIntoDatabase()
+            self.current_review_item.assignment.removeFromDatabase()
 
             # Update statistics
             if( self.current_review_item.current_review.incorrect_meaning_answers == 0 and self.current_review_item.current_review.incorrect_reading_answers == 0 ):
