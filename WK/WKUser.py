@@ -1,7 +1,11 @@
+from settings import Settings
 from WKObject import WKObject
 
 class WKUser( WKObject ):
     def __init__( self, data, wk_db ):
+        self.settings = Settings()
+        self.log = self.settings.logging
+
         WKObject.__init__( self, data, wk_db )
         self.username                           = data["username"]
         self.level                              = data["level"]
@@ -32,6 +36,7 @@ class WKUser( WKObject ):
         return( cls( data, wk_db ) )
 
     def insertIntoDatabase( self ):
+        self.log.debug("Inserting user of id: {} into database".format(self.id))
         sql = """ INSERT INTO user(
                 id,
                 object,

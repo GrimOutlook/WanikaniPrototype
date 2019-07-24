@@ -19,7 +19,8 @@ class AnswerBox( QLineEdit ):
         self.stylesheets = {
             "default"   :   "",
             "correct"   :   "background-color : green",
-            "incorrect" :   "background-color : red"
+            "incorrect" :   "background-color : red",
+            "ignored"   :   "background-color : yellow"
         }
 
     def setStyle( self, style ):

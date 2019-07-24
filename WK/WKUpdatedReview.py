@@ -1,7 +1,11 @@
+from settings import Settings
 from WKObject import WKObject
 
 class WKUpdatedReview( WKObject ):
     def __init__( self, data, wk_db ):
+        self.settings = Settings()
+        self.log = self.settings.logging
+
         self.object                     = data["object"]
         self.created_datetime           = None
         self.assignment_id              = data["assignment_id"]
@@ -35,6 +39,7 @@ class WKUpdatedReview( WKObject ):
         pass
 
     def insertIntoDatabase( self ):
+        self.log.debug("Inserting updated review of subject id: {} into database".format(self.subject_id))
         # This is all that is needed to post a review to wanikani
         sql = """ INSERT INTO updated_review(
                 created_datetime,

@@ -51,7 +51,7 @@ class ReviewSession():
         self.log.debug( 'Review Session Finished Initializing.' )
 
     def answerCurrentQuestion( self, answer, review_mode ):
-        # print( "Answering current question..." )
+        self.log.debug( "Answering current question..." )
         if( review_mode == ReviewMode.ANKI ):
             result = answer
 
@@ -94,7 +94,7 @@ class ReviewSession():
         return( result )
 
     def getQuestion( self ):
-        # print("Getting next question...")
+        self.log.debug("Getting next question...")
         if( self.current_review_item.current_review.meaning_answers_done ):
             self.current_question = "reading"
 
@@ -173,18 +173,18 @@ class ReviewSession():
             # Put item at front of the full item list
             self.full_review_list.insert( 0, self.previous_reviews[-1] )
 
-    def resetLastReview( self ):
-        if( len( self.previous_reviews ) <= 0 ):
-            return
+    # def resetLastReview( self ):
+        # if( len( self.previous_reviews ) <= 0 ):
+            # return
 
-        last_review = self.previous_reviews[-1]
-        # Fix statistics before resetting the review
-        last_review.current_review.incorrect_meaning_answers -= 1
-        last_review.current_review.incorrect_reading_answers -= 1
+        # last_review = self.previous_reviews[-1]
+        # # Fix statistics before resetting the review
+        # last_review.current_review.incorrect_meaning_answers -= 1
+        # last_review.current_review.incorrect_reading_answers -= 1
 
-        # Reset review and remove previous review from database
-        last_review.current_review.resetReview()
-        last_review.current_review.removeFromDatabase()
+        # # Reset review and remove previous review from database
+        # last_review.current_review.resetReview()
+        # last_review.current_review.removeFromDatabase()
 
     @staticmethod
     def answerIsCloseEnough( key, answer, question ):

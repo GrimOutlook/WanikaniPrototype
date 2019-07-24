@@ -1,4 +1,5 @@
 import datetime
+from settings import Settings
 from WKObject import WKObject
 from WKUpdatedReview import WKUpdatedReview
 
@@ -7,6 +8,9 @@ class WKAssignment( WKObject ):
         """
         The init function gets the parameters from a static list usually returned from an sql inquiry
         """
+        self.settings = Settings()
+        self.log = self.settings.logging
+
         WKObject.__init__( self, data, wk_db )
         self.api_url                = data["api_url"]
         self.last_updated_datetime  = data["last_updated_datetime"]
@@ -71,6 +75,7 @@ class WKAssignment( WKObject ):
                datetime.datetime.fromisoformat( self.available_datetime.strip("Z") ) < datetime.datetime.now() )
 
     def insertIntoDatabase( self ):
+        self.log.debug( "Inserting assignment with subject id: {} into database".format( self.subject_id ) )
         sql = """ INSERT INTO assignment(
                 id,
                 object,

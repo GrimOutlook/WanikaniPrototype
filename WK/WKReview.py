@@ -1,7 +1,11 @@
+from settings import Settings
 from WKObject import WKObject
 
 class WKReview( WKObject ):
     def __init__( self, data, wk_db ):
+        self.settings = Settings()
+        self.log = self.settings.logging
+
         WKObject.__init__( self, data, wk_db )
         self.api_url                    = data["api_url"]
         self.last_updated_datetime      = data["last_updated_datetime"]
@@ -38,6 +42,7 @@ class WKReview( WKObject ):
         return( cls( data, wk_db ) )
 
     def insertIntoDatabase( self ):
+        self.log.debug("Inserting review of subject id: {} into database".format(self.subject_id))
         sql = """ INSERT INTO review(
                 id,
                 object,

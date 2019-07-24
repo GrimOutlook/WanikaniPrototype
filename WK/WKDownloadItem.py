@@ -1,8 +1,12 @@
 import os
+from settings import Settings
 from WKObject import WKObject
 
 class WKDownloadItem( WKObject ):
     def __init__( self, data, wk_db ):
+        self.settings = Settings()
+        self.log = self.settings.logging
+
         WKObject.__init__( self, data, wk_db )
         self.url = data["url"]
         self.filepath = data["filepath"]
@@ -19,6 +23,7 @@ class WKDownloadItem( WKObject ):
 
 
     def insertIntoDatabase( self ):
+        self.log.debug("Inserting item into download queue with id: {}".format( self.id ))
         sql = """ INSERT INTO download_queue(
                 id,
                 object,
@@ -42,6 +47,7 @@ class WKDownloadItem( WKObject ):
         if( os.path.exists( self.filepath ) and os.path.getsize( self.filepath ) > 0 ):
             return
 
+        self.log.debug("Dowloading item with id: {}".format( self.id ))
         try:
             res = requests.get( self.url, timeout=10 )
         except requests.exceptions.ConnectTimeout:

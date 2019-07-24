@@ -1,3 +1,4 @@
+from settings import Settings
 from WKSubject import WKSubject
 import ast # This is for converting the returned database info into dictonaries easier
 
@@ -6,6 +7,9 @@ class WKKanji( WKSubject ):
         """
         The init function gets the parameters from a static list usually returned from an sql inquiry
         """
+        self.settings = Settings()
+        self.log = self.settings.logging
+
         WKSubject.__init__( self, data, wk_db  )
         self.amalgamation_subject_ids      = ast.literal_eval( data["amalgamation_subject_ids"] )
         self.component_subject_ids         = ast.literal_eval( data["component_subject_ids"] )
@@ -46,6 +50,7 @@ class WKKanji( WKSubject ):
         return( cls( data, wk_db ) )
 
     def insertIntoDatabase( self ):
+        self.log.debug("Inserting kanji of id {} into database".format(self.id))
         sql = """ INSERT INTO kanji(
                 id,
                 object,

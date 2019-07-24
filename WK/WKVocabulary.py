@@ -1,4 +1,5 @@
 import ast
+from settings import Settings
 from WKSubject import WKSubject
 
 class WKVocabulary( WKSubject ):
@@ -6,6 +7,9 @@ class WKVocabulary( WKSubject ):
         """
         The init function gets the parameters from a static list usually returned from an sql inquiry
         """
+        self.settings = Settings()
+        self.log = self.settings.logging
+
         WKSubject.__init__( self, data, wk_db  )
         self.component_subject_ids          = ast.literal_eval( data["component_subject_ids"] )
         self.context_sentences              = ast.literal_eval( data["context_sentences"] )
@@ -48,6 +52,7 @@ class WKVocabulary( WKSubject ):
         return( cls( data, wk_db ) )
 
     def insertIntoDatabase( self ):
+        self.log.debug("Inserting vocabulary of id: {} into database".format(self.id))
         sql = """ INSERT INTO vocabulary(
                 id,
                 object,

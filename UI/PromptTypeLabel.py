@@ -10,8 +10,8 @@ class PromptTypeLabel( QLabel ):
         super().__init__( parent = parent )
 
         self.stylesheets = {
-            "meaning" : "background-color : blue",
-            "reading" : "background-color : orange"
+            "meaning" : "background-color : white; color : black",
+            "reading" : "background-color : black; color : white"
         }
 
     def setPromptStyle( self, prompt_type ):
@@ -25,4 +25,3 @@ class PromptTypeLabel( QLabel ):
         font.setPixelSize(self.height() * 0.60)
 
         self.setFont(font)
-

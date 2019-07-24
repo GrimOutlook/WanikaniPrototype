@@ -1,4 +1,5 @@
 from PyQt5.Qt import *
+from WK import WKColor
 
 """
 ##### TODO ####
@@ -12,6 +13,15 @@ class ReviewPromptLabel( QLabel ):
     def __init__( self, parent ):
         super().__init__(parent=parent)
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+
+        self.stylesheets = {
+            "vocabulary" : "background-color : {}".format( WKColor.VOCABULARY_PURPLE ),
+            "kanji" : "background-color : {}".format( WKColor.KANJI_PINK ),
+            "radical" : "background-color : {}".format( WKColor.RADICAL_BLUE )
+        }
+
+    def setStyle( self, subject_type ):
+        self.setStyleSheet( self.stylesheets[ subject_type ] )
 
     def resizeEvent( self, e ):
         super(ReviewPromptLabel, self).resizeEvent( e )
@@ -28,43 +38,4 @@ class ReviewPromptLabel( QLabel ):
         # print( "BR: " + str(br.width()) + " x " + str( br.height()  ))
         # print( "CR: " + str(cr.width()) + " x " + str(cr.height()) + "\n" )
 
-
         self.setFont(font)
-
-    # def resizeEvent(self, event):
-        # super(ReviewPromptLabel, self).resizeEvent(event)
-
-        # if not self.text():
-            # return
-
-        # # --- fetch current parameters ----
-
-        # f = self.font()
-        # cr = self.contentsRect()
-
-        # # --- iterate to find the font size that fits the contentsRect ---
-
-        # fs = f.pixelSize()
-        # br = QFontMetrics(f).boundingRect(self.text())
-
-        # if( br.height() < cr.height() and br.width() < cr.width() ):
-            # while( br.height() < cr.height() and br.width() < cr.width() ):
-                # fs += 1
-                # f.setPixelSize(fs)
-                # br = QFontMetrics(f).boundingRect(self.text())
-
-            # f.setPixelSize(max(fs - 1, 1)) # backtrack
-
-        # while( br.height() > cr.height() or br.width() > cr.width() ):
-            # fs -= 1
-            # f.setPixelSize(fs)
-            # br = QFontMetrics(f).boundingRect(self.text())
-
-        # # --- update font size ---      
-
-        # self.setFont(f)
-        # br = QFontMetrics( f ).boundingRect( self.text() )
-        # cr = self.contentsRect()
-        # print( "BR: " + str(br.width()) + " x " + str( br.height()  ))
-        # print( "CR: " + str(cr.width()) + " x " + str(cr.height()) + "\n" )
-

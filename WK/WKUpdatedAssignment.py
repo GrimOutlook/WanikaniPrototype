@@ -1,3 +1,4 @@
+from settings import Settings
 from WKObject import WKObject
 
 class WKUpdatedAssignment( WKObject ):
@@ -5,11 +6,15 @@ class WKUpdatedAssignment( WKObject ):
         """
         The init function gets the parameters from a static list usually returned from an sql inquiry
         """
+        self.settings = Settings()
+        self.log = self.settings.logging
+
         WKObject.__init__( self, data, wk_db )
         self.subject_id             = data["subject_id"]
         self.started_datetime       = data["started_datetime"]
 
     def insertIntoDatabase( self ):
+        self.log.debug("Inserting updated assignment of subject id: {} into database".format(self.subject_id))
         sql = """ INSERT INTO updated_assignment(
                 id,
                 object,
