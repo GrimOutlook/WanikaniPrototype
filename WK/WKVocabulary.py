@@ -17,7 +17,6 @@ class WKVocabulary( WKSubject ):
         self.pronunciation_audio_info       = data["pronunciation_audio_info"]
         self.pronunciation_audio_path       = data["pronunciation_audio_path"]
         self.meaning_mnemonic               = data["meaning_mnemonic"]
-        self.readings                       = ast.literal_eval( data["readings"] )
         self.reading_mnemonic               = data["reading_mnemonic"]
 
     @classmethod
@@ -125,3 +124,6 @@ class WKVocabulary( WKSubject ):
 
         if( len( self.pronunciation_audio_info ) <= 0 ):
             print( "Item of id={} has no audio files to be downloaded...".format( str(self.id) ) )
+
+    def getPartsOfSpeechString( self ):
+        return( ", ".join( self.parts_of_speech ) )

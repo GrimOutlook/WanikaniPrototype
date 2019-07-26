@@ -41,6 +41,7 @@ class WKTUI():
             self.height, self.width = self.scr.getmaxyx()
 
             self.rs = ReviewSession()
+            self.rs.setSortMode([["Subject","A"],["Level","A"]])
             self.IME = PseudoJapaneseIME()
 
             # Get default from settings here
@@ -53,6 +54,7 @@ class WKTUI():
             self.incorrect_start_time = 0
             self.lightning = False
             self.text = ""
+            self.info_section_visible = False
 
             self.log.debug( "Setting char values" )
             BACKSPACE_CHAR = ord( "\x7f" )
@@ -81,6 +83,9 @@ class WKTUI():
                 self.drawKanji()
                 self.drawTopStatsBar()
                 self.drawStatusBar()
+
+                if( self.info_section_visible ):
+                    self.drawReviewInfoSection()
 
                 self.drawQuestionType()
                 self.drawAnswerBox( self.text )
@@ -137,10 +142,10 @@ class WKTUI():
                 new_text = self.IME.romanjiToKana( self.text )
                 self.text = new_text
         # This is the backspace key, currently hacked together since curses.KEY_BACKSPACE doesn't work
-        elif( ch == 127 ):
+        elif( ch == ord('\x7f') ):
             self.text = self.text[:-1]
         # This is the enter key
-        elif( ch == 10 ):
+        elif( ch == ord('\n') and self.text != "" ):
             self.answerReviewTyping( self.text )
 
         elif( self.review_mode == ReviewMode.ANKI and ch not in self.bad_chars ):
@@ -155,14 +160,16 @@ class WKTUI():
 
     def handleKeyAnswerGiven( self, ch ):
         # This is the enter key
-        if( ch == 10 or (self.review_mode == ReviewMode.ANKI and (ch == ord('1') or ch == ord('2') or ch == ord('3'))) ):
+        if( ch == ord('\n') or (self.review_mode == ReviewMode.ANKI and (ch == ord('1') or ch == ord('2') or ch == ord('3'))) ):
             self.nextReview()
             self.clearText()
             self.setAnswerBoxColorscheme( TerminalColorPalette.DEFAULT_HIGHLIGHT )
+        elif( ch == ord('#') ):
+            self.info_section_visible = True
 
     def handleKeyWaitingForDelay( self, ch ):
         if( time.time() - self.incorrect_start_time > self.DELAY_TIME ):
-            if( ch == 10 or (self.review_mode == ReviewMode.ANKI and (ch == ord('1') or ch == ord('2') or ch == ord('3'))) ):
+            if( ch == ord('\n') or (self.review_mode == ReviewMode.ANKI and (ch == ord('1') or ch == ord('2') or ch == ord('3'))) ):
                 self.nextReview()
                 self.clearText()
                 self.setAnswerBoxColorscheme( TerminalColorPalette.DEFAULT_HIGHLIGHT )
@@ -196,7 +203,9 @@ class WKTUI():
             self.setState( ReviewState.ANSWER_GIVEN )
 
     def nextReview( self ):
+        self.rs.getNextReview()
         self.setState( ReviewState.READY_FOR_ANSWER )
+        self.info_section_visible = False
 
     def showAnswer( self ):
         self.text = ", ".join( self.rs.getCorrectAnswer() )
@@ -344,7 +353,64 @@ class WKTUI():
         return( self.answer_box_colorscheme )
 
     def drawReviewInfoSection( self ):
-        pass
+        q = self.rs.current_question
+        s = self.rs.current_review_item.subject_type
+        if( s == "radical" ):
+            self.drawRadicalInfoScreen( q )
+        elif( s == "kanji" ):
+            self.drawKanjiInfoScreen( q )
+        elif( s == "vocabulary" ):
+            self.drawVocabularyInfoScreen( q )
+
+    def drawRadicalInfoScreen( self, q ):
+        x_zero = 0
+        x_width = self.width
+        y = self.getAbsoluteCenterY() + 2
+        if( q == "meaning" ):
+            self.scr.addstr( y, x_zero, "Meanings: {}".format( self.rs.current_review_item.subject.getMeaningsString() ) ) # Meaning
+            self.scr.addstr( y+1, x_zero, "User Synonyms" ) # User Synonyms
+            self.scr.addstr( y+2, x_zero, self.rs.current_review_item.subject.amalgamation_subject_ids ) # Radical Components
+            # self.scr.addstr( y, x_width, self.rs.current_review_item.subject.meaning_mnemonic ) # Meaning Mnemonic
+            # self.scr.addstr( y+1, x_width, self.rs.current_review_item.subject.meaning_hint ) # Meaning Hint
+            # self.scr.addstr( y+2, x_width, "Meaning Note" ) # Meaning Note
+
+    def drawKanjiInfoScreen( self, q ):
+        x_zero = 0
+        x_width = self.width
+        y = self.getAbsoluteCenterY() + 2
+        if( q == "meaning" ):
+            self.scr.addstr( y, x_zero, "Meanings: {}".format( self.rs.current_review_item.subject.getMeaningsString() ) ) # Meaning
+            self.scr.addstr( y+1, x_zero, "User Synonyms" ) # User Synonyms
+            self.scr.addstr( y+2, x_zero, str( self.rs.current_review_item.subject.amalgamation_subject_ids ) ) # Radical Components
+            # self.scr.addstr( y, x_width, self.rs.current_review_item.subject.meaning_mnemonic ) # Meaning Mnemonic
+            # self.scr.addstr( y+1, x_width, self.rs.current_review_item.subject.meaning_hint ) # Meaning Hint
+            # self.scr.addstr( y+2, x_width, "Meaning Note" ) # Meaning Note
+
+        elif( q == "reading" ):
+            self.scr.addstr( y, x_zero, "Readings: {}".format( self.rs.current_review_item.subject.getReadingsString() ) ) # Reading
+            self.scr.addstr( y+1, x_zero, str( self.rs.current_review_item.subject.amalgamation_subject_ids ) ) # Radical Components
+            # self.scr.addstr( y, x_width, self.rs.current_review_item.subject.reading_mnemonic ) # Reading Mnemonic
+            # self.scr.addstr( y+1, x_width, self.rs.current_review_item.subject.reading_hint ) # Reading Hint
+            # self.scr.addstr( y+2, x_width, "Reading Note" ) # Meaning Note
+
+    def drawVocabularyInfoScreen( self, q ):
+        x_zero = 0
+        x_width = self.width
+        y = self.getAbsoluteCenterY() + 2
+        if( q == "meaning" ):
+            self.scr.addstr( y, x_zero, "Meanings: {}".format( self.rs.current_review_item.subject.getMeaningsString() ), curses.color_pair(1) ) # Meaning
+            self.scr.addstr( y+1, x_zero, "User Synonyms", curses.color_pair(1) ) # User Synonyms
+            self.scr.addstr( y+2, x_zero, "Part of Speech: {}".format( self.rs.current_review_item.subject.getPartsOfSpeechString() ), curses.color_pair(1) ) # Parts of speech
+            # self.scr.addstr( y, x_width, self.rs.current_review_item.subject.component_subject_ids ) # Component Subject IDs
+            # self.scr.addstr( y+1, x_width, self.rs.current_review_item.subject.meaning_mnemonic ) # Meaning Mnemonic
+            # self.scr.addstr( y+2, x_width, "Meaning Note" ) # Meaning Note
+
+        elif( q == "reading" ):
+            self.scr.addstr( y, x_zero, "Readings: {}".format( self.rs.current_review_item.subject.getReadingsString() ) ) # Reading
+            self.scr.addstr( y+1, x_zero, "Part of Speech: {}".format( self.rs.current_review_item.subject.getPartsOfSpeechString() ) ) # Parts of speech
+            # self.scr.addstr( y, x_width, self.rs.current_review_item.subject.component_subject_ids ) # Component Subject IDs
+            # self.scr.addstr( y+1, x_width, self.rs.current_review_item.subject.reading_mnemonic ) # Meaning Mnemonic
+            # self.scr.addstr( y+2, x_width, "Reading Note" ) # Meaning Note
 
     def getAbsoluteCenterY( self ):
         return( self.height//2 )

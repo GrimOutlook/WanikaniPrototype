@@ -25,7 +25,6 @@ class ReviewWidget( QWidget ):
         self.setupUi( self )
 
     def setupUi(self, Form):
-
         self.lightning = self.settings.settings["review_page"]["lightning"]
         self.delay_on_incorrect = self.settings.settings["review_page"]["delay_on_incorrect"]
 
@@ -245,8 +244,8 @@ class ReviewWidget( QWidget ):
         # Functions in connect statements must be callable so
         # if you need to pass in arguments make it a lambda function
         self.ankiShowAnswerButton.clicked.connect( self.showAnswerAnki )
-        self.ankiYesButton.clicked.connect( lambda: self.answerPrompt( True ) )
-        self.ankiNoButton.clicked.connect( lambda: self.answerPrompt( False ) )
+        self.ankiYesButton.clicked.connect( lambda: self.answerPromptAnki( True ) )
+        self.ankiNoButton.clicked.connect( lambda: self.answerPromptAnki( False ) )
         self.ankiNextQuestionButton.clicked.connect( self.nextReview )
 
         self.lightningButton.clicked.connect( self.toggleLightning )
@@ -299,11 +298,17 @@ class ReviewWidget( QWidget ):
         # This changes the style of the answerBox to show that it was ignored
         self.answerBox.setStyle("ignored")
 
-    def answerPrompt( self, boolean=None ):
-        # Takes content from answer box if in typing mode else it takes the boolean its given
-        answer_content = self.answerBox.text() if self.review_mode == ReviewMode.TYPING else boolean
+    def answerPromptAnki( self, boolean ):
         # Gets result from checking answer
-        result = self.rs.answerCurrentQuestion( answer_content, review_mode=self.review_mode )
+        result = self.rs.answerCurrentQuestionAnki( boolean )
+        self.answerPrompt( result )
+
+    def answerPromptTyping( self, text ):
+        # Takes content from answer box if in typing mode else it takes the boolean its given
+        result = self.rs.answerCurrentQuestionTyping( text )
+        self.answerPrompt( result )
+
+    def answerPrompt( self, result ):
         # Picks which answer prompt function to use based on truth value of result
         self.answerPromptTrue() if result else self.answerPromptFalse()
         # Hides answer buttons and shows next answer button if in anki mode and review state is ANSWER_GIVEN
@@ -341,6 +346,7 @@ class ReviewWidget( QWidget ):
 
     def nextReview( self ):
         if( self.state == ReviewState.ANSWER_GIVEN):
+            self.rs.getNextReview()
             # Sets prompt label to characters of the curent review item and changes the color to the cooresponding subject type
             self.promptLabel.setText( self.rs.current_review_item.subject.characters )
             self.promptLabel.setStyle( self.rs.current_review_item.subject.object )

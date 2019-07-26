@@ -4,6 +4,7 @@ from sqlite3 import Error
 import datetime # For calculating timestamps
 import ast # This is for converting the returned database info into dictonaries easier
 import sys
+import os
 
 sys.path.append("..")
 

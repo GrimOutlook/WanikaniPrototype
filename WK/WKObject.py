@@ -7,7 +7,3 @@ class WKObject():
         self.id = data["id"]
         self.object = data["object"]
         self.wk_db = wk_db
-
-    def insertIntoDatabase( self ):
-        return
-

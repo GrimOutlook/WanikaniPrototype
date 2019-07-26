@@ -15,7 +15,6 @@ class WKKanji( WKSubject ):
         self.component_subject_ids         = ast.literal_eval( data["component_subject_ids"] )
         self.meaning_hint                  = data["meaning_hint"]
         self.meaning_mnemonic              = data["meaning_mnemonic"]
-        self.readings                      = ast.literal_eval( data["readings"] )
         self.reading_mnemonic              = data["reading_mnemonic"]
         self.reading_hint                  = data["reading_hint"]
         self.visually_similar_subject_ids  = ast.literal_eval( data["visually_similar_subject_ids"] )

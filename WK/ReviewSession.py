@@ -9,7 +9,7 @@ from random import shuffle, randint, choice # For randomizing reviews
 from difflib import SequenceMatcher # For checking for string similarity
 from datetime import datetime # For timestamps
 import re # For removing all non alpha-numeric-space characters from strings
-
+import operator
 
 class ReviewSession():
     def __init__( self ):
@@ -22,7 +22,7 @@ class ReviewSession():
         :sort_mode: = how the reviews will be sorted
         :amount: = number of items in review queue at a time
         """
-        self.sort_mode = self.settings.settings["review_session"]["sort_mode"]
+        self.sort_mode = [["Subject","A"]] # self.settings.settings["review_session"]["sort_mode"]
         self.queue_size = self.settings.settings["review_session"]["queue_size"]
         self.wk_db = WanikaniDatabase()
 
@@ -92,6 +92,7 @@ class ReviewSession():
 
         self.total_questions_asked += 1
 
+    def getNextReview( self ):
         self.removeDoneItems()
         self.pickNextItem()
         self.getQuestion()
@@ -237,30 +238,37 @@ class ReviewSession():
         Sort by SRS level
         Sort by Subject
 
-        if "(("SRS","A"),("Subject","A"))" is passed in then you would get apprentince 1 reviews and inside of apprentice 1 it
+        if "[["SRS","A"],["Subject","A"]]" is passed in then you would get apprentince 1 reviews and inside of apprentice 1 it
         would be sorted by Level highest first and the inside level it would be sorted by radicals first then go on to kanji and vocabulary
         """
         # print( "Setting sort mode..." )
+        self.sort_mode = sort_mode
 
         if( sort_mode != None ):
             for i in range( len( self.current_review_queue ) ):
-                self.full_review_list.append( self.full_review_list[i] )
-                del( self.current_review_queue[i] )
+                self.full_review_list.append( self.current_review_queue.pop() )
 
-
-            self.sort_mode.reverse() # reversing the sort mode means that it will be sorted in the correct order
-            for item in self.sort_mode:
-                if( item[0] == "SRS" ):
+            sort_mode.reverse() # reversing the sort mode means that it will be sorted in the correct order
+            for item in sort_mode:
+                if( item[0] == "Level" ):
                     if( item[1] == "A" ):
-                        self.full_review_list.sort( key=operator.attrgettr("srs_stage") )
+                        self.full_review_list = self.levelSort( self.full_review_list )
                     else:
-                        self.full_review_list.sort( key=operator.attrgettr("srs_stage"), reverse=True )
+                        self.full_review_list = self.levelSort( self.full_review_list, reverse=True )
+
+                elif( item[0] == "SRS" ):
+                    if( item[1] == "A" ):
+                        self.full_review_list = self.srsSort( self.full_review_list )
+                    else:
+                        self.full_review_list = self.srsSort( self.full_review_list, reverse=True )
 
                 elif( item[0] == "Subject" ):
                     if( item[1] == "A" ):
-                        self.full_review_list = subjectSort( valid_reviews )
+                        self.full_review_list = self.subjectSort( self.full_review_list )
                     else:
-                        self.full_review_list = subjectSort( valid_reviews, reverse=True )
+                        self.full_review_list = self.subjectSort( self.full_review_list, reverse=True )
+
+            sort_mode.reverse()
 
         self.current_review_queue = [ self.full_review_list[i] for i in range( self.queue_size ) ]
         for i in range( self.queue_size ):
@@ -271,29 +279,40 @@ class ReviewSession():
     ################### Custom Sort functions ###################
     #############################################################
     """
-    def subjectSort( l, reverse=False ):
+    def levelSort( self, l, reverse=False ):
+        self.log.debug("Sorting reviews by level")
+        sorted( l, key=operator.attrgetter("subject.level"), reverse=reverse )
+        return( l )
+
+    def srsSort( self, l, reverse=False ):
+        self.log.debug("Sorting reviews by srs")
+        sorted( l, key=operator.attrgetter("srs_stage"), reverse=reverse )
+        return( l )
+
+    def subjectSort( self, l, reverse=False ):
         """
         :l: list for sorting
         :reverse: whether list should be sorted in reverse order
         """
-        # print( "Sorting by subject..." )
+        self.log.debug("Sorting reviews by subject")
 
         mapping = [
             [ "radical",    0 ],
             [ "kanji",      1 ],
             [ "vocabulary", 2 ]
         ]
+        # self.log.debug("Type: {}".format(type(self.full_review_list)))
         for item in l:
             for m in mapping:
-                if( item.subject == m[0] ):
-                    item.subject == m[1]
+                if( item.subject_type == m[0] ):
+                    item.subject_type == m[1]
 
-        sorted( l, key=operator.attrgetter("subject"), reverse=reverse )
+        sorted( l, key=operator.attrgetter("subject_type"), reverse=reverse )
 
         for item in l:
             for m in mapping:
-                if( item.subject == m[1] ):
-                    item.subject == m[0]
+                if( item.subject_type == m[1] ):
+                    item.subject_type == m[0]
 
         return( l )
 
