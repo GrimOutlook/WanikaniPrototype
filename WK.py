@@ -89,3 +89,15 @@ class TerminalColors():
     IGNORED_YELLOW      = 226
     MEANING_WHITE       = 250
     READING_BLACK       = 237
+
+class SRSStages():
+    INITIATE        = 0
+    APPRENTICE_I    = 1
+    APPRENTICE_II   = 2
+    APPRENTICE_III  = 3
+    APPRENTICE_IV   = 4
+    GURU_I          = 5
+    GURU_II         = 6
+    MASTER          = 7
+    ENLIGHTENED     = 8
+    BURNED          = 9

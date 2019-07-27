@@ -47,17 +47,17 @@ class ReviewWidget( QWidget ):
         spacerItem = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.topBarHLayout.addItem(spacerItem)
 
-        self.percentCorrect = QLabel(Form)
-        self.percentCorrect.setObjectName("percentCorrect")
-        self.topBarHLayout.addWidget(self.percentCorrect)
+        self.totalToDo = QLabel(Form)
+        self.totalToDo.setObjectName("totalToDo")
+        self.topBarHLayout.addWidget(self.totalToDo)
 
         self.totalDone = QLabel(Form)
         self.totalDone.setObjectName("totalDone")
         self.topBarHLayout.addWidget(self.totalDone)
 
-        self.totalToDo = QLabel(Form)
-        self.totalToDo.setObjectName("totalToDo")
-        self.topBarHLayout.addWidget(self.totalToDo)
+        self.percentCorrect = QLabel(Form)
+        self.percentCorrect.setObjectName("percentCorrect")
+        self.topBarHLayout.addWidget(self.percentCorrect)
 
         self.mainVLayout.addLayout(self.topBarHLayout)
 
@@ -259,8 +259,8 @@ class ReviewWidget( QWidget ):
 
     def setState( self, state ):
         # Simply sets the current state of the review session to ANSWER GIVEN
-        self.state = state
-        self.log.debug( "Current state: {}".format( self.state ) )
+        self.review_state = state
+        self.log.debug( "Current state: {}".format( self.review_state ) )
 
     def retranslateUi(self, Form):
         _translate = QCoreApplication.translate
@@ -314,7 +314,7 @@ class ReviewWidget( QWidget ):
         # Hides answer buttons and shows next answer button if in anki mode and review state is ANSWER_GIVEN
         # Must check that answer given is mode since when lightning is on and result is true nextReview() is
         # called and changes review state to READY_FOR_ANSWER
-        if( self.state == ReviewState.ANSWER_GIVEN ):
+        if( self.review_state == ReviewState.ANSWER_GIVEN ):
             if( self.review_mode == ReviewMode.ANKI ):
                 self.ankiYesButton.hide()
                 self.ankiNoButton.hide()
@@ -345,7 +345,7 @@ class ReviewWidget( QWidget ):
             self.showPromptInfo()
 
     def nextReview( self ):
-        if( self.state == ReviewState.ANSWER_GIVEN):
+        if( self.review_state == ReviewState.ANSWER_GIVEN):
             self.rs.getNextReview()
             # Sets prompt label to characters of the curent review item and changes the color to the cooresponding subject type
             self.promptLabel.setText( self.rs.current_review_item.subject.characters )
@@ -379,7 +379,13 @@ class ReviewWidget( QWidget ):
             self.setState( ReviewState.READY_FOR_ANSWER )
 
         else:
-            self.log.debug( "Cannot get next review since current state is: {}".format( self.state ) )
+            self.log.debug( "Cannot get next review since current state is: {}".format( self.review_state ) )
+
+    def hidePromptInfo( self ):
+        self.removePreviousItemPromptInfo()
+        self.infoScrollArea.hide()
+        # This effectively begins showing the spacer again since the hide() and show() methods don't work on spacer objects
+        self.bottomVerticalSpacer.changeSize(0,157,QSizePolicy.Minimum, QSizePolicy.Preferred)
 
     def showPromptInfo( self ):
         subject = self.rs.current_review_item.subject.object
@@ -394,19 +400,14 @@ class ReviewWidget( QWidget ):
         # This effectivly hides the spacer since spacer objects cant use the hide() method
         self.bottomVerticalSpacer.changeSize(0,0,QSizePolicy.Ignored, QSizePolicy.Ignored)
 
-    def hidePromptInfo( self ):
-        self.infoScrollArea.hide()
-        # This effectively begins showing the spacer again since the hide() and show() methods don't work on spacer objects
-        self.bottomVerticalSpacer.changeSize(0,157,QSizePolicy.Minimum, QSizePolicy.Preferred)
-
     def createKanjiInfoContents( self ):
         if( self.rs.current_question == "meaning" ):
-            self.meaningInfoLabel = QLabel( str(self.rs.current_review_item.subject.meanings ) )
-            self.userSynonyms = QLabel( "" )
+            self.meaningInfoLabel = QLabel( "Meanings: {}".format( self.rs.current_review_item.subject.getMeaningsString() ) )
+            self.userSynonyms = QLabel( "User Synonyms" )
             self.radicalCombinations = QLabel( str(self.rs.current_review_item.subject.amalgamation_subject_ids ))
             self.meaningMnemonicLabel = QLabel( self.rs.current_review_item.subject.meaning_mnemonic )
             self.meaningHintLabel = QLabel( self.rs.current_review_item.subject.meaning_hint )
-            self.meaningNote = QLabel( "" )
+            self.meaningNote = QLabel( "Meaning Note" )
 
             self.leftVerticalLayout.addWidget( self.meaningInfoLabel )
             self.leftVerticalLayout.addWidget( self.userSynonyms )
@@ -416,11 +417,11 @@ class ReviewWidget( QWidget ):
             self.rightVerticalLayout.addWidget( self.meaningNote )
 
         elif( self.rs.current_question == "reading" ):
-            self.kunyomiLabel = QLabel( str(self.rs.current_review_item.subject.reading ))
+            self.kunyomiLabel = QLabel( "Readings: {}".format( self.rs.current_review_item.subject.getReadingsString() ), self )
             self.radicalCombinations = QLabel( str(self.rs.current_review_item.subject.amalgamation_subject_ids ))
             self.readingMnemonicLabel = QLabel( self.rs.current_review_item.subject.reading_mnemonic )
             self.readingHintLabel = QLabel( self.rs.current_review_item.subject.reading_hint )
-            self.readingNote = QLabel( "" )
+            self.readingNote = QLabel( "Reading Note" )
 
             self.leftVerticalLayout.addWidget( self.kunyomiLabel )
             self.leftVerticalLayout.addWidget( self.radicalCombinations )
@@ -430,12 +431,12 @@ class ReviewWidget( QWidget ):
 
     def createVocabularyInfoContents( self ):
         if( self.rs.current_question == "meaning" ):
-            self.meaningInfoLabel = QLabel( str(self.rs.current_review_item.subject.meanings ), self )
-            self.userSynonyms = QLabel( "" )
-            self.partsOfSpeechLabel = QLabel( str(self.rs.current_review_item.subject.parts_of_speech ))
+            self.meaningInfoLabel = QLabel( "Meanings: {}".format( self.rs.current_review_item.subject.getMeaningsString() ), self )
+            self.userSynonyms = QLabel( "User Synonyms" )
+            self.partsOfSpeechLabel = QLabel( "Part of Speech: {}".format( self.rs.current_review_item.subject.getPartsOfSpeechString() ) )
             self.relatedKanji = QLabel( str(self.rs.current_review_item.subject.component_subject_ids ))
             self.meaningMnemonicLabel = QLabel( self.rs.current_review_item.subject.meaning_mnemonic )
-            self.meaningNote = QLabel( "" )
+            self.meaningNote = QLabel( "Meaning Note" )
 
             self.leftVerticalLayout.addWidget( self.meaningInfoLabel )
             self.leftVerticalLayout.addWidget( self.userSynonyms )
@@ -445,11 +446,11 @@ class ReviewWidget( QWidget ):
             self.rightVerticalLayout.addWidget( self.meaningNote )
 
         elif( self.rs.current_question == "reading" ):
-            self.readingInfoLabel = QLabel( str(self.rs.current_review_item.subject.readings ) , self)
-            self.partsOfSpeechLabel = QLabel( str(self.rs.current_review_item.subject.parts_of_speech ))
+            self.readingInfoLabel = QLabel( "Readings: {}".format( self.rs.current_review_item.subject.getReadingsString() ), self)
+            self.partsOfSpeechLabel = QLabel( "Part of Speech: {}".format( self.rs.current_review_item.subject.getPartsOfSpeechString() ) )
             self.relatedKanji = QLabel( str(self.rs.current_review_item.subject.component_subject_ids ))
             self.readingMnemonicLabel = QLabel( self.rs.current_review_item.subject.reading_mnemonic )
-            self.readingNote = QLabel( "" )
+            self.readingNote = QLabel( "Reading Note" )
 
             self.leftVerticalLayout.addWidget( self.readingInfoLabel )
             self.leftVerticalLayout.addWidget( self.partsOfSpeechLabel )
@@ -457,10 +458,21 @@ class ReviewWidget( QWidget ):
             self.rightVerticalLayout.addWidget( self.readingMnemonicLabel )
             self.rightVerticalLayout.addWidget( self.readingNote )
 
+    def removePreviousItemPromptInfo( self ):
+        for layout in [ self.leftVerticalLayout, self.rightVerticalLayout ]:
+            for i in range( layout.count() ):
+                obj = layout.takeAt( 0 ) # Removes the first object and puts it in obj, all other objects in layout are shifted down
+                obj.widget().setVisible( False )
+                obj = obj.widget() # del says it cant delete a function call so this must be done
+                del obj
+
     def updateStats( self ): # Result required to determine if question was answered correctly
-        self.totalToDo.setText( str( self.rs.getTotalReviewsRemaining() ) )
-        self.totalDone.setText( str( self.rs.total_done_reviews ) )
-        self.percentCorrect.setText( str( self.rs.getPercentCorrectQuestions() ) + "%" )
+        self.totalToDo.setText( "Total: {}".format( self.rs.getTotalReviewsRemaining() ) )
+        self.totalDone.setText( "Done: {}".format( self.rs.total_done_reviews ) )
+        self.percentCorrect.setText( "Correct: {:>6.2f}%".format( self.rs.getPercentCorrectQuestions() ) )
+        self.radicalCountToDo.setText( "R: {}".format( self.rs.getRadicalCount() ) )
+        self.kanjiCountToDo.setText( "K: {}".format( self.rs.getKanjiCount() ) )
+        self.vocabularyCountToDo.setText( "V: {}".format( self.rs.getVocabularyCount() ) )
 
     def toggleAnswerMode( self ):
         # Change mode from typing to anki and vice versa
@@ -519,24 +531,24 @@ class ReviewWidget( QWidget ):
     def keyPressEvent( self, e ):
         if( type(e) == QKeyEvent ):
             if( e.key() == Qt.Key_Return ): # if the enter key is pressed:
-                if( self.state == ReviewState.READY_FOR_ANSWER ):
-                    self.answerPrompt()
+                if( self.review_state == ReviewState.READY_FOR_ANSWER ):
+                    self.answerPromptTyping( self.answerBox.text() ) if self.review_mode == ReviewMode.TYPING else None
 
-                elif( self.state == ReviewState.ANSWER_GIVEN ):
+                elif( self.review_state == ReviewState.ANSWER_GIVEN ):
                     self.nextReview()
 
-                elif( self.state == ReviewState.WAITING_FOR_INCORRECT_DELAY ):
+                elif( self.review_state == ReviewState.WAITING_FOR_INCORRECT_DELAY ):
                     # Don't do anything if waiting for incorrect delay, the if statement
                     # isn't really necessary but i like it for continuity
                     pass
 
-            elif( e.key() == Qt.Key_L and self.state == ReviewState.ANSWER_SHOWN ):
-                self.answerPrompt( True )
+            elif( e.key() == Qt.Key_L and self.review_state == ReviewState.ANSWER_SHOWN ):
+                self.answerPromptAnki( True )
 
-            elif( e.key() == Qt.Key_Semicolon and self.state == ReviewState.ANSWER_SHOWN ):
-                self.answerPrompt( False )
+            elif( e.key() == Qt.Key_Semicolon and self.review_state == ReviewState.ANSWER_SHOWN ):
+                self.answerPromptAnki( False )
 
-            elif( e.key() == Qt.Key_Apostrophe and self.state == ReviewState.READY_FOR_ANSWER ):
+            elif( e.key() == Qt.Key_Apostrophe and self.review_state == ReviewState.READY_FOR_ANSWER ):
                 self.showAnswerAnki()
 
         super( ReviewWidget, self ).keyPressEvent(e)

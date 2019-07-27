@@ -15,27 +15,26 @@ class ReviewPromptLabel( QLabel ):
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
 
         self.stylesheets = {
-            "vocabulary" : "background-color : {}".format( WKColor.VOCABULARY_PURPLE ),
-            "kanji" : "background-color : {}".format( WKColor.KANJI_PINK ),
-            "radical" : "background-color : {}".format( WKColor.RADICAL_BLUE )
+            "vocabulary"    : "background-color : {}".format( WKColor.VOCABULARY_PURPLE ),
+            "kanji"         : "background-color : {}".format( WKColor.KANJI_PINK ),
+            "radical"       : "background-color : {}".format( WKColor.RADICAL_BLUE )
         }
 
     def setStyle( self, subject_type ):
         self.setStyleSheet( self.stylesheets[ subject_type ] )
 
     def resizeEvent( self, e ):
+        """
+        Do not ask me how this works, I have no idea why this works
+        """
         super(ReviewPromptLabel, self).resizeEvent( e )
         # print( "resizeEvent", e.size().width(), e.size().height() )
         QFrame.resizeEvent( self, e )
         font = self.font()
-        if( self.width() * 0.40 < self.height() * 0.75 ):
-            font.setPixelSize(self.width() * 0.40)
-        else:
-            font.setPixelSize(self.height() * 0.75)
-
-        br = QFontMetrics( font ).boundingRect( self.text() )
-        cr = self.contentsRect()
-        # print( "BR: " + str(br.width()) + " x " + str( br.height()  ))
-        # print( "CR: " + str(cr.width()) + " x " + str(cr.height()) + "\n" )
+        # I have no idea why these constants work, i got them from trial and error and will simply leave them here with no explanation
+        w = self.width()/2 * 0.40
+        h = self.height() * 0.5
+        font.setPixelSize( w if w < h else h )
+        # print("WIDTH {} x HEIGHT {}".format(w, h))
 
         self.setFont(font)

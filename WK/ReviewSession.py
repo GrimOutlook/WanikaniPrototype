@@ -3,7 +3,7 @@ sys.path.append("..")
 
 from settings import Settings
 from WanikaniDatabase import WanikaniDatabase
-from WK import ReviewMode, Pages
+from WK import ReviewMode, Pages, SRSStages
 
 from random import shuffle, randint, choice # For randomizing reviews
 from difflib import SequenceMatcher # For checking for string similarity
@@ -29,6 +29,10 @@ class ReviewSession():
         self.full_review_list = self.wk_db.getReviews()
         shuffle( self.full_review_list )
 
+        self.initSubjectCounts()
+        self.initSRSCounts()
+        self.initLevelCounts()
+
         # This section is for the ignore answer functionality
         self.previous_reviews = []          # List of previous reviews, will probably limit this in number, used for ignoring answers even after adding to database and continuing on to others
         self.previous_review_item = None    # This is simply the item that was used for answering the last question, not neccessarily different than the current review item
@@ -48,6 +52,7 @@ class ReviewSession():
         self.total_done_reviews = 0
         self.total_questions_asked = 0
         self.total_correct_questions = 0
+
         self.log.debug( 'Review Session Finished Initializing.' )
 
     def answerCurrentQuestionTyping( self, answer ):
@@ -93,12 +98,12 @@ class ReviewSession():
         self.total_questions_asked += 1
 
     def getNextReview( self ):
+        self.log.debug("Getting next review...")
         self.removeDoneItems()
         self.pickNextItem()
         self.getQuestion()
 
     def getQuestion( self ):
-        self.log.debug("Getting next question...")
         if( self.current_review_item.current_review.meaning_answers_done ):
             self.current_question = "reading"
 
@@ -107,6 +112,8 @@ class ReviewSession():
 
         else:
             self.current_question = choice( [ "reading", "meaning" ] )
+
+        self.log.debug("New Question: {}".format( self.current_question ))
 
     def removeDoneItems( self ):
         """
@@ -129,12 +136,14 @@ class ReviewSession():
 
             self.total_done_reviews += 1
 
+            self.decreaseSubjectCount( self.current_review_item )
+
             # Moving the current item from the current review queue to the previous_reviews list
             self.previous_reviews.append( self.current_review_queue.pop( self.current_review_index ) )
             # For the number of items missing from current review queue
             for i in range( self.queue_size - len( self.current_review_queue ) ):
                 # Move an item from the full review list to the current review queue
-                self.current_review_queue.append( self.full_review_list.pop( i ) )
+                self.current_review_queue.append( self.full_review_list.pop( 0 ) )
         # print( self.current_review_queue )
 
     def pickNextItem( self ):
@@ -160,7 +169,8 @@ class ReviewSession():
             elif( self.previous_question == "reading" ):
                 self.previous_review_item.current_review.reading_answers_done = False
 
-            # print( "Meaning answers done: {} -- Reading answers done: {}".format( self.previous_review_item.current_review.meaning_answers_done, self.previous_review_item.current_review.reading_answers_done ) )
+            # print( "Meaning answers done: {} -- Reading answers done: {}".format(
+                    # self.previous_review_item.current_review.meaning_answers_done, self.previous_review_item.current_review.reading_answers_done ) )
             self.total_correct_questions -= 1
 
         else:
@@ -172,24 +182,27 @@ class ReviewSession():
 
         self.total_questions_asked -= 1
 
+        self.increaseSubjectCount( self.previous_review )
+
         # If the items aren't the same that means that the previous review has been moved from the current review queue
         # to the previous review list and must be put back to be reviewed again
         if( self.previous_review_item != self.current_review_item ):
             # Put item at front of the full item list
             self.full_review_list.insert( 0, self.previous_reviews[-1] )
 
-    # def resetLastReview( self ):
-        # if( len( self.previous_reviews ) <= 0 ):
-            # return
+    def increaseSubjectCount( self, item ):
+        # Increases count of item subject type
+        subject = item.subject_type
+        self.radicalCount += 1 if subject == "radical" else 0
+        self.kanjiCount += 1 if subject == "kanji" else 0
+        self.vocabularyCount += 1 if subject == "vocabulary" else 0
 
-        # last_review = self.previous_reviews[-1]
-        # # Fix statistics before resetting the review
-        # last_review.current_review.incorrect_meaning_answers -= 1
-        # last_review.current_review.incorrect_reading_answers -= 1
+    def decreaseSubjectCount( self, item ):
+        subject = item.subject_type
+        self.radicalCount -= 1 if subject == "radical" else 0
+        self.kanjiCount -= 1 if subject == "kanji" else 0
+        self.vocabularyCount -= 1 if subject == "vocabulary" else 0
 
-        # # Reset review and remove previous review from database
-        # last_review.current_review.resetReview()
-        # last_review.current_review.removeFromDatabase()
 
     @staticmethod
     def answerIsCloseEnough( key, answer, question ):
@@ -321,6 +334,49 @@ class ReviewSession():
     ################### Getting functions #######################
     #############################################################
     """
+    def initSubjectCounts( self ):
+        self.radicalCount = 0
+        self.kanjiCount = 0
+        self.vocabularyCount = 0
+        for item in self.full_review_list:
+            self.radicalCount += 1 if item.subject_type == "radical" else 0
+            self.kanjiCount += 1 if item.subject_type == "kanji" else 0
+            self.vocabularyCount += 1 if item.subject_type == "vocabulary" else 0
+
+        self.log.debug( "Subject Makeup -- Radical: {}, Kanji: {}, Vocabulary: {}".format( self.radicalCount, self.kanjiCount, self.vocabularyCount ) )
+
+    def getRadicalCount( self ):
+        return( self.radicalCount )
+
+    def getKanjiCount( self ):
+        return( self.kanjiCount )
+
+    def getVocabularyCount( self ):
+        return( self.vocabularyCount )
+
+    def initSRSCounts( self ):
+        srs_c = [0] * 10 # 10 because there are 10 srs stages
+        for i in range( len( self.full_review_list ) ):
+            srs = self.full_review_list[i].srs_stage
+            srs_c[ srs ] += 1
+
+        self.log.debug( "SRS Makeup -- 0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {}, 9: {}".format(
+                        srs_c[0], srs_c[1], srs_c[2], srs_c[3], srs_c[4],
+                        srs_c[5], srs_c[6], srs_c[7], srs_c[8], srs_c[9] ) )
+        self.srs_counts = srs_c
+
+    def initLevelCounts( self ):
+        lvl_c = [0] * 60 # 60 because there are 60 levels. Must subtract 1 every time since the levels are 1 indexed but the list is 0 indexed
+        for i in range( len( self.full_review_list ) ):
+            lvl = self.full_review_list[i].subject.level
+            lvl_c[ lvl ] += 1
+
+        s = "Level Makeup -- "
+        for lvl in range( len( lvl_c ) ):
+            s += "{}: {}, ".format( lvl+1, lvl_c[lvl] ) # +1 since the list starts @ 0 and wk levels start @ 1
+        self.log.debug( s )
+        self.lvl_counts = lvl_c
+
     def getCorrectAnswer( self ):
         if( self.current_question == "meaning" ):
             question = self.current_review_item.subject.meanings

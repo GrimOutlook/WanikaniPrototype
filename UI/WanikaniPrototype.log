@@ -1,12 +1,10 @@
-2019-07-25 18:55:02,852 - DEBUG - WKTUI Started Initializing.
-2019-07-25 18:55:02,853 - DEBUG - Review Session Started Initializing.
-2019-07-25 18:55:05,098 - DEBUG - Sorting reviews by subject
-2019-07-25 18:55:05,100 - DEBUG - Getting next question...
-2019-07-25 18:55:05,101 - DEBUG - Review Session Finished Initializing.
-2019-07-25 18:55:05,101 - DEBUG - Sorting reviews by level
-2019-07-25 18:55:05,102 - DEBUG - Sorting reviews by subject
-2019-07-25 18:55:05,104 - DEBUG - Setting review modes
-2019-07-25 18:55:05,104 - DEBUG - Setting char values
-2019-07-25 18:55:05,104 - DEBUG - WKTUI Finished Initializing.
-2019-07-25 18:55:05,104 - DEBUG - Drawing review screen
-2019-07-25 18:55:05,104 - DEBUG - Key pressed: None
+2019-07-26 23:37:18,513 - DEBUG - Review mode is now: ReviewMode.ANKI
+2019-07-26 23:37:18,513 - DEBUG - Changing review mode to ReviewMode.TYPING
+2019-07-26 23:37:18,513 - DEBUG - Review Session Started Initializing.
+2019-07-26 23:37:19,837 - DEBUG - Subject Makeup -- Radical: 5, Kanji: 168, Vocabulary: 857
+2019-07-26 23:37:19,837 - DEBUG - SRS Makeup -- 0: 0, 1: 99, 2: 40, 3: 85, 4: 142, 5: 213, 6: 448, 7: 1, 8: 2, 9: 0
+2019-07-26 23:37:19,839 - DEBUG - Level Makeup -- 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 1, 7: 1, 8: 3, 9: 3, 10: 4, 11: 0, 12: 6, 13: 2, 14: 1, 15: 4, 16: 1, 17: 4, 18: 5, 19: 9, 20: 0, 21: 10, 22: 16, 23: 11, 24: 5, 25: 16, 26: 15, 27: 16, 28: 9, 29: 13, 30: 17, 31: 11, 32: 17, 33: 17, 34: 21, 35: 28, 36: 18, 37: 25, 38: 33, 39: 25, 40: 30, 41: 34, 42: 37, 43: 33, 44: 48, 45: 18, 46: 20, 47: 28, 48: 43, 49: 81, 50: 81, 51: 50, 52: 4, 53: 9, 54: 6, 55: 62, 56: 19, 57: 24, 58: 36, 59: 0, 60: 0, 
+2019-07-26 23:37:19,839 - DEBUG - Sorting reviews by subject
+2019-07-26 23:37:19,841 - DEBUG - New Question: reading
+2019-07-26 23:37:19,841 - DEBUG - Review Session Finished Initializing.
+2019-07-26 23:37:19,842 - DEBUG - Current state: ReviewState.READY_FOR_ANSWER

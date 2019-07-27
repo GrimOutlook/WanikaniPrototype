@@ -3,4 +3,5 @@ env/
 venv/
 Objects/
 __pycache__/
-wanikani.db
+*.db
+*.log

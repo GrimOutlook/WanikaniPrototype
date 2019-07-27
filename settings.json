@@ -6,8 +6,8 @@
     "main_window" : {
 
         "startup_page" : "review_page",
-        "startup_height" : 2000,
-        "startup_width" : 1000
+        "startup_height" : 400,
+        "startup_width" : 300
     },
     "wanikani_database" : {
 
