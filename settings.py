@@ -1,5 +1,5 @@
 import json, logging, os
-from WK import Pages, ReviewMode
+from WK import Pages, ReviewMode, SortMode
 
 """
 I need to think about users with slower hard drives when I program this so no saving
@@ -42,6 +42,7 @@ class Settings():
     def convert( self ):
         self.convertReviewMode()
         self.convertPages()
+        self.convertSortMode()
 
     def convertReviewMode( self ):
         review_mode = self.settings["review_page"]["review_mode"]
@@ -60,6 +61,19 @@ class Settings():
             page = Pages.HOME_PAGE
 
         self.settings["main_window"]["startup_page"] = page
+
+    def convertSortMode( self ):
+        sort = self.settings["review_session"]["sort_mode"]
+        if( sort == None ):
+            sort = SortMode.RANDOM
+        elif( sort == "srs" ):
+            sort = SortMode.SRS
+        elif( sort == "subject" ):
+            sort == SortMode.SUBJECT
+        elif( sort == "level" ):
+            sort == SortMode.LEVEL
+
+        self.settings["review_session"]["sort_mode"] = sort
 
     @staticmethod
     def getBasePath():

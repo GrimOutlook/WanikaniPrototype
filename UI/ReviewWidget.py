@@ -9,7 +9,7 @@
 from PyQt5.Qt import *
 from settings import Settings
 from ReviewSession import ReviewSession
-from WK import Pages, ReviewState, ReviewMode
+from WK import Pages, ReviewState, ReviewMode, SortMode
 
 from AnswerBox import AnswerBox
 from ReviewPromptLabel import ReviewPromptLabel
@@ -64,7 +64,7 @@ class ReviewWidget( QWidget ):
         self.promptAreaHLayout = QHBoxLayout()
         self.promptAreaHLayout.setObjectName("promptAreaHLayout")
 
-        spacerItem1 = QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Minimum)
+        spacerItem1 = QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Expanding)
         self.promptAreaHLayout.addItem(spacerItem1)
 
         self.promptLabel = ReviewPromptLabel(Form)
@@ -80,44 +80,51 @@ class ReviewWidget( QWidget ):
         self.promptLabel.setObjectName("promptLabel")
         self.promptAreaHLayout.addWidget(self.promptLabel)
 
-        self.rightStatsBarVLayout = QVBoxLayout()
-        self.rightStatsBarVLayout.setObjectName("rightStatsBarVLayout")
+        spacerItem2 = QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Expanding)
+        self.promptAreaHLayout.addItem(spacerItem2)
 
-        self.radicalCountToDo = QLabel(Form)
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.radicalCountToDo.sizePolicy().hasHeightForWidth())
-        self.radicalCountToDo.setSizePolicy(sizePolicy)
-        self.radicalCountToDo.setMinimumSize(QSize(40, 0))
-        self.radicalCountToDo.setObjectName("radicalCountToDo")
-        self.rightStatsBarVLayout.addWidget(self.radicalCountToDo)
-
-        self.kanjiCountToDo = QLabel(Form)
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.kanjiCountToDo.sizePolicy().hasHeightForWidth())
-        self.kanjiCountToDo.setSizePolicy(sizePolicy)
-        self.kanjiCountToDo.setMinimumSize(QSize(40, 0))
-        self.kanjiCountToDo.setObjectName("kanjiCountToDo")
-        self.rightStatsBarVLayout.addWidget(self.kanjiCountToDo)
-
-        self.vocabularyCountToDo = QLabel(Form)
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.vocabularyCountToDo.sizePolicy().hasHeightForWidth())
-        self.vocabularyCountToDo.setSizePolicy(sizePolicy)
-        self.vocabularyCountToDo.setMinimumSize(QSize(40, 0))
-        self.vocabularyCountToDo.setObjectName("vocabularyCountToDo")
-        self.rightStatsBarVLayout.addWidget(self.vocabularyCountToDo)
-
-        spacerItem2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.rightStatsBarVLayout.addItem(spacerItem2)
-
-        self.promptAreaHLayout.addLayout(self.rightStatsBarVLayout)
         self.mainVLayout.addLayout(self.promptAreaHLayout)
+
+        self.statsBarHLayout = QHBoxLayout()
+        self.statsBarHLayout.setObjectName("subjectStatsBarHLayout")
+
+        self.statsBarLeftSpacer = QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.statsBarHLayout.addItem( self.statsBarLeftSpacer )
+
+        self.subjectCountToDo = QLabel(Form)
+        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.subjectCountToDo.sizePolicy().hasHeightForWidth())
+        self.subjectCountToDo.setSizePolicy(sizePolicy)
+        self.subjectCountToDo.setMinimumSize(QSize(40, 0))
+        self.subjectCountToDo.setObjectName("subjectCountToDo")
+        self.statsBarHLayout.addWidget(self.subjectCountToDo)
+
+        self.srsCountToDo = QLabel(Form)
+        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.srsCountToDo.sizePolicy().hasHeightForWidth())
+        self.srsCountToDo.setSizePolicy(sizePolicy)
+        self.srsCountToDo.setMinimumSize(QSize(40, 0))
+        self.srsCountToDo.setObjectName("srsCountToDo")
+        self.statsBarHLayout.addWidget(self.srsCountToDo)
+
+        self.levelCountToDo = QLabel(Form)
+        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.levelCountToDo.sizePolicy().hasHeightForWidth())
+        self.levelCountToDo.setSizePolicy(sizePolicy)
+        self.levelCountToDo.setMinimumSize(QSize(40, 0))
+        self.levelCountToDo.setObjectName("levelCountToDo")
+        self.statsBarHLayout.addWidget(self.levelCountToDo)
+
+        self.statsBarRightSpacer = QSpacerItem(20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.statsBarHLayout.addItem(self.statsBarRightSpacer)
+
+        self.mainVLayout.addLayout(self.statsBarHLayout)
 
         self.promptType = PromptTypeLabel(Form)
         self.promptType.setMinimumSize(QSize(0, 75))
@@ -205,13 +212,13 @@ class ReviewWidget( QWidget ):
         spacerItem4 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.extraButtonsHLayout.addItem(spacerItem4)
 
-        self.sortMode = QPushButton(Form)
-        self.sortMode.setObjectName("sortMode")
-        self.extraButtonsHLayout.addWidget(self.sortMode)
+        self.sortModeButton = QPushButton(Form)
+        self.sortModeButton.setObjectName("sortModeButton")
+        self.extraButtonsHLayout.addWidget(self.sortModeButton)
 
-        self.reviewMode = QPushButton(Form)
-        self.reviewMode.setObjectName("reviewMode")
-        self.extraButtonsHLayout.addWidget(self.reviewMode)
+        self.reviewModeButton = QPushButton(Form)
+        self.reviewModeButton.setObjectName("reviewModeButton")
+        self.extraButtonsHLayout.addWidget(self.reviewModeButton)
 
         self.ignoreAnswerButton = QPushButton(Form)
         self.ignoreAnswerButton.setObjectName("ignoreAnswerButton")
@@ -225,21 +232,19 @@ class ReviewWidget( QWidget ):
         # This will later be loaded by a settings file
         # This can either be t for typing or a for anki
         self.review_mode = self.settings.settings["review_page"]["review_mode"]
-        self.log.debug( "Review mode is now: {}".format( self.review_mode ) )
-
         self.setAnswerMode( self.review_mode )
 
         self.rs = ReviewSession()
-        self.promptLabel.setText( self.rs.current_review_item.subject.characters )
-        self.promptLabel.setStyle( self.rs.current_review_item.subject.object )
-        self.promptType.setText( self.rs.current_question.capitalize() )
-        self.promptType.setPromptStyle( self.rs.current_question )
+
+        self.setSortMode( self.rs.sort_mode )
+
+        self.updatePrompt()
 
         # Updates the review stats in side bar
         self.updateStats()
 
         self.homeButton.clicked.connect( lambda: self.changePage(Pages.HOME_PAGE) )
-        self.reviewMode.clicked.connect( self.toggleAnswerMode )
+        self.reviewModeButton.clicked.connect( self.cycleAnswerMode )
 
         # Functions in connect statements must be callable so
         # if you need to pass in arguments make it a lambda function
@@ -250,6 +255,7 @@ class ReviewWidget( QWidget ):
 
         self.lightningButton.clicked.connect( self.toggleLightning )
         self.ignoreAnswerButton.clicked.connect( self.ignoreAnswer )
+        self.sortModeButton.clicked.connect( self.cycleSortMode )
 
         # Intializes delay on incorrect timer
         self.delayOnIncorrectTimer = QTimer()
@@ -262,6 +268,57 @@ class ReviewWidget( QWidget ):
         self.review_state = state
         self.log.debug( "Current state: {}".format( self.review_state ) )
 
+    def cycleSortMode( self ):
+        self.setSortMode( (self.rs.sort_mode + 1 )% 4 ) # Mod 4 since there are only 4 sort modes currently
+
+    def setSortMode( self, mode ):
+        self.rs.setSortMode( mode )
+        self.updatePrompt()
+        self.changeSortModeAttributes( mode )
+
+    def changeSortModeAttributes( self, mode ):
+        if( mode == SortMode.RANDOM ):
+            text = "Random"
+        elif( mode == SortMode.LEVEL ):
+            text = "Level"
+        elif( mode == SortMode.SRS ):
+            text = "SRS"
+        elif( mode == SortMode.SUBJECT ):
+            text = "Subject"
+        else:
+            raise Exception("Invalid sort mode of {}".format(mode))
+
+        self.showStatsBar( mode )
+        self.sortModeButton.setText( text )
+
+    def showStatsBar( self, mode ):
+        if( mode == SortMode.RANDOM ):
+            self.hideStatsBar()
+            return
+
+        if( mode == SortMode.LEVEL ):
+            self.levelCountToDo.show()
+            self.srsCountToDo.hide()
+            self.subjectCountToDo.hide()
+        elif( mode == SortMode.SRS ):
+            self.levelCountToDo.hide()
+            self.srsCountToDo.show()
+            self.subjectCountToDo.hide()
+        elif( mode == SortMode.SUBJECT ):
+            self.levelCountToDo.hide()
+            self.srsCountToDo.hide()
+            self.subjectCountToDo.show()
+
+        self.statsBarLeftSpacer.changeSize( 20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum )
+        self.statsBarRightSpacer.changeSize( 20, 40, QSizePolicy.Expanding, QSizePolicy.Minimum )
+
+    def hideStatsBar( self ):
+        self.levelCountToDo.hide()
+        self.srsCountToDo.hide()
+        self.subjectCountToDo.hide()
+        self.statsBarLeftSpacer.changeSize( 20, 40, QSizePolicy.Ignored, QSizePolicy.Ignored )
+        self.statsBarRightSpacer.changeSize( 20, 40, QSizePolicy.Ignored, QSizePolicy.Ignored )
+
     def retranslateUi(self, Form):
         _translate = QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
@@ -269,18 +326,23 @@ class ReviewWidget( QWidget ):
         self.totalDone.setText(_translate("Form", "Done"))
         self.totalToDo.setText(_translate("Form", "Total"))
         self.promptLabel.setText(_translate("Form", "Prompt"))
-        self.radicalCountToDo.setText(_translate("Form", "Rad: "))
-        self.kanjiCountToDo.setText(_translate("Form", "Kan:"))
-        self.vocabularyCountToDo.setText(_translate("Form", "Voc:"))
         self.promptType.setText(_translate("Form", "Prompt Type"))
         self.answerBox.setPlaceholderText(_translate("Form", "Answer"))
-        self.sortMode.setText(_translate("Form", "Sort Mode"))
-        self.reviewMode.setText(_translate("Form", "Anki Mode"))
+        self.sortModeButton.setText(_translate("Form", "Sort Mode"))
         self.ignoreAnswerButton.setText(_translate("Form", "Ignore Answer"))
+
+    def updatePrompt( self ):
+        # Sets prompt label to characters of the curent review item and changes the color to the cooresponding subject type
+        self.promptLabel.setText( self.rs.current_review_item.subject.characters )
+        self.promptLabel.setStyle( self.rs.current_review_item.subject.object )
+        # Sets prompt type label to the character string representing the type of the question
+        self.promptType.setText( self.rs.current_question.capitalize() )
+        # Sets prompt type label to the style associated with the current question
+        self.promptType.setPromptStyle( self.rs.current_question )
 
     def showAnswerAnki( self  ):
         self.log.debug( "Answer being shown..." )
-        if( self.review_mode == ReviewMode.ANKI ):
+        if( self.review_mode == ReviewMode.ANKI_W_BUTTONS ):
             # Show answer buttons and hide the "show answer" button
             self.ankiShowAnswerButton.hide()
             self.ankiYesButton.show()
@@ -288,7 +350,7 @@ class ReviewWidget( QWidget ):
 
         # Show actual answer stuff here
         self.answerBox.setReadOnly( True )
-        self.answerBox.setText( ", ".join( self.rs.getCorrectAnswer() ) )
+        self.answerBox.setText( ", ".join( self.rs.getCorrectAnswers() ) )
 
         self.setState( ReviewState.ANSWER_SHOWN )
 
@@ -315,7 +377,7 @@ class ReviewWidget( QWidget ):
         # Must check that answer given is mode since when lightning is on and result is true nextReview() is
         # called and changes review state to READY_FOR_ANSWER
         if( self.review_state == ReviewState.ANSWER_GIVEN ):
-            if( self.review_mode == ReviewMode.ANKI ):
+            if( self.review_mode == ReviewMode.ANKI_W_BUTTONS ):
                 self.ankiYesButton.hide()
                 self.ankiNoButton.hide()
                 self.ankiNextQuestionButton.show()
@@ -347,18 +409,12 @@ class ReviewWidget( QWidget ):
     def nextReview( self ):
         if( self.review_state == ReviewState.ANSWER_GIVEN):
             self.rs.getNextReview()
-            # Sets prompt label to characters of the curent review item and changes the color to the cooresponding subject type
-            self.promptLabel.setText( self.rs.current_review_item.subject.characters )
-            self.promptLabel.setStyle( self.rs.current_review_item.subject.object )
-            # Sets prompt type label to the character string representing the type of the question
-            self.promptType.setText( self.rs.current_question.capitalize() )
-            # Sets prompt type label to the style associated with the current question
-            self.promptType.setPromptStyle( self.rs.current_question )
+            self.updatePrompt()
             # Clears the answer box for another answer
             self.answerBox.clear()
 
             # If we are reviewing in ankj mode
-            if( self.review_mode == ReviewMode.ANKI ):
+            if( self.review_mode == ReviewMode.ANKI_W_BUTTONS ):
                 # hide all buttons except show answer button
                 self.ankiNoButton.hide()
                 self.ankiYesButton.hide()
@@ -470,37 +526,46 @@ class ReviewWidget( QWidget ):
         self.totalToDo.setText( "Total: {}".format( self.rs.getTotalReviewsRemaining() ) )
         self.totalDone.setText( "Done: {}".format( self.rs.total_done_reviews ) )
         self.percentCorrect.setText( "Correct: {:>6.2f}%".format( self.rs.getPercentCorrectQuestions() ) )
-        self.radicalCountToDo.setText( "R: {}".format( self.rs.getRadicalCount() ) )
-        self.kanjiCountToDo.setText( "K: {}".format( self.rs.getKanjiCount() ) )
-        self.vocabularyCountToDo.setText( "V: {}".format( self.rs.getVocabularyCount() ) )
+        self.subjectCountToDo.setText( "R: {} -- K: {} -- V: {}".format( self.rs.getRadicalCount(), self.rs.getKanjiCount(), self.rs.getVocabularyCount()) )
 
-    def toggleAnswerMode( self ):
+        srs_count_stats_str = ""
+        srs_counts = self.rs.getSRSCounts()
+        for i in range( len( srs_counts ) ):
+            if( i != 0 ): # This adds a deliminator between all of the values
+                srs_count_stats_str += " -- "
+
+            srs_count_stats_str += "{}".format( srs_counts[i] )
+
+        self.srsCountToDo.setText( srs_count_stats_str )
+
+        level_count_stats_str = ""
+        level_counts = self.rs.getLevelCounts()
+        for i in range( len( level_counts ) ):
+            if( i % 5 == 0 ):
+                if( i != 0 ): # This adds a deliminator between all of the values
+                    level_count_stats_str += " -- "
+                # +1 since levels are 1 indexed
+                level_count_stats_str += "{}-{}: {}".format( i+1, i+4+1, sum( [ level_counts[i] for i in range(i+5) ] ) )
+
+        self.levelCountToDo.setText( level_count_stats_str )
+
+    def cycleAnswerMode( self ):
         # Change mode from typing to anki and vice versa
-        if( self.review_mode == ReviewMode.ANKI ):
-            self.review_mode = ReviewMode.TYPING
-
-        elif( self.review_mode == ReviewMode.TYPING ):
-            self.review_mode = ReviewMode.ANKI
-
-        self.log.debug("Changing review mode to {}".format( self.review_mode ))
-        self.changeAnswerModeAttributes()
+        self.setAnswerMode( (self.review_mode + 1 )%3 ) # 3 since there are currently 3 answer modes
 
     def setAnswerMode( self, mode ):
         # For changing answer mode to given value or cycling through them
         self.review_mode = mode
 
-        # Change mode from typing to anki and vice versa
-        if( self.review_mode == ReviewMode.ANKI ):
-            self.review_mode = ReviewMode.TYPING
+        # Set reviewModeButton text here
+        answer_mode_button_str = [ "Typing", "Anki", "Anki w/ Buttons" ]
+        self.reviewModeButton.setText( answer_mode_button_str[ self.review_mode ] )
 
-        elif( self.review_mode == ReviewMode.TYPING ):
-            self.review_mode = ReviewMode.ANKI
-
-        self.log.debug("Changing review mode to {}".format( self.review_mode ))
+        self.log.debug("Changing review mode to mode #{}".format( self.review_mode ))
         self.changeAnswerModeAttributes()
 
     def changeAnswerModeAttributes( self ):
-        if( self.review_mode == ReviewMode.ANKI ):
+        if( self.review_mode == ReviewMode.ANKI_W_BUTTONS ):
             # Subtracts 75 pixels for the minimum required for the anki buttons and 6 for the layouts margins
             self.bottomVerticalSpacer.changeSize(0, 157-75-6, QSizePolicy.Minimum, QSizePolicy.Preferred)
 
@@ -508,8 +573,9 @@ class ReviewWidget( QWidget ):
             # Sets the spacers size back to default
             self.bottomVerticalSpacer.changeSize(0, 157, QSizePolicy.Minimum, QSizePolicy.Preferred)
 
-        is_anki_mode = self.review_mode == ReviewMode.ANKI
-        self.ankiShowAnswerButton.setVisible( is_anki_mode )
+        is_anki_w_buttons_mode = self.review_mode == ReviewMode.ANKI_W_BUTTONS
+        is_anki_mode = self.review_mode == ReviewMode.ANKI_W_BUTTONS or self.review_mode == ReviewMode.ANKI
+        self.ankiShowAnswerButton.setVisible( is_anki_w_buttons_mode )
         self.answerBox.setReadOnly( is_anki_mode )
 
     def toggleLightning( self ):
@@ -532,24 +598,25 @@ class ReviewWidget( QWidget ):
         if( type(e) == QKeyEvent ):
             if( e.key() == Qt.Key_Return ): # if the enter key is pressed:
                 if( self.review_state == ReviewState.READY_FOR_ANSWER ):
-                    self.answerPromptTyping( self.answerBox.text() ) if self.review_mode == ReviewMode.TYPING else None
+                    if( self.review_mode == ReviewMode.TYPING): self.answerPromptTyping( self.answerBox.text() )
 
-                elif( self.review_state == ReviewState.ANSWER_GIVEN ):
-                    self.nextReview()
-
+                elif( self.review_state == ReviewState.ANSWER_GIVEN ): self.nextReview()
                 elif( self.review_state == ReviewState.WAITING_FOR_INCORRECT_DELAY ):
                     # Don't do anything if waiting for incorrect delay, the if statement
                     # isn't really necessary but i like it for continuity
                     pass
 
-            elif( e.key() == Qt.Key_L and self.review_state == ReviewState.ANSWER_SHOWN ):
-                self.answerPromptAnki( True )
+            elif( e.key() == Qt.Key_L ):
+                if( self.review_state == ReviewState.ANSWER_SHOWN ): self.answerPromptAnki( True )
+                elif( self.review_state == ReviewState.ANSWER_GIVEN ): self.nextReview()
 
-            elif( e.key() == Qt.Key_Semicolon and self.review_state == ReviewState.ANSWER_SHOWN ):
-                self.answerPromptAnki( False )
+            elif( e.key() == Qt.Key_Semicolon ):
+                if( self.review_state == ReviewState.ANSWER_SHOWN ): self.answerPromptAnki( False )
+                elif( self.review_state == ReviewState.ANSWER_GIVEN ): self.nextReview()
 
-            elif( e.key() == Qt.Key_Apostrophe and self.review_state == ReviewState.READY_FOR_ANSWER ):
-                self.showAnswerAnki()
+            elif( e.key() == Qt.Key_Apostrophe ):
+                if( self.review_state == ReviewState.READY_FOR_ANSWER ): self.showAnswerAnki()
+                elif( self.review_state == ReviewState.ANSWER_GIVEN ): self.nextReview()
 
         super( ReviewWidget, self ).keyPressEvent(e)
 

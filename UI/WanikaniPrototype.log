@@ -1,10 +1,46 @@
-2019-07-26 23:37:18,513 - DEBUG - Review mode is now: ReviewMode.ANKI
-2019-07-26 23:37:18,513 - DEBUG - Changing review mode to ReviewMode.TYPING
-2019-07-26 23:37:18,513 - DEBUG - Review Session Started Initializing.
-2019-07-26 23:37:19,837 - DEBUG - Subject Makeup -- Radical: 5, Kanji: 168, Vocabulary: 857
-2019-07-26 23:37:19,837 - DEBUG - SRS Makeup -- 0: 0, 1: 99, 2: 40, 3: 85, 4: 142, 5: 213, 6: 448, 7: 1, 8: 2, 9: 0
-2019-07-26 23:37:19,839 - DEBUG - Level Makeup -- 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 1, 7: 1, 8: 3, 9: 3, 10: 4, 11: 0, 12: 6, 13: 2, 14: 1, 15: 4, 16: 1, 17: 4, 18: 5, 19: 9, 20: 0, 21: 10, 22: 16, 23: 11, 24: 5, 25: 16, 26: 15, 27: 16, 28: 9, 29: 13, 30: 17, 31: 11, 32: 17, 33: 17, 34: 21, 35: 28, 36: 18, 37: 25, 38: 33, 39: 25, 40: 30, 41: 34, 42: 37, 43: 33, 44: 48, 45: 18, 46: 20, 47: 28, 48: 43, 49: 81, 50: 81, 51: 50, 52: 4, 53: 9, 54: 6, 55: 62, 56: 19, 57: 24, 58: 36, 59: 0, 60: 0, 
-2019-07-26 23:37:19,839 - DEBUG - Sorting reviews by subject
-2019-07-26 23:37:19,841 - DEBUG - New Question: reading
-2019-07-26 23:37:19,841 - DEBUG - Review Session Finished Initializing.
-2019-07-26 23:37:19,842 - DEBUG - Current state: ReviewState.READY_FOR_ANSWER
+2019-07-28 15:16:16,591 - DEBUG - Changing review mode to mode #1
+2019-07-28 15:16:16,591 - DEBUG - Review Session Started Initializing.
+2019-07-28 15:16:17,797 - DEBUG - Subject Makeup -- Radical: 3, Kanji: 133, Vocabulary: 734
+2019-07-28 15:16:17,797 - DEBUG - SRS Makeup -- 0: 0, 1: 61, 2: 35, 3: 72, 4: 120, 5: 192, 6: 387, 7: 1, 8: 2, 9: 0
+2019-07-28 15:16:17,799 - DEBUG - Level Makeup -- 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 3, 10: 0, 11: 4, 12: 1, 13: 1, 14: 3, 15: 1, 16: 4, 17: 3, 18: 9, 19: 0, 20: 9, 21: 15, 22: 10, 23: 4, 24: 14, 25: 13, 26: 15, 27: 7, 28: 12, 29: 14, 30: 7, 31: 15, 32: 14, 33: 17, 34: 25, 35: 16, 36: 22, 37: 27, 38: 22, 39: 28, 40: 29, 41: 30, 42: 32, 43: 37, 44: 16, 45: 17, 46: 26, 47: 35, 48: 70, 49: 70, 50: 40, 51: 4, 52: 7, 53: 6, 54: 57, 55: 14, 56: 21, 57: 24, 58: 0, 59: 0, 60: 0, 
+2019-07-28 15:16:17,799 - DEBUG - Setting sort mode to 0
+2019-07-28 15:16:17,800 - DEBUG - New Question: meaning
+2019-07-28 15:16:17,800 - DEBUG - Review Session Finished Initializing.
+2019-07-28 15:16:17,801 - DEBUG - Current state: ReviewState.READY_FOR_ANSWER
+2019-07-28 15:16:21,411 - DEBUG - Changing review mode to mode #2
+2019-07-28 15:16:22,748 - DEBUG - Changing review mode to mode #0
+2019-07-28 15:16:23,637 - DEBUG - Changing review mode to mode #1
+2019-07-28 15:16:24,335 - DEBUG - Changing review mode to mode #2
+2019-07-28 15:16:24,845 - DEBUG - Changing review mode to mode #0
+2019-07-28 15:16:24,907 - DEBUG - Changing review mode to mode #1
+2019-07-28 15:16:26,719 - DEBUG - Changing review mode to mode #2
+2019-07-28 15:16:27,120 - DEBUG - Changing review mode to mode #0
+2019-07-28 15:16:27,761 - DEBUG - Changing review mode to mode #1
+2019-07-28 15:16:29,602 - DEBUG - Setting sort mode to 1
+2019-07-28 15:16:29,603 - DEBUG - Sorting reviews by srs
+2019-07-28 15:16:31,213 - DEBUG - Setting sort mode to 2
+2019-07-28 15:16:31,213 - DEBUG - Sorting reviews by subject
+2019-07-28 15:16:32,787 - DEBUG - Setting sort mode to 3
+2019-07-28 15:16:32,788 - DEBUG - Sorting reviews by level
+2019-07-28 15:16:33,770 - DEBUG - Setting sort mode to 0
+2019-07-28 15:16:34,877 - DEBUG - Setting sort mode to 1
+2019-07-28 15:16:34,878 - DEBUG - Sorting reviews by srs
+2019-07-28 15:16:35,420 - DEBUG - Setting sort mode to 2
+2019-07-28 15:16:35,420 - DEBUG - Sorting reviews by subject
+2019-07-28 15:16:36,409 - DEBUG - Setting sort mode to 3
+2019-07-28 15:16:36,410 - DEBUG - Sorting reviews by level
+2019-07-28 15:17:18,613 - DEBUG - Answer being shown...
+2019-07-28 15:17:18,614 - DEBUG - Current state: ReviewState.ANSWER_SHOWN
+2019-07-28 15:17:19,337 - DEBUG - Answering current question in anki mode...
+2019-07-28 15:17:19,338 - DEBUG - Current state: ReviewState.ANSWER_GIVEN
+2019-07-28 15:17:19,338 - DEBUG - Getting next review...
+2019-07-28 15:17:19,338 - DEBUG - New Question: reading
+2019-07-28 15:17:19,339 - DEBUG - Current state: ReviewState.READY_FOR_ANSWER
+2019-07-28 15:17:19,860 - DEBUG - Answer being shown...
+2019-07-28 15:17:19,861 - DEBUG - Current state: ReviewState.ANSWER_SHOWN
+2019-07-28 15:17:20,009 - DEBUG - Answering current question in anki mode...
+2019-07-28 15:17:20,009 - DEBUG - Current state: ReviewState.ANSWER_GIVEN
+2019-07-28 15:17:20,009 - DEBUG - Getting next review...
+2019-07-28 15:17:20,009 - DEBUG - Inserting updated review of subject id: 1048 into database
+2019-07-28 15:17:20,016 - DEBUG - New Question: meaning
+2019-07-28 15:17:20,017 - DEBUG - Current state: ReviewState.READY_FOR_ANSWER

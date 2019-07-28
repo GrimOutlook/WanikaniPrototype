@@ -14,9 +14,10 @@ class ReviewState( Enum ):
     ANSWER_GIVEN = 2
     WAITING_FOR_INCORRECT_DELAY = 3
 
-class ReviewMode( Enum ):
+class ReviewMode():
     TYPING = 0
     ANKI = 1
+    ANKI_W_BUTTONS = 2
 
 class WKColor():
     """
@@ -101,3 +102,9 @@ class SRSStages():
     MASTER          = 7
     ENLIGHTENED     = 8
     BURNED          = 9
+
+class SortMode():
+    RANDOM = 0
+    SRS = 1
+    SUBJECT = 2
+    LEVEL = 3

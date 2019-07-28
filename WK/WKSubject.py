@@ -26,6 +26,19 @@ class WKSubject( WKObject ):
             self.assignment.subject = self
         return( self )
 
+    def getCorrectAnswers( self, question ):
+        if( question == "meaning" ):
+            answers = self.meanings
+        elif( question == "reading" ):
+            answers = self.readings
+
+        correct_answers = []
+        for answer in answers:
+            if( answer["accepted_answer"] ):
+                correct_answers.append( answer[ question ] )
+
+        return( correct_answers )
+
     def getPrimaryMeaning( self ):
         return( [ meaning["meaning"] for meaning in self.meanings if meaning["primary"] == True ] )
 

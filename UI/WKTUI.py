@@ -208,7 +208,7 @@ class WKTUI():
         self.info_section_visible = False
 
     def showAnswer( self ):
-        self.text = ", ".join( self.rs.getCorrectAnswer() )
+        self.text = ", ".join( self.rs.getCorrectAnswers() )
         self.setState( ReviewState.ANSWER_SHOWN )
 
     def drawSubjectType( self ):

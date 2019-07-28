@@ -3,7 +3,7 @@ sys.path.append("..")
 
 from settings import Settings
 from WanikaniDatabase import WanikaniDatabase
-from WK import ReviewMode, Pages, SRSStages
+from WK import ReviewMode, Pages, SRSStages, SortMode
 
 from random import shuffle, randint, choice # For randomizing reviews
 from difflib import SequenceMatcher # For checking for string similarity
@@ -22,12 +22,10 @@ class ReviewSession():
         :sort_mode: = how the reviews will be sorted
         :amount: = number of items in review queue at a time
         """
-        self.sort_mode = [["Subject","A"]] # self.settings.settings["review_session"]["sort_mode"]
         self.queue_size = self.settings.settings["review_session"]["queue_size"]
         self.wk_db = WanikaniDatabase()
 
         self.full_review_list = self.wk_db.getReviews()
-        shuffle( self.full_review_list )
 
         self.initSubjectCounts()
         self.initSRSCounts()
@@ -40,7 +38,7 @@ class ReviewSession():
         self.previous_result = None         # This is the result of the last answer the last question
 
         self.current_review_queue = []
-        self.setSortMode( self.sort_mode )
+        self.setSortMode( self.settings.settings["review_session"]["sort_mode"] )
 
         self.current_review_index = 0
         self.current_review_item = self.current_review_queue[ self.current_review_index ]
@@ -58,7 +56,7 @@ class ReviewSession():
     def answerCurrentQuestionTyping( self, answer ):
         self.log.debug( "Answering current question in typing mode..." )
         result = False
-        correct_answers = self.getCorrectAnswer()
+        correct_answers = self.getCorrectAnswers()
         for correct_answer in correct_answers:
             # This just cheks that the answer is close enough to the correct value to be deemed correct
             if( self.answerIsCloseEnough( correct_answer, answer, self.current_question ) ):
@@ -137,6 +135,8 @@ class ReviewSession():
             self.total_done_reviews += 1
 
             self.decreaseSubjectCount( self.current_review_item )
+            self.decreaseSRSCount( self.current_review_item )
+            self.decreaseLevelCount( self.current_review_item )
 
             # Moving the current item from the current review queue to the previous_reviews list
             self.previous_reviews.append( self.current_review_queue.pop( self.current_review_index ) )
@@ -183,6 +183,8 @@ class ReviewSession():
         self.total_questions_asked -= 1
 
         self.increaseSubjectCount( self.previous_review )
+        self.increaseSRSCount( self.previous_review )
+        self.increaseLevelCount( self.previous_review )
 
         # If the items aren't the same that means that the previous review has been moved from the current review queue
         # to the previous review list and must be put back to be reviewed again
@@ -193,16 +195,29 @@ class ReviewSession():
     def increaseSubjectCount( self, item ):
         # Increases count of item subject type
         subject = item.subject_type
-        self.radicalCount += 1 if subject == "radical" else 0
-        self.kanjiCount += 1 if subject == "kanji" else 0
-        self.vocabularyCount += 1 if subject == "vocabulary" else 0
+        self.subject_counts[subject] += 1
 
     def decreaseSubjectCount( self, item ):
         subject = item.subject_type
-        self.radicalCount -= 1 if subject == "radical" else 0
-        self.kanjiCount -= 1 if subject == "kanji" else 0
-        self.vocabularyCount -= 1 if subject == "vocabulary" else 0
+        self.subject_counts[subject] -= 1
 
+    def increaseSRSCount( self, item ):
+        # Increases count of item srs stage
+        srs = item.srs_stage
+        self.srs_counts[srs] += 1
+
+    def decreaseSRSCount( self, item ):
+        srs = item.srs_stage
+        self.srs_counts[srs] -= 1
+
+    def increaseLevelCount( self, item ):
+        # Increases count of item level
+        level = item.subject.level
+        self.level_counts[level-1] += 1 # -1 since levels are 1 indexed
+
+    def decreaseLevelCount( self, item ):
+        level = item.subject.level
+        self.level_counts[level-1] -= 1 # -1 since levels are 1 indexed
 
     @staticmethod
     def answerIsCloseEnough( key, answer, question ):
@@ -240,7 +255,7 @@ class ReviewSession():
                 self.current_review_queue.append( self.full_review_list[i] )
                 del( self.full_review_list[i] )
 
-    def setSortMode( self, sort_mode ):
+    def setSortMode( self, sort_mode, reverse=False ):
         """
         Scrap old queue and reparse sort mode. Re sort the total review list and form a new queue with any partially
         done reviews at the front
@@ -255,37 +270,25 @@ class ReviewSession():
         would be sorted by Level highest first and the inside level it would be sorted by radicals first then go on to kanji and vocabulary
         """
         # print( "Setting sort mode..." )
-        self.sort_mode = sort_mode
 
-        if( sort_mode != None ):
+        if( sort_mode != None and ( not hasattr( self, "sort_mode" ) or sort_mode != self.sort_mode ) ): # Ensures that there is a a mode to sort with and that it is changing from the original sort
+
+            self.sort_mode = sort_mode
+            self.log.debug("Setting sort mode to {}".format(sort_mode))
             for i in range( len( self.current_review_queue ) ):
                 self.full_review_list.append( self.current_review_queue.pop() )
 
-            sort_mode.reverse() # reversing the sort mode means that it will be sorted in the correct order
-            for item in sort_mode:
-                if( item[0] == "Level" ):
-                    if( item[1] == "A" ):
-                        self.full_review_list = self.levelSort( self.full_review_list )
-                    else:
-                        self.full_review_list = self.levelSort( self.full_review_list, reverse=True )
+            if( sort_mode == SortMode.RANDOM ):
+                shuffle( self.full_review_list )
+            elif( sort_mode == SortMode.LEVEL ):
+                self.full_review_list = self.levelSort( self.full_review_list, reverse )
+            elif( sort_mode == SortMode.SRS ):
+                self.full_review_list = self.srsSort( self.full_review_list, reverse )
+            elif( sort_mode == SortMode.SUBJECT ):
+                self.full_review_list = self.subjectSort( self.full_review_list, reverse )
 
-                elif( item[0] == "SRS" ):
-                    if( item[1] == "A" ):
-                        self.full_review_list = self.srsSort( self.full_review_list )
-                    else:
-                        self.full_review_list = self.srsSort( self.full_review_list, reverse=True )
-
-                elif( item[0] == "Subject" ):
-                    if( item[1] == "A" ):
-                        self.full_review_list = self.subjectSort( self.full_review_list )
-                    else:
-                        self.full_review_list = self.subjectSort( self.full_review_list, reverse=True )
-
-            sort_mode.reverse()
-
-        self.current_review_queue = [ self.full_review_list[i] for i in range( self.queue_size ) ]
-        for i in range( self.queue_size ):
-            del( self.full_review_list[i] )
+            self.current_review_queue = [ self.full_review_list.pop(0) for i in range( self.queue_size ) ]
+            self.pickNextItem()
 
     """
     #############################################################
@@ -294,13 +297,13 @@ class ReviewSession():
     """
     def levelSort( self, l, reverse=False ):
         self.log.debug("Sorting reviews by level")
-        sorted( l, key=operator.attrgetter("subject.level"), reverse=reverse )
-        return( l )
+        sorted_l = sorted( l, key=lambda item: item.subject.level, reverse=reverse )
+        return( sorted_l )
 
     def srsSort( self, l, reverse=False ):
         self.log.debug("Sorting reviews by srs")
-        sorted( l, key=operator.attrgetter("srs_stage"), reverse=reverse )
-        return( l )
+        sorted_l = sorted( l, key=lambda item: item.srs_stage, reverse=reverse )
+        return( sorted_l )
 
     def subjectSort( self, l, reverse=False ):
         """
@@ -318,16 +321,16 @@ class ReviewSession():
         for item in l:
             for m in mapping:
                 if( item.subject_type == m[0] ):
-                    item.subject_type == m[1]
+                    item.subject_type = m[1]
 
-        sorted( l, key=operator.attrgetter("subject_type"), reverse=reverse )
+        sorted_l = sorted( l, key=lambda item: item.subject_type, reverse=reverse )
 
         for item in l:
             for m in mapping:
                 if( item.subject_type == m[1] ):
-                    item.subject_type == m[0]
+                    item.subject_type = m[0]
 
-        return( l )
+        return( sorted_l )
 
     """
     #############################################################
@@ -335,26 +338,33 @@ class ReviewSession():
     #############################################################
     """
     def initSubjectCounts( self ):
-        self.radicalCount = 0
-        self.kanjiCount = 0
-        self.vocabularyCount = 0
-        for item in self.full_review_list:
-            self.radicalCount += 1 if item.subject_type == "radical" else 0
-            self.kanjiCount += 1 if item.subject_type == "kanji" else 0
-            self.vocabularyCount += 1 if item.subject_type == "vocabulary" else 0
+        self.subject_counts = {
+            "radical"   : 0,
+            "kanji"     : 0,
+            "vocabulary": 0
+        }
+        for item in self.full_review_list: self.subject_counts[item.subject_type] += 1
 
-        self.log.debug( "Subject Makeup -- Radical: {}, Kanji: {}, Vocabulary: {}".format( self.radicalCount, self.kanjiCount, self.vocabularyCount ) )
+        self.log.debug( "Subject Makeup -- Radical: {}, Kanji: {}, Vocabulary: {}".format(
+                        self.subject_counts["radical"], self.subject_counts["kanji"], self.subject_counts["vocabulary"] ) )
+
+    def getSubjectCounts( self ):
+        return( self.subject_counts )
 
     def getRadicalCount( self ):
-        return( self.radicalCount )
+        return( self.getSubjectCounts()["radical"] )
 
     def getKanjiCount( self ):
-        return( self.kanjiCount )
+        return( self.getSubjectCounts()["kanji"] )
 
     def getVocabularyCount( self ):
-        return( self.vocabularyCount )
+        return( self.getSubjectCounts()["vocabulary"] )
 
     def initSRSCounts( self ):
+        """
+        Initializes SRS counts to a list where the index is the srs_stage and the list contents at an index
+        is the number of items remaining, in a review session, at that srs stage
+        """
         srs_c = [0] * 10 # 10 because there are 10 srs stages
         for i in range( len( self.full_review_list ) ):
             srs = self.full_review_list[i].srs_stage
@@ -365,42 +375,58 @@ class ReviewSession():
                         srs_c[5], srs_c[6], srs_c[7], srs_c[8], srs_c[9] ) )
         self.srs_counts = srs_c
 
+    def getSRSCounts( self ):
+        """
+        Gets all srs stage counts and returns them as a list
+        """
+        return( self.srs_counts )
+
+    def getSRSCount( self, srs ):
+        """
+        Gets count of items remaining in review session of certain srs stage
+        """
+        return( self.srs_counts[ srs ] )
+
     def initLevelCounts( self ):
+        """
+        Initializes a list of level counts where the index is the level and the contents at an index is the number of
+        items remaining, during a review session, at that level
+        """
         lvl_c = [0] * 60 # 60 because there are 60 levels. Must subtract 1 every time since the levels are 1 indexed but the list is 0 indexed
         for i in range( len( self.full_review_list ) ):
             lvl = self.full_review_list[i].subject.level
-            lvl_c[ lvl ] += 1
+            lvl_c[ lvl - 1 ] += 1 # -1 since levels are 1 indexed
 
         s = "Level Makeup -- "
         for lvl in range( len( lvl_c ) ):
-            s += "{}: {}, ".format( lvl+1, lvl_c[lvl] ) # +1 since the list starts @ 0 and wk levels start @ 1
+            s += "{}: {}, ".format( lvl+1, lvl_c[lvl] ) # +1 since wk levels are 1 indexed
         self.log.debug( s )
-        self.lvl_counts = lvl_c
+        self.level_counts = lvl_c
 
-    def getCorrectAnswer( self ):
-        if( self.current_question == "meaning" ):
-            question = self.current_review_item.subject.meanings
-        elif( self.current_question == "reading" ):
-            question = self.current_review_item.subject.readings
+    def getLevelCounts( self ):
+        """
+        Returns all level counts
+        """
+        return( self.level_counts )
 
-        correct_answers = []
-        for answer in question:
-            if( answer["accepted_answer"] ):
-                correct_answers.append( answer[ self.current_question ] )
+    def getLevelCount( self, level ):
+        """
+        Returns a count of number of items with a given level
+        """
+        return( self.level_counts[ level - 1 ] ) # -1 because levels are 1 indexed
 
-        return( correct_answers )
+    def getCorrectAnswers( self ):
+        return( self.current_review_item.subject.getCorrectAnswers( self.current_question ) )
 
     def getPercentCorrectQuestions( self ):
         if( self.total_questions_asked == 0 ):
             return( 0 )
-
         else:
             return( ( self.total_correct_questions / self.total_questions_asked ) *100 )
 
     def getPercentCorrectReviews( self ):
         if( self.total_done_reviews == 0 ):
             return( 0 )
-
         else:
             return( ( self.total_correct_reviews / self.total_done_reviews ) *100 )
 
