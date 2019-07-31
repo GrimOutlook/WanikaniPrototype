@@ -14,7 +14,9 @@ class WKUpdatedAssignment( WKObject ):
         self.started_datetime       = data["started_datetime"]
 
     def insertIntoDatabase( self ):
-        self.log.debug("Inserting updated assignment of subject id: {} into database".format(self.subject_id))
+        if( self.settings.settings["debug"]["log_database_update_insertion"] ):
+            self.log.debug("Inserting updated assignment of subject id: {} into database".format(self.subject_id))
+
         sql = """ INSERT INTO updated_assignment(
                 id,
                 object,

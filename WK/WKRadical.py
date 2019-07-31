@@ -47,7 +47,9 @@ class WKRadical( WKSubject ):
         return( cls( data, wk_db ) )
 
     def insertIntoDatabase( self ):
-        self.log.debug("Inserting radical of id {} into database".format(self.id))
+        if( self.settings.settings["debug"]["log_database_insertion"] ):
+            self.log.debug("Inserting radical of id {} into database".format(self.id))
+
         sql = """ INSERT INTO radical(
                 id,
                 object,

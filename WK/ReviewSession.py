@@ -121,12 +121,12 @@ class ReviewSession():
         if( self.current_review_item.current_review.meaning_answers_done and self.current_review_item.current_review.reading_answers_done ):
             # print( "Removing done item..." )
             # Set completed timestamp to now
-            self.current_review_item.current_review.created_datetime = datetime.now().isoformat(timespec="microseconds")
-
+            self.current_review_item.current_review.setCreatedDatetime()
             # Can be updated here to automatically upload the review to the api if so chosen
             # Add new review to database
             self.current_review_item.current_review.insertIntoDatabase()
-            self.current_review_item.assignment.removeFromDatabase()
+            self.current_review_item.current_review.upload()
+            self.current_review_item.assignment.updateDone( True )
 
             # Update statistics
             if( self.current_review_item.current_review.incorrect_meaning_answers == 0 and self.current_review_item.current_review.incorrect_reading_answers == 0 ):
@@ -179,6 +179,9 @@ class ReviewSession():
                 self.previous_review_item.current_review.incorrect_meaning_answers -= 1
             elif(self.previous_question == "reading" ):
                 self.previous_review_item.current_review.incorrect_reading_answers -= 1
+
+        self.current_review_item.current_review.removeFromDatabase()
+        self.current_review_item.assignment.updateDone( False )
 
         self.total_questions_asked -= 1
 

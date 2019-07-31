@@ -10,6 +10,7 @@ sys.path.append("..")
 
 from settings import Settings
 
+import WanikaniSession as WKSESS
 from WK import Pages
 from WKSubject import WKSubject
 from WKRadical import WKRadical
@@ -171,7 +172,8 @@ class WanikaniDatabase():
                 resurrected_datetime text,
                 passed text,
                 resurrected text,
-                hidden text
+                hidden text,
+                done bool
         );"""
         sql_create_table_updated_assignment = """CREATE TABLE IF NOT EXISTS updated_assignment (
                 id integer PRIMARY KEY,
@@ -197,6 +199,8 @@ class WanikaniDatabase():
             self.database_filename = database_filename
         else:
             self.database_filename = self.settings.BASE_PATH + "/wanikani.db"
+
+        init_database = True if( not os.path.exists( self.database_filename ) or not os.path.getsize( self.database_filename) > 0  ) else False
         # path can equal either :memory: or a database file
         try:
             self.conn = sqlite3.connect( self.database_filename )
@@ -204,8 +208,14 @@ class WanikaniDatabase():
         except Error as e:
             print( e )
             self.conn.close()
-            print("Connection to database failed. Closing...")
-            exit()
+            raise Exception("Connection to database failed. Closing...")
+
+        if( self.settings.settings["debug"]["purge_database_on_startup"] ):
+            self.purgeDatabase()
+        if( self.settings.settings["debug"]["drop_updated_tables_on_startup"] ):
+            self.dropTable( "updated_review" )
+            self.dropTable( "updated_assignment" )
+
 
         self.sql_exec( sql_create_table_radical )
         self.sql_exec( sql_create_table_kanji )
@@ -219,15 +229,23 @@ class WanikaniDatabase():
 
         self.commitChanges()
 
+        if( self.settings.settings["debug"]["update_database_on_startup"] or init_database ):
+            wk_sess = WKSESS.WanikaniSession( wk_db=self )
+            wk_sess.importUserIntoDatabase()
+            wk_sess.importAllCollectionsIntoDatabase()
+            self.commitChanges()
+
     def commitChanges( self ):
         self.conn.commit()
 
     def purgeDatabase( self ):
+        self.conn.close()
         if( self.database_filename != ":memory:" ):
             os.remove( self.database_filename )
-        else:
-            self.conn.close()
-            self.conn.connect( self.database_filename )
+        self.conn.connect( self.database_filename )
+
+    def dropTable( self, table ):
+        self.sql_exec( "DROP TABLE IF EXISTS {}".format( table ) )
 
     def sql_exec( self, sql, values=None ):
         if( self.conn != None ):

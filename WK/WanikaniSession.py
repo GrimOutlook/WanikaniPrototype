@@ -9,9 +9,7 @@ sys.path.append("..")
 
 from settings import Settings
 from WK import Pages
-from WanikaniDatabase import WanikaniDatabase
-#from ReviewSession import ReviewSession
-#from LessonSession import LessonSession
+import WanikaniDatabase as WKDB
 from WKSubject import WKSubject
 from WKRadical import WKRadical
 from WKKanji import WKKanji
@@ -35,33 +33,32 @@ class WanikaniSession():
     BASE_API_URL = "https://api.wanikani.com/v2/"
     valid_collection_types = [ "subjects", "reviews", "assignments" ]
 
-    def __init__( self, api_token="48768d92-fc9b-4616-9e4a-4fde5318daab" ):
+    def __init__( self, api_token="48768d92-fc9b-4616-9e4a-4fde5318daab", wk_db=None ):
         # Initiallizes the main values necessary for querying to Wanikani API
         self.api_token = api_token
         self.header = {
+            "Wanikani-Revision" : "20170710",
             "Authorization" : "Bearer " + self.api_token
         }
 
-        self.wk_db = WanikaniDatabase()
+        self.wk_db = WKDB.WanikaniDatabase() if wk_db == None else wk_db
         self.last_API_hit_time = 0
 
-    """
-    The request code is a mess, will hopefully fix it at some point
-    """
     def getFromAPI( self, url ):
         """
         There are two modes of retrieving the results.
         1) By directly accessing self.api_results after calling getFromAPI() or
         2) By assigning the value of the returned result of the function getFromAPI()
         """
-        # Does a get request to the Wanikani API and returns the results in dictionary form
-        r = requests.get( url, headers=self.header, timeout=11 )
-        self.api_results = r.json()
-
-        MAX_TRIES = 5
+        TIMOUT = 5
+        MAX_TRIES = 3
         tries = 1
         while( True ):
+            # Does a get request to the Wanikani API and returns the results in dictionary form
+            r = requests.get( url, headers=self.header, timeout=TIMEOUT )
+
             if( r.status_code == 200 ):
+                self.api_results = r.json()
                 return( self.api_results )
 
             elif( r.status_code == 429 ):
@@ -70,28 +67,31 @@ class WanikaniSession():
                 time.sleep( 20 )
 
             else:
-                if( tries > MAX_TRIES  ):
+                if( tries >= MAX_TRIES  ):
                     raise Exception("Server returning a status code other than 200. Status code is: {}".format(r.status_code))
 
                 time.sleep(5)
                 tries += 1
 
     def postToAPI( self, url, payload ):
-        # Does a get request to the Wanikani API and returns the results in dictionary form
-        r = requests.post( url, headers=self.header, data=payload, timeout=11 )
-        self.api_results = r.json()
-
-        MAX_TRIES = 5
+        TIMEOUT = 5
+        MAX_TRIES = 3
         tries = 1
         while( True ):
+            # Does a post request to the Wanikani API and returns the results in dictionary form
+            r = requests.post( url, headers=self.header, data=payload, timeout=TIMEOUT )
+
             if( r.status_code == 200 ):
+                self.api_results = r.json()
                 return( self.api_results )
 
             elif( r.status_code == 429 ):
                 time.sleep( 20 )
 
             else:
-                if( tries > MAX_TRIES ):
+                if( tries >= MAX_TRIES ):
+                    print( "Response error message:" )
+                    print( r.json() )
                     raise Exception("Server returning a status code other than 200. Status code is: {}".format(r.status_code))
 
                 time.sleep(5)

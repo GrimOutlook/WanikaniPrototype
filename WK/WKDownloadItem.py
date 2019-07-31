@@ -23,7 +23,9 @@ class WKDownloadItem( WKObject ):
 
 
     def insertIntoDatabase( self ):
-        self.log.debug("Inserting item into download queue with id: {}".format( self.id ))
+        if( self.settings.settings["debug"]["log_database_insertion"] ):
+            self.log.debug("Inserting item into download queue with id: {}".format( self.id ))
+
         sql = """ INSERT INTO download_queue(
                 id,
                 object,

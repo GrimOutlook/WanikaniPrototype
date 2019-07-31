@@ -38,7 +38,11 @@
         "debug_mode" : false
     },
     "debug" : {
-        
+        "purge_database_on_startup": false,
+        "drop_updated_tables_on_startup": true,
+        "update_database_on_startup": false,
+        "log_database_insertion": false,
+        "log_database_update_insertion": true
     }
     
 }

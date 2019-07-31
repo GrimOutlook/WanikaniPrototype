@@ -18,8 +18,6 @@ class WKReview( WKObject ):
         self.ending_srs_stage_name      = data["ending_srs_stage_name"]
         self.incorrect_meaning_answers  = 0
         self.incorrect_reading_answers  = 0
-        self.meaning_answers_done       = False
-        self.reading_answers_done       = False
 
     @classmethod
     def fromAPI( cls, r, wk_db ):
@@ -42,7 +40,9 @@ class WKReview( WKObject ):
         return( cls( data, wk_db ) )
 
     def insertIntoDatabase( self ):
-        self.log.debug("Inserting review of subject id: {} into database".format(self.subject_id))
+        if( self.settings.settings["debug"]["log_database_insertion"] ):
+            self.log.debug("Inserting review of subject id: {} into database".format(self.subject_id))
+
         sql = """ INSERT INTO review(
                 id,
                 object,

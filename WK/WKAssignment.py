@@ -28,6 +28,7 @@ class WKAssignment( WKObject ):
         self.passed                 = data["passed"]
         self.resurrected            = data["resurrected"]
         self.hidden                 = data["hidden"]
+        self.done                   = data["done"]
 
         self.last_review = None
         self.current_review = None
@@ -55,7 +56,8 @@ class WKAssignment( WKObject ):
             "resurrected_datetime"  : d["resurrected_at"],
             "passed"                : str( d["passed"]),
             "resurrected"           : str( d["resurrected"]),
-            "hidden"                : str( d["hidden"])
+            "hidden"                : str( d["hidden"]),
+            "done"                  : False
         }
         return( cls( data, wk_db ) )
 
@@ -71,11 +73,13 @@ class WKAssignment( WKObject ):
         return( self )
 
     def isAvailableNow( self ):
-        return( self.available_datetime != None and
+        return( self.available_datetime != None and not self.done and
                datetime.datetime.fromisoformat( self.available_datetime.strip("Z") ) < datetime.datetime.now() )
 
     def insertIntoDatabase( self ):
-        self.log.debug( "Inserting assignment with subject id: {} into database".format( self.subject_id ) )
+        if( self.settings.settings["debug"]["log_database_insertion"] ):
+            self.log.debug( "Inserting assignment with subject id: {} into database".format( self.subject_id ) )
+
         sql = """ INSERT INTO assignment(
                 id,
                 object,
@@ -94,10 +98,11 @@ class WKAssignment( WKObject ):
                 resurrected_datetime,
                 passed,
                 resurrected,
-                hidden
+                hidden,
+                done
         )
 
-        VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ) """
+        VALUES( ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? ) """
 
         assignment = (
                 self.id,
@@ -117,10 +122,17 @@ class WKAssignment( WKObject ):
                 self.resurrected_datetime,
                 str( self.passed ),
                 str( self.resurrected ),
-                str( self.hidden )
+                str( self.hidden ),
+                self.done
         )
 
         self.wk_db.sql_exec( sql, assignment )
+
+    def updateDone( self, done ):
+        self.done = done
+        sql = "UPDATE assignment SET done={} WHERE subject_id={}".format( done, self.subject_id )
+        self.wk_db.sql_exec( sql )
+        self.wk_db.commitChanges()
 
     def removeFromDatabase( self ):
         sql = "DELETE FROM assignment WHERE subject_id=?"
