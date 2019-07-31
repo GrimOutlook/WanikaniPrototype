@@ -4,11 +4,11 @@ import ast # This is for converting the returned database info into dictonaries 
 
 class WKRadical( WKSubject ):
     # This constructor you use when pulling from database
-    def __init__( self, data, wk_db ):
+    def __init__( self, data, wk_db, settings=None ):
         """
         The init function gets the parameters from a static list usually returned from an sql inquiry
         """
-        self.settings = Settings()
+        self.settings = Settings() if settings == None else settings
         self.log = self.settings.logging
 
         WKSubject.__init__( self, data, wk_db  )
@@ -20,7 +20,7 @@ class WKRadical( WKSubject ):
     # This constructor you use when pulling from the API
     # Takes response object dictionary rather than database dictionary
     @classmethod
-    def fromAPI( cls, r, wk_db ):
+    def fromAPI( cls, r, wk_db, settings=None ):
         d = r["data"]
 
         filepath = None
@@ -44,13 +44,13 @@ class WKRadical( WKSubject ):
             "meaning_mnemonic"          : d["meaning_mnemonic"],
             "slug"                      : d["slug"]
         }
-        return( cls( data, wk_db ) )
+        return( cls( data, wk_db, settings=settings ) )
 
     def insertIntoDatabase( self ):
         if( self.settings.settings["debug"]["log_database_insertion"] ):
             self.log.debug("Inserting radical of id {} into database".format(self.id))
 
-        sql = """ INSERT INTO radical(
+        sql = """ INSERT OR REPLACE INTO radical(
                 id,
                 object,
                 api_url,

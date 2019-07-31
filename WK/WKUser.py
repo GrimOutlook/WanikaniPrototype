@@ -2,8 +2,8 @@ from settings import Settings
 from WKObject import WKObject
 
 class WKUser( WKObject ):
-    def __init__( self, data, wk_db ):
-        self.settings = Settings()
+    def __init__( self, data, wk_db, settings=None ):
+        self.settings = Settings() if settings == None else settings
         self.log = self.settings.logging
 
         WKObject.__init__( self, data, wk_db )
@@ -18,7 +18,7 @@ class WKUser( WKObject ):
         self.preferences                        = data["preferences"]
 
     @classmethod
-    def fromAPI( cls, r, wk_db ):
+    def fromAPI( cls, r, wk_db, settings=None ):
         d = r["data"]
         data = {
             "id"                                : d["id"],
@@ -33,7 +33,7 @@ class WKUser( WKObject ):
             "subscription"                      : str( d["subscription"]),
             "preferences"                       : str( d["preferences"])
         }
-        return( cls( data, wk_db ) )
+        return( cls( data, wk_db, settings=settings ) )
 
     def insertIntoDatabase( self ):
         self.log.debug("Inserting user of id: {} into database".format(self.id))

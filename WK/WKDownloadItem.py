@@ -3,8 +3,8 @@ from settings import Settings
 from WKObject import WKObject
 
 class WKDownloadItem( WKObject ):
-    def __init__( self, data, wk_db ):
-        self.settings = Settings()
+    def __init__( self, data, wk_db, settings=None ):
+        self.settings = Settings() if settings == None else settings
         self.log = self.settings.logging
 
         WKObject.__init__( self, data, wk_db )
@@ -12,21 +12,21 @@ class WKDownloadItem( WKObject ):
         self.filepath = data["filepath"]
 
     @classmethod
-    def fromAPI( cls, _id, obj, url, filepath, wk_db ):
+    def fromAPI( cls, _id, obj, url, filepath, wk_db, settings=None ):
         data = {
             "id"        : _id,
             "obj"       : obj,
             "url"       : url,
             "filepath"  : filepath
         }
-        return( cls( data, wk_db ) )
+        return( cls( data, wk_db, settings=settings ) )
 
 
     def insertIntoDatabase( self ):
         if( self.settings.settings["debug"]["log_database_insertion"] ):
             self.log.debug("Inserting item into download queue with id: {}".format( self.id ))
 
-        sql = """ INSERT INTO download_queue(
+        sql = """ INSERT OR REPLACE INTO download_queue(
                 id,
                 object,
                 url,

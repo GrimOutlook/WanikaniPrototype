@@ -25,8 +25,9 @@ from WKUser import WKUser
 
 class WanikaniDatabase():
 
-    def __init__( self, database_filename=None ):
-        self.settings = Settings( Pages.WANIKANI_DATABASE )
+    def __init__( self, database_filename=None, settings=None ):
+        self.settings = Settings() if settings == None else settings
+        self.log = self.settings.logging
 
         """
         Items with multiple data points will be stored as text and be parsed as json for manipulation
@@ -229,6 +230,7 @@ class WanikaniDatabase():
 
         self.commitChanges()
 
+        self.log.debug("Init_database: {}".format(init_database))
         if( self.settings.settings["debug"]["update_database_on_startup"] or init_database ):
             wk_sess = WKSESS.WanikaniSession( wk_db=self )
             wk_sess.importUserIntoDatabase()

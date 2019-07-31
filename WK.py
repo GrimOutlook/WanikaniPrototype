@@ -80,6 +80,12 @@ class TerminalColorPalette():
     READING_QUESTION     = 6
     REVIEW_VOCABULARY    = 7
     REVIEW_KANJI         = 8
+    REVIEW_RADICAL       = 9
+    APPRENTICE_PINK      = 10
+    GURU_PURPLE          = 11
+    MASTER_BLUE          = 12
+    ENLIGHTENED_BLUE     = 13
+    BURNED_GRAY          = 14
 
 class TerminalColors():
     RADICAL_BLUE        = 33
@@ -90,6 +96,11 @@ class TerminalColors():
     IGNORED_YELLOW      = 226
     MEANING_WHITE       = 250
     READING_BLACK       = 237
+    APPRENTICE_PINK     = 198
+    GURU_PURPLE         = 93
+    MASTER_BLUE         = 27
+    ENLIGHTENED_BLUE    = 33
+    BURNED_GRAY         = 237
 
 class SRSStages():
     INITIATE        = 0

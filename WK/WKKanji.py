@@ -3,11 +3,11 @@ from WKSubject import WKSubject
 import ast # This is for converting the returned database info into dictonaries easier
 
 class WKKanji( WKSubject ):
-    def __init__( self, data, wk_db ):
+    def __init__( self, data, wk_db, settings=None ):
         """
         The init function gets the parameters from a static list usually returned from an sql inquiry
         """
-        self.settings = Settings()
+        self.settings = Settings() if settings == None else settings
         self.log = self.settings.logging
 
         WKSubject.__init__( self, data, wk_db  )
@@ -20,7 +20,7 @@ class WKKanji( WKSubject ):
         self.visually_similar_subject_ids  = ast.literal_eval( data["visually_similar_subject_ids"] )
 
     @classmethod
-    def fromAPI( cls, r, wk_db ):
+    def fromAPI( cls, r, wk_db, settings=None ):
         d = r["data"]
 
         data = {
@@ -46,13 +46,13 @@ class WKKanji( WKSubject ):
             "slug"                          : d["slug"],
             "visually_similar_subject_ids"  : str( d["visually_similar_subject_ids"])
         }
-        return( cls( data, wk_db ) )
+        return( cls( data, wk_db, settings=settings ) )
 
     def insertIntoDatabase( self ):
         if( self.settings.settings["debug"]["log_database_insertion"] ):
             self.log.debug("Inserting kanji of id {} into database".format(self.id))
 
-        sql = """ INSERT INTO kanji(
+        sql = """ INSERT OR REPLACE INTO kanji(
                 id,
                 object,
                 api_url,

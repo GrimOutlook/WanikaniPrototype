@@ -43,7 +43,7 @@ class WKReview( WKObject ):
         if( self.settings.settings["debug"]["log_database_insertion"] ):
             self.log.debug("Inserting review of subject id: {} into database".format(self.subject_id))
 
-        sql = """ INSERT INTO review(
+        sql = """ INSERT OR REPLACE INTO review(
                 id,
                 object,
                 api_url,

@@ -5,7 +5,7 @@ sys.path.append("../WK")
 from settings import Settings
 from WanikaniSession import WanikaniSession
 from ReviewSession import ReviewSession
-from WK import ReviewMode, ReviewState, TerminalColorPalette, TerminalColors
+from WK import ReviewMode, ReviewState, SortMode, TerminalColorPalette, TerminalColors
 from PseudoJapaneseIME import PseudoJapaneseIME
 
 """
@@ -37,11 +37,16 @@ class WKTUI():
             curses.init_pair( TerminalColorPalette.READING_QUESTION, curses.COLOR_WHITE, TerminalColors.READING_BLACK)      # Reading Question Color
             curses.init_pair( TerminalColorPalette.REVIEW_VOCABULARY, curses.COLOR_WHITE, TerminalColors.VOCABULARY_PURPLE) # Vocab Color
             curses.init_pair( TerminalColorPalette.REVIEW_KANJI, curses.COLOR_WHITE, TerminalColors.KANJI_PINK)             # Kanji Color
+            curses.init_pair( TerminalColorPalette.REVIEW_RADICAL, curses.COLOR_WHITE, TerminalColors.RADICAL_BLUE)         # Radical Color
+            curses.init_pair( TerminalColorPalette.APPRENTICE_PINK, curses.COLOR_WHITE, TerminalColors.APPRENTICE_PINK)     #
+            curses.init_pair( TerminalColorPalette.GURU_PURPLE, curses.COLOR_WHITE, TerminalColors.GURU_PURPLE)             #
+            curses.init_pair( TerminalColorPalette.MASTER_BLUE, curses.COLOR_WHITE, TerminalColors.MASTER_BLUE)             #
+            curses.init_pair( TerminalColorPalette.ENLIGHTENED_BLUE, curses.COLOR_WHITE, TerminalColors.ENLIGHTENED_BLUE)   #
+            curses.init_pair( TerminalColorPalette.BURNED_GRAY, curses.COLOR_WHITE, TerminalColors.BURNED_GRAY)             #
 
             self.height, self.width = self.scr.getmaxyx()
 
-            self.rs = ReviewSession()
-            self.rs.setSortMode([["Subject","A"],["Level","A"]])
+            self.rs = ReviewSession( settings=self.settings )
             self.IME = PseudoJapaneseIME()
 
             # Get default from settings here
@@ -58,7 +63,7 @@ class WKTUI():
 
             self.log.debug( "Setting char values" )
             BACKSPACE_CHAR = ord( "\x7f" )
-            self.bad_chars = [  None, BACKSPACE_CHAR, ord("~"), ord("`"), ord("\n"), ord('!'),
+            self.bad_chars = [  None, BACKSPACE_CHAR, ord("~"), ord("`"), ord("\n"), ord('!'), ord("$"),
                                 curses.KEY_UP, curses.KEY_DOWN, curses.KEY_LEFT, curses.KEY_RIGHT ]
             self.log.debug( 'WKTUI Finished Initializing.' )
 
@@ -79,6 +84,7 @@ class WKTUI():
 
                 self.handleKey( ch )
 
+                self.drawSrsStageName()
                 self.drawSubjectType()
                 self.drawKanji()
                 self.drawTopStatsBar()
@@ -105,6 +111,7 @@ class WKTUI():
             print( e )
 
     def toggleReviewMode( self ):
+        # We dont allow ANKI_W_BUTTONS because there is no use and I am not going to implement buttons for this
         self.review_mode = ReviewMode.ANKI if self.review_mode == ReviewMode.TYPING else ReviewMode.TYPING
 
     def setState( self, state ):
@@ -151,6 +158,9 @@ class WKTUI():
         elif( self.review_mode == ReviewMode.ANKI and ch not in self.bad_chars ):
             if( ch == ord('3') ): # This key is used to show answer in anki mode
                 self.showAnswer()
+
+        elif( ch == ord('$') ):
+            self.cycleSortMode()
 
     def handleKeyAnswerShown( self, ch ):
         if( ch == ord('1') ): # This is the number 1 key, used for correct answer in anki mode
@@ -211,17 +221,57 @@ class WKTUI():
         self.text = ", ".join( self.rs.getCorrectAnswers() )
         self.setState( ReviewState.ANSWER_SHOWN )
 
+    def cycleSortMode( self ):
+        self.setSortMode( (self.rs.sort_mode + 1 )% 4 ) # Mod 4 since there are only 4 sort modes currently
+
+    def setSortMode( self, mode ):
+        self.rs.setSortMode( mode )
+
     def drawSubjectType( self ):
         try:
             subject_type = self.rs.current_review_item.subject.object
             x = self.getRelativeCenterX( subject_type )
             y = self.getAbsoluteCenterY() - 4
-            self.scr.attron(curses.A_BOLD)
             if( subject_type == "vocabulary" ):
-                self.scr.addstr( y, x, subject_type, curses.color_pair(TerminalColorPalette.REVIEW_VOCABULARY) )
+                c_p = curses.color_pair(TerminalColorPalette.REVIEW_VOCABULARY)
             elif( subject_type == "kanji" ):
-                self.scr.addstr( y, x, subject_type, curses.color_pair(TerminalColorPalette.REVIEW_KANJI) )
+                c_p = curses.color_pair(TerminalColorPalette.REVIEW_KANJI)
+            elif( subject_type == "radical" ):
+                c_p = curses.color_pair(TerminalColorPalette.REVIEW_RADICAL)
 
+            self.scr.attron(curses.A_BOLD)
+            self.scr.addstr( y, x, subject_type, c_p )
+            self.scr.attroff(curses.A_BOLD)
+
+        except KeyboardInterrupt:
+            self.log.exception( 'Keyboard interrupt occured during drawKanji.', exc_info=True )
+            return
+
+        except Exception as e:
+            self.log.exception( 'Exception occured during drawKanji.', exc_info=True )
+            curses.endwin()
+            print( e )
+
+    def drawSrsStageName( self ):
+        try:
+            stage_name = self.rs.current_review_item.srs_stage_name
+            stage = self.rs.current_review_item.srs_stage
+            x = self.getRelativeCenterX( stage_name )
+            y = self.getAbsoluteCenterY() - 5
+
+            if( 1 <= stage <= 4 ): # APPRENTICE
+                c_p = curses.color_pair(TerminalColorPalette.APPRENTICE_PINK)
+            elif( 5 <= stage <= 6 ): # GURU
+                c_p = curses.color_pair(TerminalColorPalette.GURU_PURPLE)
+            elif( stage == 7 ): # Master
+                c_p = curses.color_pair(TerminalColorPalette.MASTER_BLUE)
+            elif( stage == 8 ): # ENLIGHTENED
+                c_p = curses.color_pair(TerminalColorPalette.ENLIGHTENED_BLUE)
+            elif( stage == 9 ): # BURNED
+                c_p = curses.color_pair(TerminalColorPalette.BURNED_GRAY)
+
+            self.scr.attron(curses.A_BOLD)
+            self.scr.addstr( y, x, stage_name, c_p )
             self.scr.attroff(curses.A_BOLD)
 
         except KeyboardInterrupt:
@@ -280,8 +330,21 @@ class WKTUI():
 
     def drawStatusBar( self, message="" ):
         try:
+            review_modes = {
+                ReviewMode.TYPING   : "Typing",
+                ReviewMode.ANKI     : "Anki"
+            }
+            review_mode = review_modes[ self.review_mode ]
+
+            sort_modes = {
+                SortMode.RANDOM     : "Random",
+                SortMode.LEVEL      : "Level",
+                SortMode.SRS        : "SRS",
+                SortMode.SUBJECT    : "Subject"
+            }
+            sort_mode = sort_modes[ self.rs.sort_mode ]
             # Set statusbar string, append message, and slice to width to prevent wrapping
-            statusbarstr = "| {} | change mode(`) | ignore answer(!) | exit(~) | {}".format( self.review_mode, message )[:self.width]
+            statusbarstr = "| {} | change mode(`) | {} | change sort($) | ignore answer(!) | exit(~) | {}".format( review_mode, sort_mode, message )[:self.width]
 
             # Render status bar
             self.scr.attron(curses.color_pair( TerminalColorPalette.DEFAULT_HIGHLIGHT ))
@@ -303,12 +366,14 @@ class WKTUI():
             question_type = self.rs.current_question
             y = self.getAbsoluteCenterY()
             x = self.getRelativeCenterX( question_type )
-            self.scr.attron(curses.A_BOLD)
-            if( question_type == "meaning" ):
-                self.scr.addstr( y, x, question_type, curses.color_pair( TerminalColorPalette.MEANING_QUESTION ) )
-            elif( question_type == "reading" ):
-                self.scr.addstr( y, x, question_type, curses.color_pair( TerminalColorPalette.READING_QUESTION ) )
 
+            if( question_type == "meaning" ):
+                c_p = curses.color_pair( TerminalColorPalette.MEANING_QUESTION )
+            elif( question_type == "reading" ):
+                c_p = curses.color_pair( TerminalColorPalette.READING_QUESTION )
+
+            self.scr.attron(curses.A_BOLD)
+            self.scr.addstr( y, x, question_type, c_p )
             self.scr.attroff(curses.A_BOLD)
 
         except KeyboardInterrupt:

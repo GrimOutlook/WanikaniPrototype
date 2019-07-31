@@ -6,8 +6,8 @@ import WKAssignment
 import WKReview
 
 class WKUpdatedReview( WKObject ):
-    def __init__( self, data, wk_db ):
-        self.settings = Settings()
+    def __init__( self, data, wk_db, settings=None ):
+        self.settings = Settings() if settings == None else settings
         self.log = self.settings.logging
 
         self.object                     = data["object"]
@@ -16,15 +16,15 @@ class WKUpdatedReview( WKObject ):
         self.subject_id                 = data["subject_id"]
         self.incorrect_meaning_answers  = 0
         self.meaning_answers_done       = False
+        self.incorrect_reading_answers  = 0
 
-        if( self.object != "radical" ): # Radicals don't have readings
-            self.incorrect_reading_answers  = 0
-            self.reading_answers_done       = False
+        # Radicals don't have readings
+        self.reading_answers_done = True if self.object == "radical" else False
 
         self.wk_db = wk_db
 
     @classmethod
-    def fromAssignment( cls, assignment_id, _object, subject_id, wk_db ):
+    def fromAssignment( cls, assignment_id, _object, subject_id, wk_db, settings=None ):
         data = {
             "assignment_id" : assignment_id,
             "object"        : _object,
@@ -32,7 +32,7 @@ class WKUpdatedReview( WKObject ):
             "incorrect_meaning_answers" : 0,
             "incorrect_reading_answers" : 0
         }
-        return( cls( data, wk_db ) )
+        return( cls( data, wk_db, settings=settings ) )
 
     def resetReview( self ):
         self.created_datetime           = None
@@ -54,7 +54,7 @@ class WKUpdatedReview( WKObject ):
         if( self.created_datetime == None ): self.setCreatedDatetime()
 
         # This is all that is needed to post a review to wanikani
-        sql = """ INSERT INTO updated_review(
+        sql = """INSERT OR REPLACE INTO updated_review(
                 assignment_id,
                 object,
                 created_datetime,
@@ -92,14 +92,13 @@ class WKUpdatedReview( WKObject ):
                 "incorrect_reading_answers" : self.incorrect_reading_answers,
                 "created_at" : self.created_datetime
         } }
-        print( "Payload" )
-        print(payload)
+        self.log.debug( "Payload: {}".format( payload ) )
 
         url = wk_sess.BASE_API_URL + "reviews/"
-        self.log.debug("Posting review of subject_id={} to wanikani at url=\"{}\"...".format(self.subject_id, url))
+        # self.log.debug("Posting review of subject_id={} to wanikani at url=\"{}\"...".format(self.subject_id, url))
         updated_info = wk_sess.postToAPI( url, payload )
-        print( updated_info )
-        review = WKReview.WKReview.fromAPI( updated_info ).insertIntoDatabase()
-        assignment = WKAssignment.WKAssignment.fromAPI( updated_info["resources_updated"]["assignment"] ).insertIntoDatabase()
+        # self.log.debug( updated_info )
+        review = WKReview.WKReview.fromAPI( updated_info, self.wk_db ).insertIntoDatabase()
+        assignment = WKAssignment.WKAssignment.fromAPI( updated_info["resources_updated"]["assignment"], self.wk_db ).insertIntoDatabase()
         # Eventually I will also capture review statistics here
         # review_statistic = WKReviewStatistic.fromAPI( updated_info["resources_updated"]["review_statistic"] )

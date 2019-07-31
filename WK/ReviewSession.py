@@ -12,9 +12,9 @@ import re # For removing all non alpha-numeric-space characters from strings
 import operator
 
 class ReviewSession():
-    def __init__( self ):
+    def __init__( self, settings=None ):
         # print("Initiallizing review session...")
-        self.settings = Settings( Pages.REVIEW_SESSION )
+        self.settings = Settings() if settings == None else settings
         self.log = self.settings.logging
 
         self.log.debug( 'Review Session Started Initializing.' )
@@ -125,8 +125,8 @@ class ReviewSession():
             # Can be updated here to automatically upload the review to the api if so chosen
             # Add new review to database
             self.current_review_item.current_review.insertIntoDatabase()
-            self.current_review_item.current_review.upload()
             self.current_review_item.assignment.updateDone( True )
+            if( self.settings.settings["review_session"]["allow_update_posting"] ): self.current_review_item.current_review.upload()
 
             # Update statistics
             if( self.current_review_item.current_review.incorrect_meaning_answers == 0 and self.current_review_item.current_review.incorrect_reading_answers == 0 ):

@@ -4,11 +4,11 @@ from WKObject import WKObject
 from WKUpdatedReview import WKUpdatedReview
 
 class WKAssignment( WKObject ):
-    def __init__( self, data, wk_db ):
+    def __init__( self, data, wk_db, settings=None ):
         """
         The init function gets the parameters from a static list usually returned from an sql inquiry
         """
-        self.settings = Settings()
+        self.settings = Settings() if settings == None else settings
         self.log = self.settings.logging
 
         WKObject.__init__( self, data, wk_db )
@@ -36,7 +36,7 @@ class WKAssignment( WKObject ):
         self.subject = None
 
     @classmethod
-    def fromAPI( cls, r, wk_db ):
+    def fromAPI( cls, r, wk_db, settings=None ):
         d = r["data"]
         data = {
             "id"                    : r["id"],
@@ -59,7 +59,7 @@ class WKAssignment( WKObject ):
             "hidden"                : str( d["hidden"]),
             "done"                  : False
         }
-        return( cls( data, wk_db ) )
+        return( cls( data, wk_db, settings=settings ) )
 
     def getSubject( self ):
         # Sets subject attribute to subject and returns subject just in case thats more convenient
@@ -80,7 +80,7 @@ class WKAssignment( WKObject ):
         if( self.settings.settings["debug"]["log_database_insertion"] ):
             self.log.debug( "Inserting assignment with subject id: {} into database".format( self.subject_id ) )
 
-        sql = """ INSERT INTO assignment(
+        sql = """ INSERT OR REPLACE INTO assignment(
                 id,
                 object,
                 api_url,

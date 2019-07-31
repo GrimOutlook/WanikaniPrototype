@@ -28,12 +28,13 @@ By convention:
 """
 
 class WanikaniSession():
-    settings = Settings( Pages.WANIKANI_SESSION )
-
     BASE_API_URL = "https://api.wanikani.com/v2/"
     valid_collection_types = [ "subjects", "reviews", "assignments" ]
 
-    def __init__( self, api_token="48768d92-fc9b-4616-9e4a-4fde5318daab", wk_db=None ):
+    def __init__( self, api_token="48768d92-fc9b-4616-9e4a-4fde5318daab", wk_db=None, settings=None ):
+        self.settings = Settings() if settings == None else settings
+        self.log = self.settings.logging
+
         # Initiallizes the main values necessary for querying to Wanikani API
         self.api_token = api_token
         self.header = {
@@ -41,7 +42,7 @@ class WanikaniSession():
             "Authorization" : "Bearer " + self.api_token
         }
 
-        self.wk_db = WKDB.WanikaniDatabase() if wk_db == None else wk_db
+        self.wk_db = WKDB.WanikaniDatabase( settings=self.settings ) if wk_db == None else wk_db
         self.last_API_hit_time = 0
 
     def getFromAPI( self, url ):
@@ -50,7 +51,7 @@ class WanikaniSession():
         1) By directly accessing self.api_results after calling getFromAPI() or
         2) By assigning the value of the returned result of the function getFromAPI()
         """
-        TIMOUT = 5
+        TIMEOUT = 5
         MAX_TRIES = 3
         tries = 1
         while( True ):
@@ -68,6 +69,8 @@ class WanikaniSession():
 
             else:
                 if( tries >= MAX_TRIES  ):
+                    self.log.debug( "Response error message:" )
+                    self.log.debug( r.json() )
                     raise Exception("Server returning a status code other than 200. Status code is: {}".format(r.status_code))
 
                 time.sleep(5)
@@ -79,9 +82,12 @@ class WanikaniSession():
         tries = 1
         while( True ):
             # Does a post request to the Wanikani API and returns the results in dictionary form
-            r = requests.post( url, headers=self.header, data=payload, timeout=TIMEOUT )
+            # The 'data' parameter is changed to 'json' so it automatically converts it to json
+            # also it's the only way i've gotten it to work, converting it outside didn't work
+            r = requests.post( url, headers=self.header, json=payload, timeout=TIMEOUT )
 
-            if( r.status_code == 200 ):
+            if( r.status_code == 201 ):
+                # Response code 201 means that the request was successful and a resource was created
                 self.api_results = r.json()
                 return( self.api_results )
 
@@ -90,8 +96,8 @@ class WanikaniSession():
 
             else:
                 if( tries >= MAX_TRIES ):
-                    print( "Response error message:" )
-                    print( r.json() )
+                    self.log.debug( "Response error message:" )
+                    self.log.debug( r.json() )
                     raise Exception("Server returning a status code other than 200. Status code is: {}".format(r.status_code))
 
                 time.sleep(5)
@@ -129,17 +135,17 @@ class WanikaniSession():
     def importObjectIntoItemDatabase( self, r ):
         type_obj = r["object"]
         if( type_obj == "radical" ):
-            obj = WKRadical.fromAPI( r, self.wk_db )
+            obj = WKRadical.fromAPI( r, self.wk_db, settings=self.settings )
         elif( type_obj == "kanji" ):
-            obj = WKKanji.fromAPI( r, self.wk_db )
+            obj = WKKanji.fromAPI( r, self.wk_db, settings=self.settings )
         elif( type_obj == "vocabulary" ):
-            obj = WKVocabulary.fromAPI( r, self.wk_db )
+            obj = WKVocabulary.fromAPI( r, self.wk_db, settings=self.settings )
         elif( type_obj == "review" ):
-            obj = WKReview.fromAPI( r, self.wk_db )
+            obj = WKReview.fromAPI( r, self.wk_db, settings=self.settings )
         elif( type_obj == "assignment" ):
-            obj = WKAssignment.fromAPI( r, self.wk_db )
+            obj = WKAssignment.fromAPI( r, self.wk_db, settings=self.settings )
         elif( type_obj == "user" ):
-            obj = WKUser.fromAPI( r, self.wk_db )
+            obj = WKUser.fromAPI( r, self.wk_db, settings=self.settings )
         else:
             raise Exception("Not a know object format. Object format is {}".format( type_obj ) )
 

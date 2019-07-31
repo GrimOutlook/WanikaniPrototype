@@ -2,11 +2,11 @@ from settings import Settings
 from WKObject import WKObject
 
 class WKUpdatedAssignment( WKObject ):
-    def __init__( self, data, wk_db ):
+    def __init__( self, data, wk_db, settings=None ):
         """
         The init function gets the parameters from a static list usually returned from an sql inquiry
         """
-        self.settings = Settings()
+        self.settings = Settings() if settings == None else settings
         self.log = self.settings.logging
 
         WKObject.__init__( self, data, wk_db )
@@ -17,7 +17,7 @@ class WKUpdatedAssignment( WKObject ):
         if( self.settings.settings["debug"]["log_database_update_insertion"] ):
             self.log.debug("Inserting updated assignment of subject id: {} into database".format(self.subject_id))
 
-        sql = """ INSERT INTO updated_assignment(
+        sql = """ INSERT OR REPLACE INTO updated_assignment(
                 id,
                 object,
                 subject_id,

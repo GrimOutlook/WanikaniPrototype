@@ -3,11 +3,11 @@ from settings import Settings
 from WKSubject import WKSubject
 
 class WKVocabulary( WKSubject ):
-    def __init__( self, data, wk_db ):
+    def __init__( self, data, wk_db, settings=None ):
         """
         The init function gets the parameters from a static list usually returned from an sql inquiry
         """
-        self.settings = Settings()
+        self.settings = Settings() if settings == None else settings
         self.log = self.settings.logging
 
         WKSubject.__init__( self, data, wk_db  )
@@ -20,7 +20,7 @@ class WKVocabulary( WKSubject ):
         self.reading_mnemonic               = data["reading_mnemonic"]
 
     @classmethod
-    def fromAPI( cls, r, wk_db ):
+    def fromAPI( cls, r, wk_db, settings=None ):
         d = r["data"]   # This makes it easier to write in insert. Just data portion of JSON
 
         filepath = None
@@ -48,13 +48,13 @@ class WKVocabulary( WKSubject ):
             "reading_mnemonic"          : d["reading_mnemonic"],
             "slug"                      : d["slug"]
         }
-        return( cls( data, wk_db ) )
+        return( cls( data, wk_db, settings=settings ) )
 
     def insertIntoDatabase( self ):
         if( self.settings.settings["debug"]["log_database_insertion"] ):
             self.log.debug("Inserting vocabulary of id: {} into database".format(self.id))
 
-        sql = """ INSERT INTO vocabulary(
+        sql = """ INSERT OR REPLACE INTO vocabulary(
                 id,
                 object,
                 api_url,

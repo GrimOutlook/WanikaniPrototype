@@ -16,13 +16,13 @@
     },
     "wanikani_session" : {
 
-        "database_file_path" : "",
-        "allow_update_posting": false
+        "database_file_path" : ""
     },
     "review_session" : {
 
         "sort_mode" : null,
-        "queue_size" : 1
+        "queue_size" : 1,
+        "allow_update_posting": false
     },
     "home_page" : {},
     "review_page" : {
