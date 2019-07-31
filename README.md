@@ -1,5 +1,8 @@
 # WanikaniPrototype
-### Main Features
+### API Link
+https://docs.api.wanikani.com/20170710/
+
+# Main Features
 * Offline Usage
 * Built-in implementation of popular user scripts
 
@@ -7,7 +10,7 @@
 * Real numbers user script (shows more than 42 reviews and tells you the real number)
 * Dashboard progress plus
 
-### TODO
+## TODO
 * Allow personal reviews (maybe?)
 * Enable Kaniwani support (maybe?)
 * Enable Bunpro support (maybe?)
