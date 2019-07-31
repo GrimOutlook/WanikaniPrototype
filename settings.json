@@ -30,7 +30,8 @@
         "sort_mode" : null,
         "lightning" : true,
         "review_mode" : "anki",
-        "delay_on_incorrect" : false
+        "delay_on_incorrect" : false,
+        "open_info_pane_on_incorrect": true
     },
     "settings" : {
 

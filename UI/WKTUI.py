@@ -212,6 +212,9 @@ class WKTUI():
         else:
             self.setState( ReviewState.ANSWER_GIVEN )
 
+        if( self.settings.settings["review_page"]["open_info_pane_on_incorrect"] ):
+            self.info_section_visible = True
+
     def nextReview( self ):
         self.rs.getNextReview()
         self.setState( ReviewState.READY_FOR_ANSWER )
