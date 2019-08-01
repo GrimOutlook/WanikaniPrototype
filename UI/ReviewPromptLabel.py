@@ -1,5 +1,6 @@
 from PyQt5.Qt import *
 from WK import WKColor
+from urwid.util import str_util # Use this to determine the actual width of strings with japanese chars present
 
 """
 ##### TODO ####
@@ -32,9 +33,17 @@ class ReviewPromptLabel( QLabel ):
         QFrame.resizeEvent( self, e )
         font = self.font()
         # I have no idea why these constants work, i got them from trial and error and will simply leave them here with no explanation
-        w = self.width()/2 * 0.40
+        text_len = self.getTextLength()
+        w = self.width() / (text_len)
         h = self.height() * 0.5
         font.setPixelSize( w if w < h else h )
         # print("WIDTH {} x HEIGHT {}".format(w, h))
 
         self.setFont(font)
+
+    def getTextLength( self ):
+        l = 0
+        for char in self.text():
+            l += str_util.get_width( ord( char ) )
+
+        return( l )

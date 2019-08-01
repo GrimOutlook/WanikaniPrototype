@@ -10,6 +10,9 @@ from PseudoJapaneseIME import PseudoJapaneseIME
 # https://stackoverflow.com/questions/23058564/checking-a-character-is-fullwidth-or-halfwidth-in-python
 from urwid.util import str_util # Use this to determine the actual width of strings with japanese chars present
 
+# TODO
+## Add Lightning mode
+
 """
 Probably need to check if necessary fonts are installed for language
 """
