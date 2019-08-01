@@ -277,16 +277,21 @@ class ReviewWidget( QWidget ):
         self.changeSortModeAttributes( mode )
 
     def changeSortModeAttributes( self, mode ):
-        if( mode == SortMode.RANDOM ):
-            text = "Random"
-        elif( mode == SortMode.LEVEL ):
-            text = "Level"
-        elif( mode == SortMode.SRS ):
-            text = "SRS"
-        elif( mode == SortMode.SUBJECT ):
-            text = "Subject"
-        else:
-            raise Exception("Invalid sort mode of {}".format(mode))
+        switch = {
+            SortMode.RANDOM     : "Random",
+            SortMode.LEVEL      : "Level",
+            SortMode.SRS        : "SRS",
+            SortMode.SUBJECT    : "Subject"
+        }
+        try:
+            # Gets text based on sort mode variable value
+            text = switch[ mode ]
+
+        except KeyError as e:
+            exception_string = "Invalid sort mode of {}".format(mode)
+            self.log.exception( exception_string )
+            print(e)
+            raise Exception( exception_string )
 
         self.showStatsBar( mode )
         self.sortModeButton.setText( text )

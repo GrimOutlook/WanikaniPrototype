@@ -134,22 +134,21 @@ class WanikaniSession():
 
     def importObjectIntoItemDatabase( self, r ):
         type_obj = r["object"]
-        if( type_obj == "radical" ):
-            obj = WKRadical.fromAPI( r, self.wk_db, settings=self.settings )
-        elif( type_obj == "kanji" ):
-            obj = WKKanji.fromAPI( r, self.wk_db, settings=self.settings )
-        elif( type_obj == "vocabulary" ):
-            obj = WKVocabulary.fromAPI( r, self.wk_db, settings=self.settings )
-        elif( type_obj == "review" ):
-            obj = WKReview.fromAPI( r, self.wk_db, settings=self.settings )
-        elif( type_obj == "assignment" ):
-            obj = WKAssignment.fromAPI( r, self.wk_db, settings=self.settings )
-        elif( type_obj == "user" ):
-            obj = WKUser.fromAPI( r, self.wk_db, settings=self.settings )
-        else:
-            raise Exception("Not a know object format. Object format is {}".format( type_obj ) )
+        switch = {
+            "radical"       : WKRadical,
+            "kanji"         : WKKanji,
+            "vocabulary"    : WKVocabulary,
+            "review"        : WKReview,
+            "assignment"    : WKAssignment,
+            "user"          : WKUser,
+        }
+        try:
+            obj = switch[type_obj].fromAPI( r, self.wk_db, settings=self.settings )
+            obj.insertIntoDatabase()
 
-        obj.insertIntoDatabase()
+        except Exception as e:
+            self.log.exception("Not a know object format. Object format is {}".format( type_obj ) )
+            raise e
 
     def importSingleObjectIntoItemDatabase( self, r ):
         self.importObjectIntoItemDatabase( r )

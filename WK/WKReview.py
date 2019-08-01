@@ -2,8 +2,8 @@ from settings import Settings
 from WKObject import WKObject
 
 class WKReview( WKObject ):
-    def __init__( self, data, wk_db ):
-        self.settings = Settings()
+    def __init__( self, data, wk_db, settings=None ):
+        self.settings = Settings() if settings == None else settings
         self.log = self.settings.logging
 
         WKObject.__init__( self, data, wk_db )
@@ -20,7 +20,7 @@ class WKReview( WKObject ):
         self.incorrect_reading_answers  = 0
 
     @classmethod
-    def fromAPI( cls, r, wk_db ):
+    def fromAPI( cls, r, wk_db, settings=None ):
         d = r["data"]
         data = {
             "id"                        : r["id"],
@@ -37,7 +37,7 @@ class WKReview( WKObject ):
             "incorrect_meaning_answers" : d["incorrect_meaning_answers"],
             "incorrect_reading_answers" : d["incorrect_reading_answers"]
         }
-        return( cls( data, wk_db ) )
+        return( cls( data, wk_db, settings=settings ) )
 
     def insertIntoDatabase( self ):
         if( self.settings.settings["debug"]["log_database_insertion"] ):

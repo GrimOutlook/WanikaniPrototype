@@ -5,7 +5,7 @@ from settings import Settings
 from WanikaniDatabase import WanikaniDatabase
 from WK import ReviewMode, Pages, SRSStages, SortMode
 
-from random import shuffle, randint, choice # For randomizing reviews
+import random
 from difflib import SequenceMatcher # For checking for string similarity
 from datetime import datetime # For timestamps
 import re # For removing all non alpha-numeric-space characters from strings
@@ -109,7 +109,7 @@ class ReviewSession():
             self.current_question = "meaning"
 
         else:
-            self.current_question = choice( [ "reading", "meaning" ] )
+            self.current_question = random.choice( [ "reading", "meaning" ] )
 
         self.log.debug("New Question: {}".format( self.current_question ))
 
@@ -149,7 +149,7 @@ class ReviewSession():
     def pickNextItem( self ):
         # print("Picking next item...")
         # Picks a random number between 0 and the max queue size
-        self.current_review_index = randint( 0, self.queue_size - 1 )
+        self.current_review_index = random.randint( 0, self.queue_size - 1 )
         # Gets the item stored at that index from the current review queue
         self.current_review_item = self.current_review_queue[ self.current_review_index ]
         # print( "Current characters: {}".format( self.current_review_item.subject.characters ) )
@@ -281,14 +281,14 @@ class ReviewSession():
             for i in range( len( self.current_review_queue ) ):
                 self.full_review_list.append( self.current_review_queue.pop() )
 
-            if( sort_mode == SortMode.RANDOM ):
-                shuffle( self.full_review_list )
-            elif( sort_mode == SortMode.LEVEL ):
-                self.full_review_list = self.levelSort( self.full_review_list, reverse )
-            elif( sort_mode == SortMode.SRS ):
-                self.full_review_list = self.srsSort( self.full_review_list, reverse )
-            elif( sort_mode == SortMode.SUBJECT ):
-                self.full_review_list = self.subjectSort( self.full_review_list, reverse )
+            switch = {
+                # Sample is the non-in-place version of shuffle, it returns a list that has been shuffled
+                SortMode.RANDOM     : lambda x,y: random.sample(x, len(x)),
+                SortMode.LEVEL      : self.levelSort,
+                SortMode.SRS        : self.srsSort,
+                SortMode.SUBJECT    : self.subjectSort
+            }
+            self.full_review_list = switch[sort_mode](self.full_review_list, reverse)
 
             self.current_review_queue = [ self.full_review_list.pop(0) for i in range( self.queue_size ) ]
             self.pickNextItem()

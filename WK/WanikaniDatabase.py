@@ -209,7 +209,9 @@ class WanikaniDatabase():
         except Error as e:
             print( e )
             self.conn.close()
-            raise Exception("Connection to database failed. Closing...")
+            exception_string = "Connection to database failed. Closing..."
+            self.log.exception( exception_string )
+            raise Exception(exception_string)
 
         if( self.settings.settings["debug"]["purge_database_on_startup"] ):
             self.purgeDatabase()
@@ -218,15 +220,9 @@ class WanikaniDatabase():
             self.dropTable( "updated_assignment" )
 
 
-        self.sql_exec( sql_create_table_radical )
-        self.sql_exec( sql_create_table_kanji )
-        self.sql_exec( sql_create_table_vocabulary )
-        self.sql_exec( sql_create_table_download_queue )
-        self.sql_exec( sql_create_table_review )
-        self.sql_exec( sql_create_table_updated_review )
-        self.sql_exec( sql_create_table_assignment )
-        self.sql_exec( sql_create_table_updated_assignment )
-        self.sql_exec( sql_create_table_user )
+        table_list = [  sql_create_table_radical, sql_create_table_kanji, sql_create_table_vocabulary, sql_create_table_download_queue, sql_create_table_review,
+                        sql_create_table_updated_review, sql_create_table_assignment, sql_create_table_updated_assignment, sql_create_table_user ]
+        for table in table_list: self.sql_exec( table )
 
         self.commitChanges()
 
@@ -334,29 +330,26 @@ class WanikaniDatabase():
     def parseData( self, data ):
         obj = data["object"]
 
-        if( obj == "radical" ):
-            new_obj = WKRadical( data, self )
-        elif( obj == "kanji" ):
-            new_obj = WKKanji( data, self )
-        elif( obj == "vocabulary" ):
-            new_obj = WKVocabulary( data, self )
-        elif( obj == "download_item" ):
-            new_obj = WKDownloadItem( data, self )
-        elif( obj == "review" ):
-            new_obj = WKReview( data, self )
-        elif( obj == "updated_review" ):
-            new_obj = WKUpdatedReview( data, self )
-        elif( obj == "assignment" ):
-            new_obj = WKAssignment( data, self )
-        elif( obj == "updated_assignment" ):
-            new_obj = WKUpdatedAssignment( data, self )
-        elif( obj == "user" ):
-            new_obj = WKUser( data, self )
-        else:
-            raise Exception( "Cannot parse object of unknown type. Object is of type {}".format(obj) )
+        switch = {
+            "radical"               : WKRadical,
+            "kanji"                 : WKKanji,
+            "vocabulary"            : WKVocabulary,
+            "download_item"         : WKDownloadItem,
+            "review"                : WKReview,
+            "updated_review"        : WKUpdatedReview,
+            "assignment"            : WKAssignment,
+            "updated_assignment"    : WKUpdatedAssignment,
+            "user"                  : WKUser
+        }
+        try:
+            # Initializes a new object of type that is specified by the coresponding obj string
+            new_obj = switch[ obj ]( data, self )
+
+        except Exception as e:
+            self.log.exception( "Cannot parse object of unknown type. Object is of type {}".format(obj) )
+            raise( e )
 
         return( new_obj )
-
 
     def parseDataList( self, data_list ):
         # return( data_list )
