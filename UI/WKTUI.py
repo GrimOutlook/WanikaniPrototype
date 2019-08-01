@@ -68,7 +68,7 @@ class WKTUI():
 
             self.log.debug( "Setting char values" )
             BACKSPACE_CHAR = ord( "\x7f" )
-            self.bad_chars = [  None, BACKSPACE_CHAR, ord("~"), ord("`"), ord("\n"), ord('!'), ord("$"),
+            self.bad_chars = [  None, BACKSPACE_CHAR, ord("%"), ord("~"), ord("`"), ord("\n"), ord('!'), ord("$"),
                                 curses.KEY_UP, curses.KEY_DOWN, curses.KEY_LEFT, curses.KEY_RIGHT ]
             self.log.debug( 'WKTUI Finished Initializing.' )
 
@@ -167,6 +167,9 @@ class WKTUI():
         elif( ch == ord('$') ):
             self.cycleSortMode()
 
+        elif( ch == ord("%") ):
+            self.toggleLightning()
+
     def handleKeyAnswerShown( self, ch ):
         if( ch == ord('1') ): # This is the number 1 key, used for correct answer in anki mode
             self.answerReviewAnki( True )
@@ -240,12 +243,18 @@ class WKTUI():
             subject_type = self.rs.current_review_item.subject.object
             x = self.getRelativeCenterX( subject_type )
             y = self.getAbsoluteCenterY() - 4
-            if( subject_type == "vocabulary" ):
-                c_p = curses.color_pair(TerminalColorPalette.REVIEW_VOCABULARY)
-            elif( subject_type == "kanji" ):
-                c_p = curses.color_pair(TerminalColorPalette.REVIEW_KANJI)
-            elif( subject_type == "radical" ):
-                c_p = curses.color_pair(TerminalColorPalette.REVIEW_RADICAL)
+            switch = {
+                "radical"       : curses.color_pair(TerminalColorPalette.REVIEW_RADICAL),
+                "kanji"         : curses.color_pair(TerminalColorPalette.REVIEW_KANJI),
+                "vocabulary"    : curses.color_pair(TerminalColorPalette.REVIEW_VOCABULARY),
+            }
+            try:
+                c_p = switch[ subject_type ]
+            except KeyError as e:
+                exception_string = "Unknown subject type. Subject is of type: {}".format( suject_type )
+                self.log.exception( exception_string )
+                print( e )
+                raise( exception_string )
 
             self.scr.attron(curses.A_BOLD)
             self.scr.addstr( y, x, subject_type, c_p )
@@ -342,7 +351,13 @@ class WKTUI():
                 ReviewMode.TYPING   : "Typing",
                 ReviewMode.ANKI     : "Anki"
             }
-            review_mode = review_modes[ self.review_mode ]
+            try:
+                review_mode = review_modes[ self.review_mode ]
+            except KeyError as e:
+                exception_string = "Unknown review mode. Review mode is: {}".format( suject_type )
+                self.log.exception( exception_string )
+                print( e )
+                raise( exception_string )
 
             sort_modes = {
                 SortMode.RANDOM     : "Random",
@@ -350,7 +365,14 @@ class WKTUI():
                 SortMode.SRS        : "SRS",
                 SortMode.SUBJECT    : "Subject"
             }
-            sort_mode = sort_modes[ self.rs.sort_mode ]
+            try:
+                sort_mode = sort_modes[ self.rs.sort_mode ]
+            except KeyError as e:
+                exception_string = "Unknown sort mode. Sort mode is: {}".format( suject_type )
+                self.log.exception( exception_string )
+                print( e )
+                raise( exception_string )
+
             # Set statusbar string, append message, and slice to width to prevent wrapping
             statusbarstr = "| {} | change mode(`) | {} | change sort($) | ignore answer(!) | exit(~) | {}".format( review_mode, sort_mode, message )[:self.width]
 
@@ -399,10 +421,10 @@ class WKTUI():
                 text = text[:self.width]
                 answer_box_str = text
             else:
-                spacing_len = int( (self.width//2) - (len( text )//2) - (len(text)%2) )
+                spacing_len = int( (self.width//2) - (self.getTextLength( text )//2) - 1 )  # Replace "-1" with "- (self.getTextLength(text)%2)" depending on desired format
                 spacing = " " * spacing_len
                 answer_box_str = "{}{}{}".format( spacing, text, spacing )
-                while( len( answer_box_str ) < self.width - 1):
+                while( self.getTextLength( answer_box_str ) < self.width - 1):
                     answer_box_str += " "
 
             y = self.getAbsoluteCenterY() + 1
@@ -419,6 +441,14 @@ class WKTUI():
             curses.endwin()
             print( e )
 
+    @staticmethod
+    def getTextLength( text ):
+        l = 0
+        for char in text:
+            l += str_util.get_width( ord( char ) )
+
+        return( l )
+
     def setAnswerBoxColorscheme( self, colorscheme ):
         self.answer_box_colorscheme = colorscheme
 
@@ -428,12 +458,19 @@ class WKTUI():
     def drawReviewInfoSection( self ):
         q = self.rs.current_question
         s = self.rs.current_review_item.subject_type
-        if( s == "radical" ):
-            self.drawRadicalInfoScreen( q )
-        elif( s == "kanji" ):
-            self.drawKanjiInfoScreen( q )
-        elif( s == "vocabulary" ):
-            self.drawVocabularyInfoScreen( q )
+        switch = {
+            "radical"       : self.drawRadicalInfoScreen,
+            "kanji"         : self.drawKanjiInfoScreen,
+            "vocabulary"    : self.drawVocabularyInfoScreen,
+        }
+        try:
+            # Runs the function specified by subject type
+            switch[ s ]( q )
+        except KeyError as e:
+            exception_string = "Unknown subject type. Subject is of type: {}".format( suject_type )
+            self.log.exception( exception_string )
+            print( e )
+            raise( exception_string )
 
     def drawRadicalInfoScreen( self, q ):
         x_zero = 0
