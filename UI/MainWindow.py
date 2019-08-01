@@ -43,7 +43,11 @@ class MainWindow( QMainWindow ):
         if( e.key() == Qt.Key_Q  and e.modifiers() & Qt.ControlModifier ):
             self.close()
 
+    def syncReviews( self ):
+        pass
+
     def closeEvent( self, e ):
+        self.syncReviews()
         self.settings.saveSettings()
         e.accept()
 

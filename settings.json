@@ -1,11 +1,14 @@
 {
     "general" : {
 
-        "BASE_PATH" : ""
+        "BASE_PATH" : "",
+        "sync_reviews_on_open"  : false,
+        "sync_reviews_on_close" : false
     },
     "main_window" : {
 
-        "startup_page" : "review_page",
+        "//" : "pages: 1-home_page, 2-review_page",
+        "startup_page" : 1,
         "startup_height" : 400,
         "startup_width" : 300
     },
@@ -19,17 +22,19 @@
         "database_file_path" : ""
     },
     "review_session" : {
+        "//" : "sort_mode: 0-random, 1-level, 2-srs, 3-subject",
+        "sort_mode" : 0,
 
-        "sort_mode" : null,
         "queue_size" : 1,
         "allow_update_posting": false
     },
     "home_page" : {},
     "review_page" : {
         
-        "sort_mode" : null,
+        "//" : "review_modes: 0-typing, 1-anki, 2-anki_w_buttons",
+        "review_mode" : 2,
+
         "lightning" : true,
-        "review_mode" : "anki",
         "delay_on_incorrect" : false,
         "open_info_pane_on_incorrect": true
     },

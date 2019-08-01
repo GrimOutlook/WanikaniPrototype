@@ -11,13 +11,10 @@ class WKVocabulary( WKSubject ):
         self.log = self.settings.logging
 
         WKSubject.__init__( self, data, wk_db  )
-        self.component_subject_ids          = ast.literal_eval( data["component_subject_ids"] )
         self.context_sentences              = ast.literal_eval( data["context_sentences"] )
         self.parts_of_speech                = ast.literal_eval( data["parts_of_speech"] )
         self.pronunciation_audio_info       = data["pronunciation_audio_info"]
         self.pronunciation_audio_path       = data["pronunciation_audio_path"]
-        self.meaning_mnemonic               = data["meaning_mnemonic"]
-        self.reading_mnemonic               = data["reading_mnemonic"]
 
     @classmethod
     def fromAPI( cls, r, wk_db, settings=None ):

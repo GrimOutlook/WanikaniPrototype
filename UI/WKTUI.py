@@ -57,12 +57,15 @@ class WKTUI():
             # Get default from settings here
             self.log.debug("Setting review modes")
             self.setAnswerBoxColorscheme( TerminalColorPalette.DEFAULT_HIGHLIGHT )
-            self.review_mode = ReviewMode.ANKI
+
+            self.review_mode = self.settings.settings["review_page"]["review_mode"]
+            self.review_mode = ReviewMode.ANKI if self.review_mode == ReviewMode.ANKI_W_BUTTONS else self.review_mode
+
             self.review_state = ReviewState.READY_FOR_ANSWER
-            self.delay_on_incorrect = True
+            self.delay_on_incorrect = self.settings.settings["review_page"]["delay_on_incorrect"]
             self.DELAY_TIME = 1 # 1 Second
-            self.incorrect_start_time = 0
-            self.lightning = False
+            self.incorrect_start_time = 0 # Initializing incorrect start time for timer on incorrect
+            self.lightning = self.settings.settings["review_page"]["lightning"]
             self.text = ""
             self.info_section_visible = False
 
@@ -117,11 +120,22 @@ class WKTUI():
 
     def toggleReviewMode( self ):
         # We dont allow ANKI_W_BUTTONS because there is no use and I am not going to implement buttons for this
-        self.review_mode = ReviewMode.ANKI if self.review_mode == ReviewMode.TYPING else ReviewMode.TYPING
+        self.setReviewMode( ReviewMode.ANKI if self.review_mode == ReviewMode.TYPING else ReviewMode.TYPING )
+
+    def setReviewMode( self, review_mode ):
+        self.review_mode = review_mode
+        self.settings.settings["review_page"]["review_mode"] = review_mode
 
     def setState( self, state ):
         self.review_state = state
         self.log.debug( "ReviewState is now {}".format( self.review_state ) )
+
+    def toggleLightning( self ):
+        self.setLightning( True if self.lightning == False else False )
+
+    def setLightning( self, lighting ):
+        self.lightning = lighting
+        self.settings.settings["review_page"]["lightning"] = lightning
 
     def clearText( self ):
         self.text = ""
@@ -477,50 +491,48 @@ class WKTUI():
         x_width = self.width
         y = self.getAbsoluteCenterY() + 2
         if( q == "meaning" ):
-            self.scr.addstr( y, x_zero, "Meanings: {}".format( self.rs.current_review_item.subject.getMeaningsString() ) ) # Meaning
-            self.scr.addstr( y+1, x_zero, "User Synonyms" ) # User Synonyms
-            self.scr.addstr( y+2, x_zero, self.rs.current_review_item.subject.amalgamation_subject_ids ) # Radical Components
-            # self.scr.addstr( y, x_width, self.rs.current_review_item.subject.meaning_mnemonic ) # Meaning Mnemonic
-            # self.scr.addstr( y+1, x_width, self.rs.current_review_item.subject.meaning_hint ) # Meaning Hint
-            # self.scr.addstr( y+2, x_width, "Meaning Note" ) # Meaning Note
+            self.scr.addstr( y,   x_zero, "Meanings: {}".format( self.rs.current_review_item.subject.getMeaningsString() ) ) # Meaning
+            self.scr.addstr( y+1, x_zero, "User Synonyms:" ) # User Synonyms
+            self.scr.addstr( y+2, x_zero, "Found in Kanji: {}".format( self.rs.current_review_item.subject.getAmalgamationSubjectString() ) ) # Radical Components
+            self.scr.addstr( y+3, x_zero, "Meaning Mnemonic: {}".format( self.rs.current_review_item.subject.getMeaningMnemonicString() ) ) # Meaning Mnemonic
+            self.scr.addstr( y+4, x_zero, "Meaning Hint: {}".format( self.rs.current_review_item.subject.getMeaningHintString() ) ) # Meaning Hint
+            self.scr.addstr( y+5, x_zero, "Meaning Note:" ) # Meaning Note
 
     def drawKanjiInfoScreen( self, q ):
         x_zero = 0
         x_width = self.width
         y = self.getAbsoluteCenterY() + 2
         if( q == "meaning" ):
-            self.scr.addstr( y, x_zero, "Meanings: {}".format( self.rs.current_review_item.subject.getMeaningsString() ) ) # Meaning
-            self.scr.addstr( y+1, x_zero, "User Synonyms" ) # User Synonyms
-            self.scr.addstr( y+2, x_zero, str( self.rs.current_review_item.subject.amalgamation_subject_ids ) ) # Radical Components
-            # self.scr.addstr( y, x_width, self.rs.current_review_item.subject.meaning_mnemonic ) # Meaning Mnemonic
-            # self.scr.addstr( y+1, x_width, self.rs.current_review_item.subject.meaning_hint ) # Meaning Hint
-            # self.scr.addstr( y+2, x_width, "Meaning Note" ) # Meaning Note
+            self.scr.addstr( y,   x_zero, "Meanings: {}".format( self.rs.current_review_item.subject.getMeaningsString() ) ) # Meaning
+            self.scr.addstr( y+1, x_zero, "User Synonyms:" ) # User Synonyms
+            self.scr.addstr( y+2, x_zero, "Found in Vocabulary: {}".format( self.rs.current_review_item.subject.getAmalgamationSubjectString() ) ) # Radical Components
+            self.scr.addstr( y+3, x_zero, "Meaning Mnemonic: {}".format( self.rs.current_review_item.subject.getMeaningMnemonicString() ) ) # Meaning Mnemonic
+            self.scr.addstr( y+4, x_zero, "Meaning Hint: {}".format( self.rs.current_review_item.subject.getMeaningHintString() ) ) # Meaning Hint
+            self.scr.addstr( y+5, x_zero, "Meaning Note:" ) # Meaning Note
 
         elif( q == "reading" ):
-            self.scr.addstr( y, x_zero, "Readings: {}".format( self.rs.current_review_item.subject.getReadingsString() ) ) # Reading
-            self.scr.addstr( y+1, x_zero, str( self.rs.current_review_item.subject.amalgamation_subject_ids ) ) # Radical Components
-            # self.scr.addstr( y, x_width, self.rs.current_review_item.subject.reading_mnemonic ) # Reading Mnemonic
-            # self.scr.addstr( y+1, x_width, self.rs.current_review_item.subject.reading_hint ) # Reading Hint
-            # self.scr.addstr( y+2, x_width, "Reading Note" ) # Meaning Note
+            self.scr.addstr( y,   x_zero, "Readings: {}".format( self.rs.current_review_item.subject.getReadingsString() ) ) # Reading
+            self.scr.addstr( y+1, x_zero, "Found in Vocabulary: {}".format( self.rs.current_review_item.subject.getAmalgamationSubjectString() ) ) # Radical Components
+            self.scr.addstr( y+2, x_zero, "Meaning Mnemonic: {}".format( self.rs.current_review_item.subject.getReadingMnemonicString() ) ) # Reading Mnemonic
+            self.scr.addstr( y+3, x_zero, "Reading Hint: {}".format( self.rs.current_review_item.subject.getReadingHintString() ) ) # Reading Hint
+            self.scr.addstr( y+4, x_zero, "Reading Note:" ) # Meaning Note
 
     def drawVocabularyInfoScreen( self, q ):
         x_zero = 0
         x_width = self.width
         y = self.getAbsoluteCenterY() + 2
         if( q == "meaning" ):
-            self.scr.addstr( y, x_zero, "Meanings: {}".format( self.rs.current_review_item.subject.getMeaningsString() ), curses.color_pair(1) ) # Meaning
-            self.scr.addstr( y+1, x_zero, "User Synonyms", curses.color_pair(1) ) # User Synonyms
+            self.scr.addstr( y,   x_zero, "Meanings: {}".format( self.rs.current_review_item.subject.getMeaningsString() ), curses.color_pair(1) ) # Meaning
+            self.scr.addstr( y+1, x_zero, "User Synonyms:", curses.color_pair(1) ) # User Synonyms
             self.scr.addstr( y+2, x_zero, "Part of Speech: {}".format( self.rs.current_review_item.subject.getPartsOfSpeechString() ), curses.color_pair(1) ) # Parts of speech
-            # self.scr.addstr( y, x_width, self.rs.current_review_item.subject.component_subject_ids ) # Component Subject IDs
-            # self.scr.addstr( y+1, x_width, self.rs.current_review_item.subject.meaning_mnemonic ) # Meaning Mnemonic
-            # self.scr.addstr( y+2, x_width, "Meaning Note" ) # Meaning Note
+            self.scr.addstr( y+3, x_zero, "Meaning Mnemonic: {}".format( self.rs.current_review_item.subject.getMeaningMnemonicString() ) ) # Meaning Mnemonic
+            self.scr.addstr( y+4, x_zero, "Meaning Note: " ) # Meaning Note
 
         elif( q == "reading" ):
-            self.scr.addstr( y, x_zero, "Readings: {}".format( self.rs.current_review_item.subject.getReadingsString() ) ) # Reading
+            self.scr.addstr( y,   x_zero, "Readings: {}".format( self.rs.current_review_item.subject.getReadingsString() ) ) # Reading
             self.scr.addstr( y+1, x_zero, "Part of Speech: {}".format( self.rs.current_review_item.subject.getPartsOfSpeechString() ) ) # Parts of speech
-            # self.scr.addstr( y, x_width, self.rs.current_review_item.subject.component_subject_ids ) # Component Subject IDs
-            # self.scr.addstr( y+1, x_width, self.rs.current_review_item.subject.reading_mnemonic ) # Meaning Mnemonic
-            # self.scr.addstr( y+2, x_width, "Reading Note" ) # Meaning Note
+            self.scr.addstr( y+2, x_zero, "Reading Mnemonic: {}".format( self.rs.current_review_item.subject.getReadingMnemonicString() ) ) # Reading Mnemonic
+            self.scr.addstr( y+3, x_zero, "Reading Note: " ) # Meaning Note
 
     def getAbsoluteCenterY( self ):
         return( self.height//2 )

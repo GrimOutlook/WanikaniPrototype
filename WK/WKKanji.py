@@ -12,10 +12,7 @@ class WKKanji( WKSubject ):
 
         WKSubject.__init__( self, data, wk_db  )
         self.amalgamation_subject_ids      = ast.literal_eval( data["amalgamation_subject_ids"] )
-        self.component_subject_ids         = ast.literal_eval( data["component_subject_ids"] )
         self.meaning_hint                  = data["meaning_hint"]
-        self.meaning_mnemonic              = data["meaning_mnemonic"]
-        self.reading_mnemonic              = data["reading_mnemonic"]
         self.reading_hint                  = data["reading_hint"]
         self.visually_similar_subject_ids  = ast.literal_eval( data["visually_similar_subject_ids"] )
 
@@ -103,3 +100,13 @@ class WKKanji( WKSubject ):
         )
 
         self.wk_db.sql_exec( sql, kanji )
+
+    def getAmalgamationSubjectString( self ):
+        chars = [ self.wk_db.getObjectBySubjectID( _id, "vocabulary" ).characters for _id in self.amalgamation_subject_ids ]
+        return( ", ".join( chars ) )
+
+    def getMeaningHintString( self ):
+        return( self.meaning_hint )
+
+    def getReadingHintString( self ):
+        return( self.reading_hint )

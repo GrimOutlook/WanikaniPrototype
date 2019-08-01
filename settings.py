@@ -19,7 +19,7 @@ class Settings():
         with open( settings_file, "r" ) as f:
             self.settings = json.load( f )
 
-        self.convert()
+        # self.convert()
 
         # Settings for the settings module
 
@@ -39,41 +39,43 @@ class Settings():
             with open( settings_file, "w" ) as f:
                 f.write( json.dumps( self.settings ) )
 
-    def convert( self ):
-        self.convertReviewMode()
-        self.convertPages()
-        self.convertSortMode()
+    # def convert( self ):
+        # self.convertReviewMode()
+        # self.convertPages()
+        # self.convertSortMode()
 
-    def convertReviewMode( self ):
-        review_mode = self.settings["review_page"]["review_mode"]
-        if( review_mode == "anki" ):
-            review_mode = ReviewMode.ANKI
-        elif( review_mode == "typing" ):
-            review_mode = ReviewMode.TYPING
+    # def convertReviewMode( self ):
+        # review_mode = self.settings["review_page"]["review_mode"]
+        # if( review_mode == "anki" ):
+            # review_mode = ReviewMode.ANKI
+        # if( review_mode == "anki_w_buttons" ):
+            # review_mode = ReviewMode.ANKI_W_BUTTONS
+        # elif( review_mode == "typing" ):
+            # review_mode = ReviewMode.TYPING
 
-        self.settings["review_page"]["review_mode"] = review_mode
+        # self.settings["review_page"]["review_mode"] = review_mode
 
-    def convertPages( self ):
-        page = self.settings["main_window"]["startup_page"]
-        if( page == "review_page" ):
-            page = Pages.REVIEW_PAGE
-        elif( page == "home_page" ):
-            page = Pages.HOME_PAGE
+    # def convertPages( self ):
+        # page = self.settings["main_window"]["startup_page"]
+        # if( page == "review_page" ):
+            # page = Pages.REVIEW_PAGE
+        # elif( page == "home_page" ):
+            # page = Pages.HOME_PAGE
 
-        self.settings["main_window"]["startup_page"] = page
+        # self.settings["main_window"]["startup_page"] = page
 
-    def convertSortMode( self ):
-        sort = self.settings["review_session"]["sort_mode"]
-        if( sort == None ):
-            sort = SortMode.RANDOM
-        elif( sort == "srs" ):
-            sort = SortMode.SRS
-        elif( sort == "subject" ):
-            sort == SortMode.SUBJECT
-        elif( sort == "level" ):
-            sort == SortMode.LEVEL
+    # def convertSortMode( self ):
+        # sort = self.settings["review_session"]["sort_mode"]
+        # if( sort == "random"):
+            # sort = SortMode.RANDOM
+        # elif( sort == "srs" ):
+            # sort = SortMode.SRS
+        # elif( sort == "subject" ):
+            # sort == SortMode.SUBJECT
+        # elif( sort == "level" ):
+            # sort == SortMode.LEVEL
 
-        self.settings["review_session"]["sort_mode"] = sort
+        # self.settings["review_session"]["sort_mode"] = sort
 
     @staticmethod
     def getBasePath():

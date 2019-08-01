@@ -31,11 +31,7 @@ class ReviewSession():
         self.initSRSCounts()
         self.initLevelCounts()
 
-        # This section is for the ignore answer functionality
-        self.previous_reviews = []          # List of previous reviews, will probably limit this in number, used for ignoring answers even after adding to database and continuing on to others
-        self.previous_review_item = None    # This is simply the item that was used for answering the last question, not neccessarily different than the current review item
-        self.previous_question = None       # Last question that was asked
-        self.previous_result = None         # This is the result of the last answer the last question
+        self.initPreviousReviews()
 
         self.current_review_queue = []
         self.setSortMode( self.settings.settings["review_session"]["sort_mode"] )
@@ -44,14 +40,23 @@ class ReviewSession():
         self.current_review_item = self.current_review_queue[ self.current_review_index ]
         self.getQuestion() # Sets current_question internally
 
-        # Statistics stuff
-        self.initial_total_reviews = len( self.full_review_list ) + len( self.current_review_queue )
-        self.total_correct_reviews = 0  # A review is deemed correct in this context if both the reading and meaning questions are answered with no incorrect responses
-        self.total_done_reviews = 0
-        self.total_questions_asked = 0
-        self.total_correct_questions = 0
+        self.initStatistics()
 
         self.log.debug( 'Review Session Finished Initializing.' )
+
+    def initPreviousReviews( self ):
+        # This section is for the ignore answer functionality
+        self.previous_reviews = []          # List of previous reviews, will probably limit this in number, used for ignoring answers even after adding to database and continuing on to others
+        self.previous_review_item = None    # This is simply the item that was used for answering the last question, not neccessarily different than the current review item
+        self.previous_question = None       # Last question that was asked
+        self.previous_result = None         # This is the result of the last answer the last question
+
+    def initStatistics( self ):
+        self.initial_total_reviews      = len( self.full_review_list ) + len( self.current_review_queue )
+        self.total_questions_asked      = 0
+        self.total_correct_questions    = 0
+        self.total_done_reviews         = 0 # A review is deemed done if both the meaning and reading answers haver been answered correctly
+        self.total_correct_reviews      = 0 # A review is deemed correct in this context if both the reading and meaning questions are answered with no incorrect responses
 
     def answerCurrentQuestionTyping( self, answer ):
         self.log.debug( "Answering current question in typing mode..." )
@@ -102,6 +107,10 @@ class ReviewSession():
         self.getQuestion()
 
     def getQuestion( self ):
+        """
+        Picks question at random if neither has been answered correctly
+        else it picks a random question
+        """
         if( self.current_review_item.current_review.meaning_answers_done ):
             self.current_question = "reading"
 
@@ -277,6 +286,7 @@ class ReviewSession():
         if( sort_mode != None and ( not hasattr( self, "sort_mode" ) or sort_mode != self.sort_mode ) ): # Ensures that there is a a mode to sort with and that it is changing from the original sort
 
             self.sort_mode = sort_mode
+            self.settings.settings["review_session"]["sort_mode"] = sort_mode
             self.log.debug("Setting sort mode to {}".format(sort_mode))
             for i in range( len( self.current_review_queue ) ):
                 self.full_review_list.append( self.current_review_queue.pop() )

@@ -15,7 +15,6 @@ class WKRadical( WKSubject ):
         self.character_images_info         = data["character_images_info"]
         self.character_images_path         = data["character_images_path"]
         self.amalgamation_subject_ids      = ast.literal_eval( data["amalgamation_subject_ids"] )
-        self.meaning_mnemonic              = data["meaning_mnemonic"]
 
     # This constructor you use when pulling from the API
     # Takes response object dictionary rather than database dictionary
