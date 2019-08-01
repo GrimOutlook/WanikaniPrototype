@@ -102,3 +102,6 @@ class WKUpdatedReview( WKObject ):
         assignment = WKAssignment.WKAssignment.fromAPI( updated_info["resources_updated"]["assignment"], self.wk_db ).insertIntoDatabase()
         # Eventually I will also capture review statistics here
         # review_statistic = WKReviewStatistic.fromAPI( updated_info["resources_updated"]["review_statistic"] )
+
+        # Remove self from database after being uploaded
+        self.removeFromDatabase()
