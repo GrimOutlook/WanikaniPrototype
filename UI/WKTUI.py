@@ -71,7 +71,7 @@ class WKTUI():
 
             self.log.debug( "Setting char values" )
             BACKSPACE_CHAR = ord( "\x7f" )
-            self.bad_chars = [  None, BACKSPACE_CHAR, ord("%"), ord("~"), ord("`"), ord("\n"), ord('!'), ord("$"),
+            self.bad_chars = [  None, 0, BACKSPACE_CHAR, ord("%"), ord("~"), ord("`"), ord("\n"), ord('!'), ord("$"),
                                 curses.KEY_UP, curses.KEY_DOWN, curses.KEY_LEFT, curses.KEY_RIGHT ]
             self.log.debug( 'WKTUI Finished Initializing.' )
 
@@ -431,15 +431,14 @@ class WKTUI():
 
     def drawAnswerBox( self, text ):
         try:
-            if( len(text) >= self.width ):
-                text = text[:self.width]
-                answer_box_str = text
-            else:
-                spacing_len = int( (self.width//2) - (self.getTextLength( text )//2) - 1 )  # Replace "-1" with "- (self.getTextLength(text)%2)" depending on desired format
-                spacing = " " * spacing_len
-                answer_box_str = "{}{}{}".format( spacing, text, spacing )
-                while( self.getTextLength( answer_box_str ) < self.width - 1):
-                    answer_box_str += " "
+            while( self.getTextLength(text) >= self.width ):
+                text = text[:-1]
+
+            spacing_len = int( (self.width//2) - (self.getTextLength( text )//2) - 1 )  # Replace "-1" with "- (self.getTextLength(text)%2)" depending on desired format
+            spacing = " " * spacing_len
+            answer_box_str = "{}{}{}".format( spacing, text, spacing )
+            while( self.getTextLength( answer_box_str ) < self.width - 1):
+                answer_box_str += " "
 
             y = self.getAbsoluteCenterY() + 1
             x = 0
