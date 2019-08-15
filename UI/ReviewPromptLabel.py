@@ -13,7 +13,14 @@ from urwid.util import str_util # Use this to determine the actual width of stri
 class ReviewPromptLabel( QLabel ):
     def __init__( self, parent ):
         super().__init__(parent=parent)
+        sizePolicy.setHeightForWidth(self.promptLabel.sizePolicy().hasHeightForWidth())
+        self.setSizePolicy(sizePolicy)
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.setMinimumSize(QSize(0, 0))
+        self.setFrameShape(QFrame.Box)
+        self.setLineWidth(3)
+        self.setAlignment(Qt.AlignCenter)
+        self.setObjectName("promptLabel")
 
         self.stylesheets = {
             "vocabulary"    : "background-color : {}".format( WKColor.VOCABULARY_PURPLE ),
@@ -34,8 +41,8 @@ class ReviewPromptLabel( QLabel ):
         font = self.font()
         # I have no idea why these constants work, i got them from trial and error and will simply leave them here with no explanation
         text_len = self.getTextLength()
-        w = self.width() / (text_len)
-        h = self.height() * 0.5
+        w = self.width() / (text_len) * 1.5
+        h = self.height() * 0.6
         font.setPixelSize( w if w < h else h )
         # print("WIDTH {} x HEIGHT {}".format(w, h))
 

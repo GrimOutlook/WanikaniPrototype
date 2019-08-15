@@ -15,6 +15,8 @@ from AnswerBox import AnswerBox
 from ReviewPromptLabel import ReviewPromptLabel
 from PromptTypeLabel import PromptTypeLabel
 from LightningButton import LightningButton
+from SyncToolButton import SyncToolButton
+from InfoScrollArea import InfoScrollArea
 
 class ReviewWidget( QWidget ):
     def __init__(self, MainWindow):
@@ -27,6 +29,7 @@ class ReviewWidget( QWidget ):
     def setupUi(self, Form):
         self.lightning = self.settings.settings["review_page"]["lightning"]
         self.delay_on_incorrect = self.settings.settings["review_page"]["delay_on_incorrect"]
+        self.sync_mode = self.settings.settings["review_page"]["sync_mode"]
 
         Form.setObjectName("Form")
 
@@ -43,6 +46,10 @@ class ReviewWidget( QWidget ):
         self.lightningButton = LightningButton( self.lightning )
         self.lightningButton.setObjectName("lightningButton")
         self.topBarHLayout.addWidget( self.lightningButton )
+
+        self.syncToolButton = SyncToolButton( self.sync_mode )
+        self.syncToolButton.setObjectName("syncToolButton")
+        self.topBarHLayout.addWidget( self.syncToolButton )
 
         spacerItem = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.topBarHLayout.addItem(spacerItem)
@@ -68,16 +75,6 @@ class ReviewWidget( QWidget ):
         self.promptAreaHLayout.addItem(spacerItem1)
 
         self.promptLabel = ReviewPromptLabel(Form)
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.promptLabel.sizePolicy().hasHeightForWidth())
-        self.promptLabel.setSizePolicy(sizePolicy)
-        self.promptLabel.setMinimumSize(QSize(0, 0))
-        self.promptLabel.setFrameShape(QFrame.Box)
-        self.promptLabel.setLineWidth(3)
-        self.promptLabel.setAlignment(Qt.AlignCenter)
-        self.promptLabel.setObjectName("promptLabel")
         self.promptAreaHLayout.addWidget(self.promptLabel)
 
         spacerItem2 = QSpacerItem(40, 20, QSizePolicy.Fixed, QSizePolicy.Expanding)
@@ -127,15 +124,9 @@ class ReviewWidget( QWidget ):
         self.mainVLayout.addLayout(self.statsBarHLayout)
 
         self.promptType = PromptTypeLabel(Form)
-        self.promptType.setMinimumSize(QSize(0, 75))
-        self.promptType.setAlignment(Qt.AlignCenter)
-        self.promptType.setObjectName("promptType")
         self.mainVLayout.addWidget(self.promptType)
 
         self.answerBox = AnswerBox(Form)
-        self.answerBox.setMinimumSize(QSize(0, 75))
-        self.answerBox.setAlignment(Qt.AlignCenter)
-        self.answerBox.setObjectName("answerBox")
         self.mainVLayout.addWidget(self.answerBox)
         self.answerBox.setFocus()
 
@@ -170,38 +161,9 @@ class ReviewWidget( QWidget ):
         self.ankiButtonsHLayout.addWidget(self.ankiNextQuestionButton)
         self.ankiNextQuestionButton.hide()
 
-        # self.scrollArea = QScrollArea(Form)
-        # self.scrollArea.setAutoFillBackground(False)
-        # self.scrollArea.setWidgetResizable( True )
-        # self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # self.scrollArea.setAlignment(Qt.AlignCenter)
-        # self.scrollArea.setObjectName("scrollArea")
-        # self.mainScrollAreaWidgetContents = QWidget()
-        # self.mainScrollAreaWidgetContents.setObjectName("mainScrollAreaWidgetContents")
-        # self.mainScrollAreaWidgetContents.setContentsMargins(0,0,0,0)
-
-        # self.scrollArea.setWidget(self.mainScrollAreaWidgetContents)
-        # self.verticalLayoutMain.addWidget(self.scrollArea)
-
-        self.infoScrollArea = QScrollArea( Form )
-        self.infoScrollArea.setAutoFillBackground(False)
-        self.infoScrollArea.setWidgetResizable( True )
-        self.infoScrollArea.setAlignment(Qt.AlignCenter)
-        self.infoScrollArea.setObjectName("infoScrollArea")
-        self.infoScrollAreaContents = QWidget()
-        self.infoScrollAreaContents.setObjectName("mainScrollAreaWidgetContents")
-        self.infoScrollAreaContents.setContentsMargins(0,0,0,0)
-
-        self.infoScrollArea.setWidget(self.infoScrollAreaContents)
+        self.infoScrollArea = InfoScrollArea( Form )
         self.mainVLayout.addWidget( self.infoScrollArea )
         self.infoScrollArea.hide()
-
-        self.mainInfoHLayout = QHBoxLayout()
-        self.infoScrollAreaContents.setLayout( self.mainInfoHLayout )
-        self.leftVerticalLayout = QVBoxLayout()
-        self.mainInfoHLayout.addLayout( self.leftVerticalLayout )
-        self.rightVerticalLayout = QVBoxLayout()
-        self.mainInfoHLayout.addLayout( self.rightVerticalLayout )
 
         self.bottomVerticalSpacer = QSpacerItem(0, 157, QSizePolicy.Minimum, QSizePolicy.Preferred)
         self.mainVLayout.addItem(self.bottomVerticalSpacer)
@@ -229,8 +191,6 @@ class ReviewWidget( QWidget ):
         self.retranslateUi(Form)
         QMetaObject.connectSlotsByName(Form)
 
-        # This will later be loaded by a settings file
-        # This can either be t for typing or a for anki
         self.review_mode = self.settings.settings["review_page"]["review_mode"]
         self.setAnswerMode( self.review_mode )
 
@@ -243,7 +203,7 @@ class ReviewWidget( QWidget ):
         # Updates the review stats in side bar
         self.updateStats()
 
-        self.homeButton.clicked.connect( lambda: self.changePage(Pages.HOME_PAGE) )
+        self.homeButton.clicked.connect( lambda: self.changePage( Pages.HOME_PAGE ) )
         self.reviewModeButton.clicked.connect( self.cycleAnswerMode )
 
         # Functions in connect statements must be callable so
@@ -259,6 +219,7 @@ class ReviewWidget( QWidget ):
 
         # Intializes delay on incorrect timer
         self.delayOnIncorrectTimer = QTimer()
+        self.delayOnIncorrectDelayTime = 1000 # 1000 for 1 second in milliseconds
         # self.delayOnIncorrectTimer.timout.connect( self.setAnswerGiven )
 
         self.setState(ReviewState.READY_FOR_ANSWER)
@@ -269,7 +230,7 @@ class ReviewWidget( QWidget ):
         self.log.debug( "Current state: {}".format( self.review_state ) )
 
     def cycleSortMode( self ):
-        self.setSortMode( (self.rs.sort_mode + 1 )% 4 ) # Mod 4 since there are only 4 sort modes currently
+        self.setSortMode( (self.rs.sort_mode + 1 ) % 4 ) # Mod 4 since there are only 4 sort modes currently
 
     def setSortMode( self, mode ):
         self.rs.setSortMode( mode )
@@ -403,13 +364,13 @@ class ReviewWidget( QWidget ):
         self.answerBox.setStyle( "incorrect" )
         if( self.delay_on_incorrect ):
             # Start timer for when you are allowed to move on to the next review item
-            self.delayOnIncorrectTimer.singleShot( 1000, self.setAnswerGiven )
+            self.delayOnIncorrectTimer.singleShot( self.delayOnIncorrectDelayTime, self.setAnswerGiven )
             self.setState( ReviewState.WAITING_FOR_INCORRECT_DELAY )
         else:
             self.setState( ReviewState.ANSWER_GIVEN )
 
         if( self.lightning ):
-            self.showPromptInfo()
+            self.infoScrollArea.showPromptInfo( self.rs.current_review_item, self.rs.current_question, self.bottomVerticalSpacer )
 
     def nextReview( self ):
         if( self.review_state == ReviewState.ANSWER_GIVEN):
@@ -431,7 +392,7 @@ class ReviewWidget( QWidget ):
                 self.answerBox.setReadOnly( False )
 
             # Hide info scroll area
-            self.hidePromptInfo()
+            self.infoScrollArea.hidePromptInfo( self.bottomVerticalSpacer )
 
             # Set prompt type label back to default color
             self.answerBox.setStyle( "default" )
@@ -441,91 +402,6 @@ class ReviewWidget( QWidget ):
 
         else:
             self.log.debug( "Cannot get next review since current state is: {}".format( self.review_state ) )
-
-    def hidePromptInfo( self ):
-        self.removePreviousItemPromptInfo()
-        self.infoScrollArea.hide()
-        # This effectively begins showing the spacer again since the hide() and show() methods don't work on spacer objects
-        self.bottomVerticalSpacer.changeSize(0,157,QSizePolicy.Minimum, QSizePolicy.Preferred)
-
-    def showPromptInfo( self ):
-        subject = self.rs.current_review_item.subject.object
-
-        if( subject == "kanji" ):
-            self.createKanjiInfoContents()
-
-        elif( subject == "vocabulary" ):
-            self.createVocabularyInfoContents()
-
-        self.infoScrollArea.show()
-        # This effectivly hides the spacer since spacer objects cant use the hide() method
-        self.bottomVerticalSpacer.changeSize(0,0,QSizePolicy.Ignored, QSizePolicy.Ignored)
-
-    def createKanjiInfoContents( self ):
-        if( self.rs.current_question == "meaning" ):
-            self.meaningInfoLabel = QLabel( "Meanings: {}".format( self.rs.current_review_item.subject.getMeaningsString() ) )
-            self.userSynonyms = QLabel( "User Synonyms" )
-            self.radicalCombinations = QLabel( str(self.rs.current_review_item.subject.amalgamation_subject_ids ))
-            self.meaningMnemonicLabel = QLabel( self.rs.current_review_item.subject.meaning_mnemonic )
-            self.meaningHintLabel = QLabel( self.rs.current_review_item.subject.meaning_hint )
-            self.meaningNote = QLabel( "Meaning Note" )
-
-            self.leftVerticalLayout.addWidget( self.meaningInfoLabel )
-            self.leftVerticalLayout.addWidget( self.userSynonyms )
-            self.leftVerticalLayout.addWidget( self.radicalCombinations )
-            self.rightVerticalLayout.addWidget( self.meaningMnemonicLabel )
-            self.rightVerticalLayout.addWidget( self.meaningHintLabel )
-            self.rightVerticalLayout.addWidget( self.meaningNote )
-
-        elif( self.rs.current_question == "reading" ):
-            self.kunyomiLabel = QLabel( "Readings: {}".format( self.rs.current_review_item.subject.getReadingsString() ), self )
-            self.radicalCombinations = QLabel( str(self.rs.current_review_item.subject.amalgamation_subject_ids ))
-            self.readingMnemonicLabel = QLabel( self.rs.current_review_item.subject.reading_mnemonic )
-            self.readingHintLabel = QLabel( self.rs.current_review_item.subject.reading_hint )
-            self.readingNote = QLabel( "Reading Note" )
-
-            self.leftVerticalLayout.addWidget( self.kunyomiLabel )
-            self.leftVerticalLayout.addWidget( self.radicalCombinations )
-            self.rightVerticalLayout.addWidget( self.readingMnemonicLabel )
-            self.rightVerticalLayout.addWidget( self.readingHintLabel )
-            self.rightVerticalLayout.addWidget( self.readingNote )
-
-    def createVocabularyInfoContents( self ):
-        if( self.rs.current_question == "meaning" ):
-            self.meaningInfoLabel = QLabel( "Meanings: {}".format( self.rs.current_review_item.subject.getMeaningsString() ), self )
-            self.userSynonyms = QLabel( "User Synonyms" )
-            self.partsOfSpeechLabel = QLabel( "Part of Speech: {}".format( self.rs.current_review_item.subject.getPartsOfSpeechString() ) )
-            self.relatedKanji = QLabel( str(self.rs.current_review_item.subject.component_subject_ids ))
-            self.meaningMnemonicLabel = QLabel( self.rs.current_review_item.subject.meaning_mnemonic )
-            self.meaningNote = QLabel( "Meaning Note" )
-
-            self.leftVerticalLayout.addWidget( self.meaningInfoLabel )
-            self.leftVerticalLayout.addWidget( self.userSynonyms )
-            self.leftVerticalLayout.addWidget( self.partsOfSpeechLabel )
-            self.leftVerticalLayout.addWidget( self.relatedKanji )
-            self.rightVerticalLayout.addWidget( self.meaningMnemonicLabel )
-            self.rightVerticalLayout.addWidget( self.meaningNote )
-
-        elif( self.rs.current_question == "reading" ):
-            self.readingInfoLabel = QLabel( "Readings: {}".format( self.rs.current_review_item.subject.getReadingsString() ), self)
-            self.partsOfSpeechLabel = QLabel( "Part of Speech: {}".format( self.rs.current_review_item.subject.getPartsOfSpeechString() ) )
-            self.relatedKanji = QLabel( str(self.rs.current_review_item.subject.component_subject_ids ))
-            self.readingMnemonicLabel = QLabel( self.rs.current_review_item.subject.reading_mnemonic )
-            self.readingNote = QLabel( "Reading Note" )
-
-            self.leftVerticalLayout.addWidget( self.readingInfoLabel )
-            self.leftVerticalLayout.addWidget( self.partsOfSpeechLabel )
-            self.leftVerticalLayout.addWidget( self.relatedKanji )
-            self.rightVerticalLayout.addWidget( self.readingMnemonicLabel )
-            self.rightVerticalLayout.addWidget( self.readingNote )
-
-    def removePreviousItemPromptInfo( self ):
-        for layout in [ self.leftVerticalLayout, self.rightVerticalLayout ]:
-            for i in range( layout.count() ):
-                obj = layout.takeAt( 0 ) # Removes the first object and puts it in obj, all other objects in layout are shifted down
-                obj.widget().setVisible( False )
-                obj = obj.widget() # del says it cant delete a function call so this must be done
-                del obj
 
     def updateStats( self ): # Result required to determine if question was answered correctly
         self.totalToDo.setText( "Total: {}".format( self.rs.getTotalReviewsRemaining() ) )
@@ -556,7 +432,7 @@ class ReviewWidget( QWidget ):
 
     def cycleAnswerMode( self ):
         # Change mode from typing to anki and vice versa
-        self.setAnswerMode( (self.review_mode + 1 )%3 ) # 3 since there are currently 3 answer modes
+        self.setAnswerMode( ( self.review_mode + 1 ) % 3 ) # 3 since there are currently 3 answer modes
 
     def setAnswerMode( self, mode ):
         # For changing answer mode to given value or cycling through them

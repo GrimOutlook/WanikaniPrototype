@@ -3,12 +3,15 @@
 
         "BASE_PATH" : "",
         "sync_reviews_on_open"  : false,
-        "sync_reviews_on_close" : false
+        "sync_reviews_on_close" : false,
+        "last_review_sync_time" : null,
+        "last_assignment_sync_time" : null,
+        "last_subject_sync_time" : null
     },
     "main_window" : {
 
         "//" : "pages: 1-home_page, 2-review_page",
-        "startup_page" : 1,
+        "startup_page" : 2,
         "startup_height" : 400,
         "startup_width" : 300
     },
@@ -32,8 +35,10 @@
     "review_page" : {
         
         "//" : "review_modes: 0-typing, 1-anki, 2-anki_w_buttons",
-        "review_mode" : 2,
+        "review_mode" : 1,
 
+        "//" : "Sync modes: 0-Sync on review, 1-delayed sync on review, 2-no sync on review",
+        "sync_mode": 0,
         "lightning" : true,
         "delay_on_incorrect" : false,
         "open_info_pane_on_incorrect": true

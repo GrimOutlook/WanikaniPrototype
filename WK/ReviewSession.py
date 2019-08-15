@@ -45,7 +45,7 @@ class ReviewSession():
         self.log.debug( 'Review Session Finished Initializing.' )
 
     def initPreviousReviews( self ):
-        # This section is for the ignore answer functionality
+        # This section is for the ignore answer funCtionality
         self.previous_reviews = []          # List of previous reviews, will probably limit this in number, used for ignoring answers even after adding to database and continuing on to others
         self.previous_review_item = None    # This is simply the item that was used for answering the last question, not neccessarily different than the current review item
         self.previous_question = None       # Last question that was asked
@@ -150,7 +150,7 @@ class ReviewSession():
             # Moving the current item from the current review queue to the previous_reviews list
             self.previous_reviews.append( self.current_review_queue.pop( self.current_review_index ) )
             # For the number of items missing from current review queue
-            for i in range( self.queue_size - len( self.current_review_queue ) ):
+            for _ in range( self.queue_size - len( self.current_review_queue ) ):
                 # Move an item from the full review list to the current review queue
                 self.current_review_queue.append( self.full_review_list.pop( 0 ) )
         # print( self.current_review_queue )
@@ -194,9 +194,9 @@ class ReviewSession():
 
         self.total_questions_asked -= 1
 
-        self.increaseSubjectCount( self.previous_review )
-        self.increaseSRSCount( self.previous_review )
-        self.increaseLevelCount( self.previous_review )
+        self.increaseSubjectCount( self.previous_review_item )
+        self.increaseSRSCount( self.previous_review_item )
+        self.increaseLevelCount( self.previous_review_item )
 
         # If the items aren't the same that means that the previous review has been moved from the current review queue
         # to the previous review list and must be put back to be reviewed again
@@ -283,25 +283,23 @@ class ReviewSession():
         """
         # print( "Setting sort mode..." )
 
-        if( sort_mode != None and ( not hasattr( self, "sort_mode" ) or sort_mode != self.sort_mode ) ): # Ensures that there is a a mode to sort with and that it is changing from the original sort
+        self.sort_mode = sort_mode
+        self.settings.settings["review_session"]["sort_mode"] = sort_mode
+        self.log.debug("Setting sort mode to {}".format(sort_mode))
+        for _ in range( len( self.current_review_queue ) ):
+            self.full_review_list.append( self.current_review_queue.pop() )
 
-            self.sort_mode = sort_mode
-            self.settings.settings["review_session"]["sort_mode"] = sort_mode
-            self.log.debug("Setting sort mode to {}".format(sort_mode))
-            for i in range( len( self.current_review_queue ) ):
-                self.full_review_list.append( self.current_review_queue.pop() )
+        switch = {
+            # Sample is the non-in-place version of shuffle, it returns a list that has been shuffled
+            SortMode.RANDOM     : lambda x,y: random.sample(x, len(x)),
+            SortMode.LEVEL      : self.levelSort,
+            SortMode.SRS        : self.srsSort,
+            SortMode.SUBJECT    : self.subjectSort
+        }
+        self.full_review_list = switch[sort_mode](self.full_review_list, reverse)
 
-            switch = {
-                # Sample is the non-in-place version of shuffle, it returns a list that has been shuffled
-                SortMode.RANDOM     : lambda x,y: random.sample(x, len(x)),
-                SortMode.LEVEL      : self.levelSort,
-                SortMode.SRS        : self.srsSort,
-                SortMode.SUBJECT    : self.subjectSort
-            }
-            self.full_review_list = switch[sort_mode](self.full_review_list, reverse)
-
-            self.current_review_queue = [ self.full_review_list.pop(0) for i in range( self.queue_size ) ]
-            self.pickNextItem()
+        self.current_review_queue = [ self.full_review_list.pop(0) for i in range( self.queue_size ) ]
+        self.pickNextItem()
 
     """
     #############################################################

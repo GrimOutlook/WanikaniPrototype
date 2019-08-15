@@ -8,6 +8,9 @@ Change font to something better. Better yet allow choice of font
 class PromptTypeLabel( QLabel ):
     def __init__( self, parent ):
         super().__init__( parent = parent )
+        self.promptType.setMinimumSize(QSize(0, 75))
+        self.promptType.setAlignment(Qt.AlignCenter)
+        self.promptType.setObjectName("promptType")
 
         self.stylesheets = {
             "meaning" : "background-color : white; color : black",

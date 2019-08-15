@@ -27,8 +27,7 @@ class WKColor():
     GURU_PURPLE         = "#882D9E" # Normal purple, for guru
     MASTER_BLUE         = "#294DDB" # Normal dark blue, for master
     ENLIGHTENED_BLUE    = "#0093DD" # Normal light blue, for enlightened
-    BURNED_GRAY         = "#555555" # Normal gray, for burned
-    BURNED_GREY         = BURNED_GRAY
+    BURNED_GRAY = BURNED_GREY = "#555555" # Normal gray, for burned
 
     RADICAL_BLUE        = "#0088CC" # light - "#00AAFF"
     KANJI_PINK          = "#CC0088" # light - "#FF00AA"
@@ -45,9 +44,7 @@ class WKColor():
     RADICAL_PROGRESSION_DONE_BLUE   = "#242C4C" # light -"#9AA5CF"
     KANJI_PROGRESSION_MASK_PINK     = "#FF99DD" # Used for marking locked kanji in the level kanji progression
     KANJI_PROGRESSION_DONE_PINK     = "#3A254B"
-    DARK_GRAY   = "#1A1B1C"
-    DARK_GREY   = DARK_GRAY
-    BLACK       = DARK_GRAY
+    BLACK = DARK_GRAY = DARK_GRAY   = "#1A1B1C"
 
 
     """
@@ -119,3 +116,8 @@ class SortMode():
     SRS     = 1
     SUBJECT = 2
     LEVEL   = 3
+
+class SyncMode():
+    SYNC_ON_REVIEW  = 0
+    DELAY_SYNC      = 1 # This allows for users to ignore reviews earlier than just the previous review
+    NO_SYNC         = 2 # Doesn't sync whilst doing reviews, users must manually hit the sync button

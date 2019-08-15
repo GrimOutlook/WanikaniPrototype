@@ -12,6 +12,9 @@ class AnswerBox( QLineEdit ):
     def __init__( self, parent ):
         super().__init__(parent=parent)
         self.parent = parent
+        self.answerBox.setMinimumSize(QSize(0, 75))
+        self.answerBox.setAlignment(Qt.AlignCenter)
+        self.answerBox.setObjectName("answerBox")
 
         self.IME = PseudoJapaneseIME()
         self.textChanged.connect( self.romanjiToKana )
